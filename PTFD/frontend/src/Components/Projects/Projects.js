@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function Projects({ project }) {
   if (!project) {
@@ -13,6 +14,7 @@ export default function Projects({ project }) {
   }
 
   const {
+    _id,
     pname,
     pcode,
     pownerid,
@@ -39,6 +41,15 @@ export default function Projects({ project }) {
         <p className="card-text">Budget: ${pbudget}</p>
         <p className="card-text">Status: {pstatus}</p>
         <p className="card-text">End Date: {new Date(penddate).toLocaleDateString()}</p>
+        {/* 👇 Action Buttons */}
+        <div className="mt-3">
+          <Link to={`/projects/${_id}`} className="btn btn-warning me-2">
+            Edit
+          </Link>
+          <button className="btn btn-danger">
+            Delete
+          </button>
+        </div>
       </div>
     </div>
   );

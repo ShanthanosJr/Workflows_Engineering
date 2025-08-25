@@ -1,7 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function Projects({ project }) {
+
+  const navigate = useNavigate();
+
   if (!project) {
     return (
       <div className="card-body">
@@ -27,6 +32,18 @@ export default function Projects({ project }) {
     penddate,
   } = project;
 
+
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:5000/projects/${_id}`);
+      navigate("/");
+      navigate("/projects");
+    } catch (err) {
+      console.error("Error deleting project:", err);
+    }
+  }
+
   return (
     <div>
       <h1>Projects</h1>
@@ -46,7 +63,7 @@ export default function Projects({ project }) {
           <Link to={`/projects/${_id}`} className="btn btn-warning me-2">
             Edit
           </Link>
-          <button className="btn btn-danger">
+          <button onClick={handleDelete} className="btn btn-danger">
             Delete
           </button>
         </div>

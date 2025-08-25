@@ -5,9 +5,11 @@ const mongoose = require("mongoose");
 const router = require("./Route/ProjectRoutes"); 
 
 const app = express();
+const cors = require("cors");
 
 // Middleware
 app.use(express.json()); // Parse JSON bodies
+app.use(cors()); // Enable CORS for all routes
 app.use("/projects", router); 
 
 // Connect to MongoDB

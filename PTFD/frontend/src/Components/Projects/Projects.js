@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
-export default function Projects({ project }) {
 
-  const navigate = useNavigate();
+export default function Projects({ project, onDelete }) {
+
+
 
   if (!project) {
     return (
@@ -35,10 +35,15 @@ export default function Projects({ project }) {
 
 
   const handleDelete = async () => {
+        // ✅ ask before deleting
+        const confirmDelete = window.confirm(
+          `Are you sure you want to delete project "${pname}"?`
+        );
+        if (!confirmDelete) return; // user canceled
+
     try {
       await axios.delete(`http://localhost:5000/projects/${_id}`);
-      navigate("/");
-      navigate("/projects");
+      if (onDelete) onDelete(_id); // ✅ remove from parent state
     } catch (err) {
       console.error("Error deleting project:", err);
     }

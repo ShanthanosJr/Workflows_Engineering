@@ -38,6 +38,11 @@ export default function ProjectsDisplay() {
     return () => { mounted = false; };
   }, []);
 
+    // ✅ remove deleted project immediately from state
+    const handleDeleteFromList = (id) => {
+      setProjects((prev) => prev.filter((p) => p._id !== id));
+    };
+
   return (
     <div>
       <Nav />
@@ -51,7 +56,7 @@ export default function ProjectsDisplay() {
 
         {!loading && !errMsg && projects.map((project, i) => (
           <div key={project._id ?? i} className="card mb-3">
-            <Projects project={project} />
+            <Projects project={project} onDelete={handleDeleteFromList}/>
           </div>
         ))}
       </div>

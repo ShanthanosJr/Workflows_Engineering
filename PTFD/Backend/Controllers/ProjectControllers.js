@@ -1,6 +1,4 @@
 const Project = require("../Model/ProjectModel");
-// vQSVBzYWHfOo7wa5
-
 
 const getAllProjects = async (req, res, next) => {
 
@@ -14,7 +12,7 @@ const getAllProjects = async (req, res, next) => {
     }
     // if no projects found
     if (!projects || projects.length === 0) {
-        return res.status(404).json({ message: "No projects found" , error:err.message});
+        return res.status(404).json({ message: "No projects found" });
       }
       
     // Display all projects
@@ -24,19 +22,27 @@ const getAllProjects = async (req, res, next) => {
 // Data insert
 
 const insertProject = async (req, res, next) => {
-    const { pname, pcode, pownerid, pownername, pdescription, pbudget, pstatus, penddate } = req.body;
+    const { pname, pnumber, pcode, plocation, pimg, ptype, pownerid, pownername, potelnumber, pdescription, ppriority, pbudget, pstatus, penddate ,pissues, pobservations } = req.body;
 
     let project;
     try {
         project = new Project({
             pname,
+            pnumber,
             pcode,
+            plocation,
+            pimg,
+            ptype,
             pownerid,
             pownername,
+            potelnumber,
             pdescription,
+            ppriority,
             pbudget,
             pstatus,
-            penddate
+            penddate,
+            pissues,
+            pobservations
         });
         await project.save();
     } catch (err) {

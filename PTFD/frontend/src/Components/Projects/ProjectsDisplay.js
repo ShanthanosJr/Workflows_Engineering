@@ -47,18 +47,31 @@ export default function ProjectsDisplay() {
     <div>
       <Nav />
       <div className="container py-3">
-        <h1 className="mb-3">Projects Display</h1>
+        <h1
+          className="mb-4 text-center fw-bold"
+          style={{
+            letterSpacing: "2px",
+            fontSize: "2.5rem",
+            color: "#2c3e50",
+            textShadow: "1px 2px 8px #e0e0e0",
+            fontFamily: "'Montserrat', 'Segoe UI', Arial, sans-serif"
+          }}
+        >
+          Projects Display
+        </h1>
 
         {loading && <div className="alert alert-info">Loading projects…</div>}
         {!loading && errMsg && (
           <div className="alert alert-warning">{errMsg}</div>
         )}
 
-        {!loading && !errMsg && projects.map((project, i) => (
-          <div key={project._id ?? i} className="card mb-3">
-            <Projects project={project} onDelete={handleDeleteFromList}/>
+        {!loading && !errMsg && (
+          <div className="row justify-content-center">
+            {projects.map((project, i) => (
+              <Projects key={project._id ?? i} project={project} onDelete={handleDeleteFromList}/>
+            ))}
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

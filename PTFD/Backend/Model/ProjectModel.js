@@ -6,7 +6,22 @@ const ProjectSchema = new Schema({
         type: String,
         required: true,
     },
+    pnumber: {
+        type: String,
+        required: true,
+        unique: true,
+    },
     pcode: {
+        type: String,
+        required: true,
+    },
+    plocation: {
+        type: String,
+        required: true,
+    },
+    pimg: { type: String },
+
+    ptype : {
         type: String,
         required: true,
     },
@@ -18,11 +33,19 @@ const ProjectSchema = new Schema({
         type: String,
         required: true,
     },
-
+    potelnumber: {
+        type: String,
+        required: true,
+    },
     pdescription: {
         type: String,
         required: true,
     },
+    ppriority: { 
+        type: String, 
+        enum: ["High", "Medium", "Low"], 
+        default: "Medium" },
+
     pcreatedat: {
         type: Date,
         default: Date.now
@@ -43,6 +66,8 @@ const ProjectSchema = new Schema({
         type: Date,
         required: true,
     },
+    pissues: [{ type: String }], // array of text issues
+    pobservations: { type: String },
 
     });
 

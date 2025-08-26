@@ -10,7 +10,7 @@ function UpdateProjects() {
   useEffect(() => {
     async function fetchProject() {
       try {
-        const res = await axios.get(`http://localhost:5000/projects/${id}`);
+        const res = await axios.get(`http://localhost:5050/projects/${id}`);
         // ✅ handle both cases (wrapped or plain project)
         setProject(res.data.project || res.data);
       } catch (err) {
@@ -23,7 +23,7 @@ function UpdateProjects() {
 
   const sendRequest = async () => {
     try {
-      await axios.put(`http://localhost:5000/projects/${id}`, {
+      await axios.put(`http://localhost:5050/projects/${id}`, {
         pname: project.pname,
         pcode: project.pcode,
         pownerid: project.pownerid,

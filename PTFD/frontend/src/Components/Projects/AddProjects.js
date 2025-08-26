@@ -27,7 +27,7 @@ export default function AddProjects() {
     e.preventDefault();
 
     try {
-      const res = await axios.post("http://localhost:5000/projects", formData);
+      const res = await axios.post("http://localhost:5050/projects", formData);
       setMessage("✅ Project added successfully!");
       console.log("Project created:", res.data);
       setFormData({

@@ -1,4 +1,6 @@
 const Project = require("../Model/ProjectModel");
+// vQSVBzYWHfOo7wa5
+
 
 const getAllProjects = async (req, res, next) => {
 
@@ -12,7 +14,7 @@ const getAllProjects = async (req, res, next) => {
     }
     // if no projects found
     if (!projects || projects.length === 0) {
-        return res.status(404).json({ message: "No projects found" });
+        return res.status(404).json({ message: "No projects found" , error:err.message});
       }
       
     // Display all projects

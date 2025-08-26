@@ -3,7 +3,7 @@ import axios from 'axios';
 import Nav from '../Nav/Nav';
 import Projects from './Projects';
 
-const URL = 'http://localhost:5000/projects';
+const URL = 'http://localhost:5050/projects';
 
 async function fetchHandlers() {
   try {

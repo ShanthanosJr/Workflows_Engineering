@@ -42,7 +42,7 @@ export default function Projects({ project, onDelete }) {
         if (!confirmDelete) return; // user canceled
 
     try {
-      await axios.delete(`http://localhost:5000/projects/${_id}`);
+      await axios.delete(`http://localhost:5050/projects/${_id}`);
       if (onDelete) onDelete(_id); // ✅ remove from parent state
     } catch (err) {
       console.error("Error deleting project:", err);

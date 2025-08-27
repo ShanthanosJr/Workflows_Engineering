@@ -340,6 +340,14 @@ export default function Projects({ project, onDelete }) {
         {/* Card Footer with Action Buttons */}
         <div className="card-footer bg-light border-0 p-3">
           <div className="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <Link 
+              to={`/project-view/${_id}`} 
+              className="btn btn-outline-primary btn-sm flex-view me-md-2"
+              style={{ transition: "all 0.3s ease" }}
+            >
+              <i className="fas fa-view me-1"></i>
+              View Details
+            </Link>
             <Link 
               to={`/projects/${_id}`} 
               className="btn btn-outline-primary btn-sm flex-fill me-md-2"

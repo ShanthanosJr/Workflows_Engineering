@@ -7,6 +7,7 @@ import UpdateProjects from './Components/Projects/UpdateProjects';
 import Timelines from './Components/Timelines/Timelines';
 import AddTimelines from './Components/Timelines/AddTimelines';
 import UpdateTimelines from './Components/Timelines/UpdateTimelines';
+import ProjectsView from './Components/Projects/ProjectsView';
 
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/projects" element={<ProjectsDisplay />} />
         <Route path="/add-project" element={<AddProjects />} />
         <Route path="projects/:id" element={<UpdateProjects />} />
+        <Route path="project-view/:id" element={<ProjectsView />} />
         {/* Add timeline routes here */}
         <Route path="/timelines" element={<Timelines />} />
         <Route path="/add-timeline" element={<AddTimelines />} />

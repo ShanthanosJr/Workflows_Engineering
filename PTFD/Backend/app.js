@@ -1,22 +1,30 @@
 console.log("Starting PTFD Backend...");
 // vQSVBzYWHfOo7wa5
+
 const express = require("express");
 const mongoose = require("mongoose");
-const router = require("./Route/ProjectRoutes"); 
+const cors = require("cors");
+
+// Import Routes
+const projectRoutes = require("./Route/ProjectRoutes");
+const timelineRoutes = require("./Route/TimelineRoutes"); // 👈 add timeline
 
 const app = express();
-const cors = require("cors");
 
 // Middleware
 app.use(express.json()); // Parse JSON bodies
 app.use(cors({ origin: "*" })); // Enable CORS for all routes
-app.use("/projects", router); 
 
+// Routes
+app.use("/projects", projectRoutes);
+app.use("/timelines", timelineRoutes); // 👈 mount timeline CRUD
+
+// Test route
 app.get("/test", (req, res) => {
   res.json({ message: "Test route working" });
 });
 
-// Connect to MongoDB
+// MongoDB Connection
 mongoose.connect("mongodb+srv://Kavishka:vQSVBzYWHfOo7wa5@cluster0.6vdnmh3.mongodb.net/test?retryWrites=true&w=majority")
   .then(() => {
     console.log("Connected to MongoDB");
@@ -29,5 +37,4 @@ mongoose.connect("mongodb+srv://Kavishka:vQSVBzYWHfOo7wa5@cluster0.6vdnmh3.mongo
   .catch(err => {
     console.error("Error connecting to MongoDB:", err);
   });
-
 

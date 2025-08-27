@@ -220,21 +220,31 @@ function UpdateProjects() {
                           required
                         />
                       </div>
+
                       <div className="col-md-6">
                         <label htmlFor="ptype" className="form-label fw-semibold">
                           Project Type <span className="text-danger">*</span>
                         </label>
-                        <input
-                          type="text"
+                        <select
                           id="ptype"
                           name="ptype"
-                          className="form-control form-control-lg"
+                          className="form-select form-select-lg"
                           value={project.ptype || ""}
                           onChange={(e) => handleChange('ptype', e.target.value)}
-                          placeholder="Enter project type"
                           required
-                        />
+                        >
+                          <option value="">Choose project type...</option>
+                          <option value="Residential">🏠 Residential</option>
+                          <option value="Commercial">🏢 Commercial</option>
+                          <option value="Industrial">🏭 Industrial</option>
+                          <option value="Infrastructure">🛣️ Infrastructure</option>
+                          <option value="Institutional">🏫 Institutional</option>
+                          <option value="Renovation">🔨 Renovation</option>
+                          <option value="Landscaping">🌳 Landscaping</option>
+                          <option value="Mixed-Use">🏙️ Mixed-Use</option>
+                        </select>
                       </div>
+                      
                       <div className="col-md-6">
                         <label htmlFor="pimg" className="form-label fw-semibold">
                           Project Images URL <span className="text-danger">*</span>

@@ -90,7 +90,31 @@ export default function Projects({ project, onDelete }) {
 
     setIsDeleting(true);
     try {
-      await axios.delete(`http://localhost:5050/projects/${_id}`);
+      await axios.delete(`http://localhost:505      // ...existing code...
+      <div className="col-md-6">
+        <label htmlFor="ptype" className="form-label fw-semibold">
+          Project Type <span className="text-danger">*</span>
+        </label>
+        <select
+          id="ptype"
+          name="ptype"
+          className="form-select form-select-lg"
+          value={formData.ptype}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Choose project type...</option>
+          <option value="Residential">🏠 Residential</option>
+          <option value="Commercial">🏢 Commercial</option>
+          <option value="Industrial">🏭 Industrial</option>
+          <option value="Infrastructure">🛣️ Infrastructure</option>
+          <option value="Institutional">🏫 Institutional</option>
+          <option value="Renovation">🔨 Renovation</option>
+          <option value="Landscaping">🌳 Landscaping</option>
+          <option value="Mixed-Use">🏙️ Mixed-Use</option>
+        </select>
+      </div>
+      // ...existing code...0/projects/${_id}`);
       if (onDelete) onDelete(_id);
     } catch (err) {
       console.error("Error deleting project:", err);

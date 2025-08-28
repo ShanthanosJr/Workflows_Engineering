@@ -61,35 +61,12 @@ export default function Nav() {
               <li className="nav-item mx-2">
                 <NavLink 
                   to="/projects" 
+                  end
                   className={({ isActive }) =>
                     `nav-link px-4 py-2 rounded-pill fw-semibold position-relative overflow-hidden ${
-                      isActive ? 'text-white' : 'text-white-50'
+                      isActive ? 'active' : ''
                     }`
                   }
-                  style={{
-                    transition: 'all 0.3s ease',
-                    background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.2)'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!e.target.classList.contains('active')) {
-                      e.target.style.background = 'rgba(255,255,255,0.2)';
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-                      e.target.classList.remove('text-white-50');
-                      e.target.classList.add('text-white');
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!e.target.classList.contains('active')) {
-                      e.target.style.background = 'rgba(255,255,255,0.1)';
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = 'none';
-                      e.target.classList.remove('text-white');
-                      e.target.classList.add('text-white-50');
-                    }
-                  }}
                 >
                   <span className="me-2">📊</span>
                   Projects
@@ -98,35 +75,12 @@ export default function Nav() {
               <li className="nav-item mx-2">
                 <NavLink 
                   to="/timelines" 
+                  end
                   className={({ isActive }) =>
                     `nav-link px-4 py-2 rounded-pill fw-semibold position-relative overflow-hidden ${
-                      isActive ? 'text-white' : 'text-white-50'
+                      isActive ? 'active' : ''
                     }`
                   }
-                  style={{
-                    transition: 'all 0.3s ease',
-                    background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.2)'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!e.target.classList.contains('active')) {
-                      e.target.style.background = 'rgba(255,255,255,0.2)';
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-                      e.target.classList.remove('text-white-50');
-                      e.target.classList.add('text-white');
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!e.target.classList.contains('active')) {
-                      e.target.style.background = 'rgba(255,255,255,0.1)';
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = 'none';
-                      e.target.classList.remove('text-white');
-                      e.target.classList.add('text-white-50');
-                    }
-                  }}
                 >
                   <span className="me-2">📅</span>
                   Timelines
@@ -138,7 +92,21 @@ export default function Nav() {
       </nav>
 
       <style jsx global>{`
-        /* Custom styles for active nav links */
+        .navbar-nav .nav-link {
+          transition: all 0.3s ease;
+          background: rgba(255,255,255,0.1);
+          backdropFilter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.2);
+          color: rgba(255,255,255,0.5);
+        }
+
+        .navbar-nav .nav-link:hover:not(.active) {
+          background: rgba(255,255,255,0.2);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+          color: white;
+        }
+
         .navbar-nav .nav-link.active {
           background: rgba(255,255,255,0.25) !important;
           color: white !important;
@@ -146,7 +114,6 @@ export default function Nav() {
           transform: translateY(-2px) !important;
         }
 
-        /* Hover animation for brand */
         .navbar-brand {
           position: relative;
         }
@@ -166,7 +133,6 @@ export default function Nav() {
           width: 100%;
         }
 
-        /* Mobile responsive improvements */
         @media (max-width: 991.98px) {
           .navbar-collapse {
             background: rgba(0,0,0,0.1);
@@ -187,18 +153,15 @@ export default function Nav() {
           }
         }
 
-        /* Glassmorphism effect for navigation */
         .navbar {
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
         }
 
-        /* Smooth scroll behavior */
         html {
           scroll-behavior: smooth;
         }
 
-        /* Add subtle animation to the entire navbar */
         .navbar {
           animation: slideDown 0.5s ease-out;
         }
@@ -214,7 +177,6 @@ export default function Nav() {
           }
         }
 
-        /* Custom focus states for accessibility */
         .navbar-nav .nav-link:focus {
           outline: 2px solid rgba(255,255,255,0.5);
           outline-offset: 2px;

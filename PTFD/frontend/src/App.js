@@ -34,7 +34,7 @@ export default function App() {
           <p className="mb-1 fw-semibold" style={{ letterSpacing: "1px", fontSize: "1.1rem" }}>
             &copy; 2025 <span className="text-info">Project Tracker</span>
           </p>
-          <small className="text-secondary">Empowering Modern Construction Management</small>
+          <small className="text-secondary"> Smart Construction Workflow & Safety Management System</small>
         </div>
       </footer>
     </div>

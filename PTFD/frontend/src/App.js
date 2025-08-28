@@ -8,6 +8,7 @@ import Timelines from './Components/Timelines/Timelines';
 import AddTimelines from './Components/Timelines/AddTimelines';
 import UpdateTimelines from './Components/Timelines/UpdateTimelines';
 import ProjectsView from './Components/Projects/ProjectsView';
+import TimelinesView from './Components/Timelines/TimelinesView';
 
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/timelines" element={<Timelines />} />
         <Route path="/add-timeline" element={<AddTimelines />} />
         <Route path="/update-timeline/:id" element={<UpdateTimelines />} />
+        <Route path="/timeline/:id" element={<TimelinesView />} />
 
       </Routes>
 

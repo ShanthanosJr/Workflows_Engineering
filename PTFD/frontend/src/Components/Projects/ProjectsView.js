@@ -166,7 +166,7 @@ export default function ProjectsView() {
                   <div className="btn-group">
                     <button 
                       className="btn btn-light btn-sm"
-                      onClick={() => navigate(`/update-project/${id}`)}
+                      onClick={() => navigate(`/projects/${id}`)}
                       title="Edit Project"
                     >
                       ✏️ Edit
@@ -442,7 +442,7 @@ export default function ProjectsView() {
               <div className="btn-group" role="group">
                 <button 
                   className="btn btn-primary btn-lg"
-                  onClick={() => navigate(`/update-project/${id}`)}
+                  onClick={() => navigate(`/projects/${id}`)}
                 >
                   ✏️ Edit Project
                 </button>

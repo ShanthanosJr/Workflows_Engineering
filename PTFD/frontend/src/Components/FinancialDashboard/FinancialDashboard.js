@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Nav from "../Nav/Nav";
@@ -79,12 +79,7 @@ export default function FinancialDashboard() {
     activeDashboards: 0
   });
 
-  useEffect(() => {
-    fetchDashboards();
-    fetchAvailableProjects();
-  }, []);
-
-  const fetchDashboards = async () => {
+  const fetchDashboards = useCallback(async () => {
     try {
       setLoading(true);
       console.log('🔄 Fetching financial dashboards...');
@@ -102,16 +97,21 @@ export default function FinancialDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchAvailableProjects = async () => {
+  const fetchAvailableProjects = useCallback(async () => {
     try {
       const response = await axios.get('http://localhost:5050/financial-dashboard/config/projects');
       setAvailableProjects(response.data.data || []);
     } catch (error) {
       console.error('❌ Error fetching projects:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchDashboards();
+    fetchAvailableProjects();
+  }, [fetchDashboards, fetchAvailableProjects]);
 
   const calculateStatistics = (data) => {
     const stats = {
@@ -142,7 +142,7 @@ export default function FinancialDashboard() {
         dateTo: dateTo || undefined
       };
 
-      const response = await axios.post('http://localhost:5050/financial-dashboard/calculate', calculationData);
+      await axios.post('http://localhost:5050/financial-dashboard/calculate', calculationData);
       
       console.log('✅ Financial calculation completed');
       alert('✅ Financial dashboard calculated successfully!');

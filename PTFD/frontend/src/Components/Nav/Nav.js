@@ -109,6 +109,21 @@ export default function Nav() {
               </li>
               <li className="nav-item mx-2">
                 <NavLink 
+                  to="/chatbot" 
+                  end
+                  className={({ isActive }) =>
+                    `nav-link px-4 py-2 rounded-pill fw-semibold position-relative overflow-hidden ${
+                      isActive ? 'active chatbot-nav' : 'chatbot-nav'
+                    }`
+                  }
+                >
+                  <span className="me-2">🤖</span>
+                  AI Assistant
+                  <span className="badge bg-info ms-2" style={{fontSize: '0.7rem', padding: '2px 6px'}}>AI</span>
+                </NavLink>
+              </li>
+              <li className="nav-item mx-2">
+                <NavLink 
                   to="/timelines" 
                   end
                   className={({ isActive }) =>
@@ -212,6 +227,45 @@ export default function Nav() {
           transform: translateY(-4px) !important;
           box-shadow: 0 10px 30px rgba(255, 193, 7, 0.5) !important;
           border-color: rgba(255, 193, 7, 1) !important;
+        }
+
+        /* Special styling for ChatBot AI Assistant nav item */
+        .chatbot-nav {
+          background: linear-gradient(45deg, rgba(255,255,255,0.3), rgba(138, 43, 226, 0.4)) !important;
+          border: 2px solid rgba(138, 43, 226, 0.6) !important;
+          box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3) !important;
+          color: white !important;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .chatbot-nav::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+          transition: left 0.5s ease;
+        }
+
+        .chatbot-nav:hover::before {
+          left: 100%;
+        }
+
+        .chatbot-nav:hover {
+          background: linear-gradient(45deg, rgba(255,255,255,0.4), rgba(138, 43, 226, 0.5)) !important;
+          transform: translateY(-4px) !important;
+          box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4) !important;
+          border-color: rgba(138, 43, 226, 0.8) !important;
+        }
+
+        .chatbot-nav.active {
+          background: linear-gradient(45deg, rgba(255,255,255,0.5), rgba(138, 43, 226, 0.6)) !important;
+          transform: translateY(-4px) !important;
+          box-shadow: 0 10px 30px rgba(138, 43, 226, 0.5) !important;
+          border-color: rgba(138, 43, 226, 1) !important;
         }
 
         .navbar-brand {

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Nav from "../Nav/Nav";
 
 export default function ProjectTimelines() {
@@ -25,7 +25,7 @@ export default function ProjectTimelines() {
   const [selectedTimelines, setSelectedTimelines] = useState([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
-  const [statusFilter, setStatusFilter] = useState([]);
+  // Removed unused statusFilter state
   const [costRange, setCostRange] = useState({ min: "", max: "" });
   const [selectedTimelineDetail, setSelectedTimelineDetail] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -350,7 +350,7 @@ export default function ProjectTimelines() {
     );
   }
 
-  const sortedTimelines = getSortedAndFilteredTimelines();
+  // Removed unused sortedTimelines variable
   const uniqueProjects = getUniqueProjects();
   const paginatedData = getPaginatedData();
 

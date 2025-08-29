@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import Nav from "../Nav/Nav";
@@ -17,7 +17,6 @@ export default function UpdateProjectTimeline() {
   const [loading, setLoading] = useState(true);
   const [projectCode, setProjectCode] = useState("");
   const [projectDetails, setProjectDetails] = useState(null);
-  const [validatingProject, setValidatingProject] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
 
   const [form, setForm] = useState({
@@ -74,9 +73,9 @@ export default function UpdateProjectTimeline() {
   // Fetch existing timeline data
   useEffect(() => {
     fetchTimelineData();
-  }, [id]);
+  }, [id, fetchTimelineData]);
 
-  const fetchTimelineData = async () => {
+  const fetchTimelineData = useCallback(async () => {
     try {
       setLoading(true);
       console.log('🔄 Fetching timeline data for ID:', id);
@@ -123,7 +122,7 @@ export default function UpdateProjectTimeline() {
       setLoading(false);
       alert('Error loading timeline data. Please try again.');
     }
-  };
+  }, [id]); // Added dependency
 
   // Project validation function (used only for auto-validation during data load)
   const validateProject = async (code) => {
@@ -132,7 +131,7 @@ export default function UpdateProjectTimeline() {
       return;
     }
 
-    setValidatingProject(true);
+    // Removed validatingProject state usage
 
     try {
       console.log('🔍 Auto-validating project code:', code);
@@ -148,7 +147,7 @@ export default function UpdateProjectTimeline() {
       console.error('❌ Validation error:', error.response?.data || error.message);
       // Don't set error state for auto-validation, just log it
     }
-    setValidatingProject(false);
+    // Removed setValidatingProject(false);
   };
 
   const addField = (key, newObj) => {

@@ -10,6 +10,10 @@ const projectRoutes = require("./Route/ProjectRoutes");
 const timelineRoutes = require("./Route/TimelineRoutes"); // 👈 add timeline
 const projectTimelineRoutes = require("./Route/ProjectTimelineRts"); // 👈 add project timeline
 const financialDashboardRoutes = require("./Route/FinancialDashboardRts"); // 👈 add financial dashboard
+const chatbotRoutes = require("./Route/ChatBotRts"); // 👈 add chatbot routes
+
+// Import ChatBot controller for initialization
+const { initializeKnowledgeBase } = require('./Controllers/ChatBotCtrl');
 
 const app = express();
 
@@ -22,6 +26,7 @@ app.use("/projects", projectRoutes);
 app.use("/timelines", timelineRoutes); // 👈 mount timeline CRUD
 app.use("/project-timelines", projectTimelineRoutes); // 👈 mount project timeline CRUD
 app.use("/financial-dashboard", financialDashboardRoutes); // 👈 mount financial dashboard CRUD
+app.use("/chatbot", chatbotRoutes); // 👈 mount chatbot CRUD
 
 // Test route
 app.get("/test", (req, res) => {
@@ -30,12 +35,16 @@ app.get("/test", (req, res) => {
 
 // MongoDB Connection
 mongoose.connect("mongodb+srv://Kavishka:vQSVBzYWHfOo7wa5@cluster0.6vdnmh3.mongodb.net/test?retryWrites=true&w=majority")
-  .then(() => {
+  .then(async () => {
     console.log("Connected to MongoDB");
+    
+    // Initialize ChatBot knowledge base
+    await initializeKnowledgeBase();
 
     // Start the server
     app.listen(5050, "0.0.0.0", () => {
       console.log("Server is running on port 5050");
+      console.log("🤖 ChatBot AI Assistant is ready!");
     });
   })
   .catch(err => {

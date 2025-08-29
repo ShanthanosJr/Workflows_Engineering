@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import Nav from "../Nav/Nav";
@@ -58,11 +58,7 @@ export default function FinancialDashboardView() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
-  useEffect(() => {
-    fetchDashboardDetails();
-  }, [id]);
-
-  const fetchDashboardDetails = async () => {
+  const fetchDashboardDetails = useCallback(async () => {
     try {
       setLoading(true);
       console.log('🔄 Fetching dashboard details for ID:', id);
@@ -77,7 +73,11 @@ export default function FinancialDashboardView() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchDashboardDetails();
+  }, [id, fetchDashboardDetails]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -95,11 +95,7 @@ export default function FinancialDashboardView() {
     });
   };
 
-  const getProgressBarColor = (percentage) => {
-    if (percentage >= 80) return 'bg-success';
-    if (percentage >= 60) return 'bg-warning';
-    return 'bg-danger';
-  };
+  // Removed unused getProgressBarColor function
 
   if (loading) {
     return (

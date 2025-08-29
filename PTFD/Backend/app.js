@@ -8,6 +8,8 @@ const cors = require("cors");
 // Import Routes
 const projectRoutes = require("./Route/ProjectRoutes");
 const timelineRoutes = require("./Route/TimelineRoutes"); // 👈 add timeline
+const projectTimelineRoutes = require("./Route/ProjectTimelineRts"); // 👈 add project timeline
+const financialDashboardRoutes = require("./Route/FinancialDashboardRts"); // 👈 add financial dashboard
 
 const app = express();
 
@@ -18,6 +20,8 @@ app.use(cors({ origin: "*" })); // Enable CORS for all routes
 // Routes
 app.use("/projects", projectRoutes);
 app.use("/timelines", timelineRoutes); // 👈 mount timeline CRUD
+app.use("/project-timelines", projectTimelineRoutes); // 👈 mount project timeline CRUD
+app.use("/financial-dashboard", financialDashboardRoutes); // 👈 mount financial dashboard CRUD
 
 // Test route
 app.get("/test", (req, res) => {

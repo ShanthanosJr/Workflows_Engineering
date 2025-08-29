@@ -10,6 +10,11 @@ import UpdateTimelines from './Components/Timelines/UpdateTimelines';
 import ProjectsView from './Components/Projects/ProjectsView';
 import TimelinesView from './Components/Timelines/TimelinesView';
 import ProjectsFD from './Components/Projects/ProjectsFD';
+import ProjectTimeline from './Components/ProjectTimeline/ProjectTimeline';
+import AddProjectTimelines from './Components/ProjectTimeline/AddProjectTimelines';
+import UpdateProjectTimeline from './Components/ProjectTimeline/UpdateProjectTimeline';
+import FinancialDashboard from './Components/FinancialDashboard/FinancialDashboard';
+import FinancialDashboardView from './Components/FinancialDashboard/FinancialDashboardView';
 
 
 export default function App() {
@@ -28,7 +33,13 @@ export default function App() {
         <Route path="/add-timeline" element={<AddTimelines />} />
         <Route path="/update-timeline/:id" element={<UpdateTimelines />} />
         <Route path="/timeline/:id" element={<TimelinesView />} />
-
+        {/* Add timeline routes here */}
+        <Route path="/project-timelines" element={<ProjectTimeline />} />
+        <Route path="/add-project-timeline" element={<AddProjectTimelines />} />
+        <Route path="/update-project-timeline/:id" element={<UpdateProjectTimeline />} />
+        {/* Financial Dashboard routes */}
+        <Route path="/financial-dashboard" element={<FinancialDashboard />} />
+        <Route path="/financial-dashboard/view/:id" element={<FinancialDashboardView />} />
       </Routes>
 
       <footer className="App-footer bg-dark text-light py-3 mt-5 border-top shadow-sm">

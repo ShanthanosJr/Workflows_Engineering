@@ -8,6 +8,59 @@ export default function ProjectsView() {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+
+  // Get project images array or fallback to single image/default
+  const getProjectImages = (project) => {
+    if (!project) return [];
+    
+    if (project.pimg && Array.isArray(project.pimg) && project.pimg.length > 0) {
+      return project.pimg;
+    }
+    
+    if (project.pimg && typeof project.pimg === 'string') {
+      return [project.pimg];
+    }
+    
+    const defaultImages = {
+      'Residential': 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&h=400&fit=crop&auto=format',
+      'Commercial': 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=400&fit=crop&auto=format',
+      'Infrastructure': 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=400&fit=crop&auto=format',
+      'Industrial': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=400&fit=crop&auto=format',
+      default: 'https://via.placeholder.com/800x400?text=Project+Image'
+    };
+    
+    return [defaultImages[project.ptype] || defaultImages.default];
+  };
+
+  // Auto-carousel effect (3 seconds) when auto-playing is enabled
+  useEffect(() => {
+    let intervalId;
+    if (isAutoPlaying && project) {
+      const projectImages = getProjectImages(project);
+      if (projectImages.length > 1) {
+        intervalId = setInterval(() => {
+          setCurrentImageIndex((prevIndex) => 
+            prevIndex === projectImages.length - 1 ? 0 : prevIndex + 1
+          );
+        }, 3000); // 3 second interval
+      }
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isAutoPlaying, project]);
+
+  const handlePreviousImage = () => {
+    const projectImages = getProjectImages(project);
+    setCurrentImageIndex(currentImageIndex === 0 ? projectImages.length - 1 : currentImageIndex - 1);
+  };
+
+  const handleNextImage = () => {
+    const projectImages = getProjectImages(project);
+    setCurrentImageIndex(currentImageIndex === projectImages.length - 1 ? 0 : currentImageIndex + 1);
+  };
 
   const fetchProject = () => {
     setLoading(true);
@@ -189,21 +242,117 @@ export default function ProjectsView() {
       <div className="row">
         {/* Main Content */}
         <div className="col-lg-8">
-          {/* Project Image */}
+          {/* Project Image Carousel */}
           <div className="card shadow-sm mb-4">
             <div className="card-body p-0">
-              <div className="position-relative">
-                <img
-                  src={project.pimg || "https://via.placeholder.com/800x400?text=Project+Image"}
-                  alt="Project"
-                  className="img-fluid rounded w-100"
-                  style={{ maxHeight: "400px", objectFit: "cover" }}
-                />
-                <div className="position-absolute top-0 end-0 m-3">
-                  <span className={`badge ${getStatusBadgeClass(project.pstatus)} fs-6 px-3 py-2`}>
-                    {project.pstatus}
-                  </span>
-                </div>
+              <div 
+                className="position-relative"
+                onMouseEnter={() => setIsAutoPlaying(true)}
+                onMouseLeave={() => setIsAutoPlaying(false)}
+              >
+                {(() => {
+                  const projectImages = getProjectImages(project);
+                  const hasMultipleImages = projectImages.length > 1;
+                  
+                  return (
+                    <>
+                      <img
+                        src={projectImages[currentImageIndex]}
+                        alt={`${project.pname} - ${currentImageIndex + 1}`}
+                        className="img-fluid rounded w-100"
+                        style={{ maxHeight: "500px", objectFit: "cover" }}
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/800x400?text=Project+Image';
+                        }}
+                      />
+                      
+                      {/* Status Badge */}
+                      <div className="position-absolute top-0 end-0 m-3">
+                        <span className={`badge ${getStatusBadgeClass(project.pstatus)} fs-6 px-3 py-2`}>
+                          {project.pstatus}
+                        </span>
+                      </div>
+                      
+                      {/* Navigation buttons for multiple images */}
+                      {hasMultipleImages && (
+                        <>
+                          <button
+                            className="btn btn-dark btn-lg position-absolute top-50 start-0 translate-middle-y ms-3"
+                            onClick={handlePreviousImage}
+                            style={{
+                              width: '50px',
+                              height: '50px',
+                              borderRadius: '50%',
+                              opacity: 0.8,
+                              zIndex: 2
+                            }}
+                            onMouseEnter={(e) => e.target.style.opacity = '1'}
+                            onMouseLeave={(e) => e.target.style.opacity = '0.8'}
+                            title="Previous image"
+                          >
+                            ←
+                          </button>
+                          <button
+                            className="btn btn-dark btn-lg position-absolute top-50 end-0 translate-middle-y me-3"
+                            onClick={handleNextImage}
+                            style={{
+                              width: '50px',
+                              height: '50px',
+                              borderRadius: '50%',
+                              opacity: 0.8,
+                              zIndex: 2
+                            }}
+                            onMouseEnter={(e) => e.target.style.opacity = '1'}
+                            onMouseLeave={(e) => e.target.style.opacity = '0.8'}
+                            title="Next image"
+                          >
+                            →
+                          </button>
+                          
+                          {/* Image counter */}
+                          <div className="position-absolute bottom-0 end-0 mb-3 me-3">
+                            <span 
+                              className="badge bg-dark bg-opacity-75 text-white fs-6 px-3 py-2"
+                            >
+                              {currentImageIndex + 1} / {projectImages.length}
+                            </span>
+                          </div>
+                          
+                          {/* Image dots indicator */}
+                          <div className="position-absolute bottom-0 start-50 translate-middle-x mb-3">
+                            <div className="d-flex gap-2">
+                              {projectImages.map((_, index) => (
+                                <button
+                                  key={index}
+                                  className={`btn p-0 rounded-circle ${
+                                    index === currentImageIndex ? 'btn-light' : 'btn-secondary'
+                                  }`}
+                                  style={{
+                                    width: '12px',
+                                    height: '12px',
+                                    opacity: index === currentImageIndex ? 1 : 0.6
+                                  }}
+                                  onClick={() => setCurrentImageIndex(index)}
+                                  title={`Go to image ${index + 1}`}
+                                >
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {/* Auto-play indicator */}
+                          {isAutoPlaying && (
+                            <div className="position-absolute top-0 start-0 m-3">
+                              <span className="badge bg-success bg-opacity-75 text-white">
+                                🔄 Auto-playing
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -255,6 +404,21 @@ export default function ProjectsView() {
                     <span className="text-muted fst-italic">No description provided.</span>
                   )}
                 </div>
+                
+                {/* Image Gallery Info */}
+                {(() => {
+                  const projectImages = getProjectImages(project);
+                  if (projectImages.length > 1) {
+                    return (
+                      <div className="mt-3 p-2 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
+                        <small className="text-info">
+                          📸 This project has {projectImages.length} images. Hover over the image above to auto-play the slideshow, or use navigation controls.
+                        </small>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
 
               {/* Issues */}

@@ -19,7 +19,7 @@ const ProjectSchema = new Schema({
         type: String,
         required: true,
     },
-    pimg: { type: String },
+    pimg: [{ type: String }], // Array of image URLs/base64 strings
 
     ptype : {
         type: String,

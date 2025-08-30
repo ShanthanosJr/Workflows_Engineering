@@ -70,6 +70,8 @@ export default function FinancialDashboard() {
   const [dashboardName, setDashboardName] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [dateRangePreset, setDateRangePreset] = useState("last30days");
+  const [autoDateRange, setAutoDateRange] = useState(true);
 
   // Statistics
   const [statistics, setStatistics] = useState({
@@ -123,6 +125,79 @@ export default function FinancialDashboard() {
     
     stats.avgProjectCost = stats.totalDashboards > 0 ? stats.totalValue / stats.totalDashboards : 0;
     setStatistics(stats);
+  };
+
+  // Auto-calculate date ranges based on preset
+  const applyDateRangePreset = (preset) => {
+    const today = new Date();
+    const formatDate = (date) => date.toISOString().split('T')[0];
+    
+    let fromDate, toDate;
+    
+    switch (preset) {
+      case 'last7days':
+        fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        toDate = today;
+        break;
+      case 'last30days':
+        fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        toDate = today;
+        break;
+      case 'last3months':
+        fromDate = new Date(today.getFullYear(), today.getMonth() - 3, today.getDate());
+        toDate = today;
+        break;
+      case 'last6months':
+        fromDate = new Date(today.getFullYear(), today.getMonth() - 6, today.getDate());
+        toDate = today;
+        break;
+      case 'lastyear':
+        fromDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+        toDate = today;
+        break;
+      case 'thismonth':
+        fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        toDate = today;
+        break;
+      case 'thisyear':
+        fromDate = new Date(today.getFullYear(), 0, 1);
+        toDate = today;
+        break;
+      default:
+        fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        toDate = today;
+    }
+    
+    setDateFrom(formatDate(fromDate));
+    setDateTo(formatDate(toDate));
+  };
+
+  // Apply date range when preset changes
+  useEffect(() => {
+    if (autoDateRange && dateRangePreset) {
+      applyDateRangePreset(dateRangePreset);
+    }
+  }, [dateRangePreset, autoDateRange]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Initialize with default date range when modal opens
+  useEffect(() => {
+    if (showCalculationModal && autoDateRange) {
+      applyDateRangePreset(dateRangePreset);
+    }
+  }, [showCalculationModal]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const getDateRangeLabel = (preset) => {
+    const labels = {
+      'last7days': 'Last 7 Days',
+      'last30days': 'Last 30 Days',
+      'last3months': 'Last 3 Months',
+      'last6months': 'Last 6 Months',
+      'lastyear': 'Last Year',
+      'thismonth': 'This Month',
+      'thisyear': 'This Year',
+      'custom': 'Custom Range'
+    };
+    return labels[preset] || 'Last 30 Days';
   };
 
   const handleCalculateNewDashboard = async () => {
@@ -785,25 +860,60 @@ export default function FinancialDashboard() {
         )}
       </div>
 
-      {/* Calculate New Dashboard Modal */}
+      {/* Enhanced Calculate New Dashboard Modal */}
       {showCalculationModal && (
-        <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+        <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.6)'}}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content border-0 shadow-lg" style={{borderRadius: '20px'}}>
-              <div className="modal-header border-0" style={{
-                background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                borderRadius: '20px 20px 0 0',
-                color: 'white'
+            <div className="modal-content border-0 shadow-lg" style={{borderRadius: '25px', overflow: 'hidden'}}>
+              {/* Premium Modal Header */}
+              <div className="modal-header border-0 position-relative" style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                padding: '2rem'
               }}>
-                <h5 className="modal-title fw-bold">
-                  <span className="me-2">🔢</span>
-                  Calculate New Financial Dashboard
-                </h5>
-                <button 
-                  type="button" 
-                  className="btn-close btn-close-white" 
-                  onClick={() => setShowCalculationModal(false)}
-                ></button>
+                {/* Background Pattern */}
+                <div className="position-absolute top-0 start-0 w-100 h-100" style={{
+                  background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="7" cy="7" r="1"/%3E%3Ccircle cx="7" cy="27" r="1"/%3E%3Ccircle cx="7" cy="47" r="1"/%3E%3Ccircle cx="27" cy="7" r="1"/%3E%3Ccircle cx="27" cy="27" r="1"/%3E%3Ccircle cx="27" cy="47" r="1"/%3E%3Ccircle cx="47" cy="7" r="1"/%3E%3Ccircle cx="47" cy="27" r="1"/%3E%3Ccircle cx="47" cy="47" r="1"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+                  opacity: 0.3
+                }}></div>
+                
+                {/* Header Content */}
+                <div className="d-flex align-items-center w-100 position-relative" style={{zIndex: 1}}>
+                  <div className="bg-white bg-opacity-20 rounded-circle p-3 me-3" style={{
+                    width: '70px',
+                    height: '70px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backdropFilter: 'blur(10px)'
+                  }}>
+                    <span style={{fontSize: '2rem'}}>🔢</span>
+                  </div>
+                  <div className="flex-grow-1">
+                    <h4 className="modal-title text-white fw-bold mb-1" style={{fontSize: '1.5rem'}}>
+                      Financial Analysis Calculator
+                    </h4>
+                    <p className="text-white-50 mb-0">Generate comprehensive financial reports with smart analytics</p>
+                  </div>
+                  <button 
+                    type="button" 
+                    className="btn-close btn-close-white position-relative" 
+                    onClick={() => {
+                      setShowCalculationModal(false);
+                      // Reset form
+                      setDashboardName('');
+                      setSelectedProjects([]);
+                      setAutoDateRange(true);
+                      setDateRangePreset('last30days');
+                    }}
+                    style={{
+                      fontSize: '1.2rem',
+                      opacity: 0.8,
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.target.style.opacity = '1'}
+                    onMouseLeave={(e) => e.target.style.opacity = '0.8'}
+                  ></button>
+                </div>
               </div>
               
               <div className="modal-body p-4">
@@ -866,83 +976,351 @@ export default function FinancialDashboard() {
                     </small>
                   </div>
 
-                  {/* Date Range */}
-                  <div className="row mb-4">
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">
-                        <span className="me-2">📅</span>
-                        From Date (Optional)
-                      </label>
-                      <input
-                        type="date"
-                        className="form-control border-0 shadow-sm"
-                        value={dateFrom}
-                        onChange={(e) => setDateFrom(e.target.value)}
-                        style={{borderRadius: '12px', padding: '12px'}}
-                      />
+                  {/* Date Range Section - Premium */}
+                  <div className="mb-4">
+                    <label className="form-label fw-bold">
+                      <span className="me-2">📅</span>
+                      Date Range Analysis
+                    </label>
+                    
+                    {/* Auto Date Range Toggle */}
+                    <div className="card border-0 shadow-sm mb-3" style={{borderRadius: '12px', background: 'linear-gradient(135deg, rgba(40,167,69,0.1) 0%, rgba(32,201,151,0.05) 100%)'}}>
+                      <div className="card-body p-3">
+                        <div className="form-check form-switch">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="autoDateRange"
+                            checked={autoDateRange}
+                            onChange={(e) => {
+                              setAutoDateRange(e.target.checked);
+                              if (e.target.checked) {
+                                applyDateRangePreset(dateRangePreset);
+                              }
+                            }}
+                            style={{transform: 'scale(1.2)'}}
+                          />
+                          <label className="form-check-label fw-semibold" htmlFor="autoDateRange">
+                            <span className="me-2">🤖</span>
+                            Smart Date Range Selection
+                          </label>
+                        </div>
+                        <small className="text-muted">
+                          Automatically calculate optimal date ranges for comprehensive analysis
+                        </small>
+                      </div>
                     </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">
-                        <span className="me-2">📅</span>
-                        To Date (Optional)
-                      </label>
-                      <input
-                        type="date"
-                        className="form-control border-0 shadow-sm"
-                        value={dateTo}
-                        onChange={(e) => setDateTo(e.target.value)}
-                        style={{borderRadius: '12px', padding: '12px'}}
-                      />
+
+                    {/* Date Range Presets */}
+                    {autoDateRange && (
+                      <div className="mb-3">
+                        <label className="form-label fw-semibold">Quick Date Ranges</label>
+                        <div className="d-flex flex-wrap gap-2">
+                          {[
+                            { value: 'last7days', label: 'Last 7 Days', icon: '📅' },
+                            { value: 'last30days', label: 'Last 30 Days', icon: '📊' },
+                            { value: 'last3months', label: 'Last 3 Months', icon: '📈' },
+                            { value: 'last6months', label: 'Last 6 Months', icon: '📉' },
+                            { value: 'thismonth', label: 'This Month', icon: '🗓️' },
+                            { value: 'thisyear', label: 'This Year', icon: '📆' }
+                          ].map(preset => (
+                            <button
+                              key={preset.value}
+                              type="button"
+                              className={`btn btn-sm ${
+                                dateRangePreset === preset.value 
+                                  ? 'btn-primary' 
+                                  : 'btn-outline-primary'
+                              }`}
+                              onClick={() => {
+                                setDateRangePreset(preset.value);
+                                applyDateRangePreset(preset.value);
+                              }}
+                              style={{
+                                borderRadius: '25px',
+                                padding: '8px 16px',
+                                fontSize: '0.85rem',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              <span className="me-1">{preset.icon}</span>
+                              {preset.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Date Range Display */}
+                    <div className="card border-0 shadow-sm" style={{borderRadius: '12px', background: 'linear-gradient(135deg, rgba(0,123,255,0.1) 0%, rgba(0,123,255,0.05) 100%)'}}>
+                      <div className="card-body p-3">
+                        <div className="row g-3">
+                          <div className="col-md-6">
+                            <label className="form-label fw-semibold small">From Date</label>
+                            <input
+                              type="date"
+                              className="form-control border-0 shadow-sm"
+                              value={dateFrom}
+                              onChange={(e) => {
+                                setDateFrom(e.target.value);
+                                setAutoDateRange(false);
+                                setDateRangePreset('custom');
+                              }}
+                              style={{borderRadius: '8px', padding: '10px'}}
+                              disabled={autoDateRange}
+                            />
+                          </div>
+                          <div className="col-md-6">
+                            <label className="form-label fw-semibold small">To Date</label>
+                            <input
+                              type="date"
+                              className="form-control border-0 shadow-sm"
+                              value={dateTo}
+                              onChange={(e) => {
+                                setDateTo(e.target.value);
+                                setAutoDateRange(false);
+                                setDateRangePreset('custom');
+                              }}
+                              style={{borderRadius: '8px', padding: '10px'}}
+                              disabled={autoDateRange}
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Date Range Summary */}
+                        {dateFrom && dateTo && (
+                          <div className="mt-3 p-2 rounded" style={{backgroundColor: 'rgba(40,167,69,0.1)'}}>
+                            <small className="text-success fw-semibold">
+                              <span className="me-2">📊</span>
+                              Analysis Period: {getDateRangeLabel(dateRangePreset)}
+                              <br />
+                              <span className="text-muted">
+                                From {new Date(dateFrom).toLocaleDateString()} to {new Date(dateTo).toLocaleDateString()}
+                                ({Math.ceil((new Date(dateTo) - new Date(dateFrom)) / (1000 * 60 * 60 * 24))} days)
+                              </span>
+                            </small>
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    
+                    <small className="form-text text-muted mt-2">
+                      <span className="me-1">💡</span>
+                      Smart date ranges provide optimal analysis periods based on your project data
+                    </small>
                   </div>
                 </form>
               </div>
               
-              <div className="modal-footer border-0 p-4">
-                <button 
-                  type="button" 
-                  className="btn btn-outline-secondary btn-lg"
-                  onClick={() => setShowCalculationModal(false)}
-                  style={{borderRadius: '50px', padding: '12px 25px'}}
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="button" 
-                  className="btn btn-lg shadow-sm"
-                  onClick={handleCalculateNewDashboard}
-                  disabled={calculatingNew}
-                  style={{
-                    borderRadius: '50px', 
-                    padding: '12px 30px',
-                    background: 'linear-gradient(45deg, #28a745, #20c997)',
-                    border: 'none',
-                    color: 'white'
-                  }}
-                >
-                  {calculatingNew ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                      Calculating...
-                    </>
-                  ) : (
-                    <>
-                      <span className="me-2">🔢</span> Calculate Dashboard
-                    </>
-                  )}
-                </button>
+              
+              {/* Enhanced Modal Footer */}
+              <div className="modal-footer border-0" style={{
+                background: 'linear-gradient(135deg, rgba(248,249,250,0.9) 0%, rgba(255,255,255,0.9) 100%)',
+                padding: '2rem'
+              }}>
+                {/* Validation Summary */}
+                <div className="flex-grow-1 me-3">
+                  <div className="d-flex align-items-center mb-2">
+                    {dashboardName.trim() ? (
+                      <span className="badge bg-success me-2">
+                        <span className="me-1">✓</span> Dashboard Name
+                      </span>
+                    ) : (
+                      <span className="badge bg-secondary me-2">
+                        <span className="me-1">•</span> Dashboard Name Required
+                      </span>
+                    )}
+                    
+                    {dateFrom && dateTo ? (
+                      <span className="badge bg-success me-2">
+                        <span className="me-1">✓</span> Date Range Set
+                      </span>
+                    ) : (
+                      <span className="badge bg-info me-2">
+                        <span className="me-1">📅</span> Auto Date Range
+                      </span>
+                    )}
+                    
+                    {selectedProjects.length > 0 ? (
+                      <span className="badge bg-primary">
+                        <span className="me-1">🏢</span> {selectedProjects.length} Project{selectedProjects.length !== 1 ? 's' : ''}
+                      </span>
+                    ) : (
+                      <span className="badge bg-warning">
+                        <span className="me-1">🏢</span> All Projects
+                      </span>
+                    )}
+                  </div>
+                  
+                  <small className="text-muted">
+                    <span className="me-2">💡</span>
+                    {autoDateRange 
+                      ? `Smart analysis for ${getDateRangeLabel(dateRangePreset).toLowerCase()}`
+                      : 'Custom date range analysis'
+                    }
+                  </small>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="d-flex gap-3">
+                  <button 
+                    type="button" 
+                    className="btn btn-outline-secondary btn-lg"
+                    onClick={() => {
+                      setShowCalculationModal(false);
+                      // Reset form
+                      setDashboardName('');
+                      setSelectedProjects([]);
+                      setAutoDateRange(true);
+                      setDateRangePreset('last30days');
+                    }}
+                    style={{
+                      borderRadius: '50px', 
+                      padding: '12px 25px',
+                      transition: 'all 0.3s ease',
+                      border: '2px solid #6c757d'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(108,117,125,0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  >
+                    <span className="me-2">✕</span> Cancel
+                  </button>
+                  
+                  <button 
+                    type="button" 
+                    className="btn btn-lg shadow-lg"
+                    onClick={handleCalculateNewDashboard}
+                    disabled={calculatingNew || !dashboardName.trim()}
+                    style={{
+                      borderRadius: '50px', 
+                      padding: '12px 30px',
+                      background: calculatingNew || !dashboardName.trim() 
+                        ? 'linear-gradient(45deg, #6c757d, #5a6268)'
+                        : 'linear-gradient(45deg, #28a745, #20c997)',
+                      border: 'none',
+                      color: 'white',
+                      transition: 'all 0.3s ease',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!calculatingNew && dashboardName.trim()) {
+                        e.target.style.transform = 'translateY(-3px)';
+                        e.target.style.boxShadow = '0 15px 40px rgba(40,167,69,0.4)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+                    }}
+                  >
+                    {/* Button shimmer effect */}
+                    {!calculatingNew && dashboardName.trim() && (
+                      <div className="position-absolute top-0 start-0 w-100 h-100" style={{
+                        background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
+                        animation: 'shimmer 2s infinite',
+                        pointerEvents: 'none'
+                      }}></div>
+                    )}
+                    
+                    <span className="position-relative">
+                      {calculatingNew ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                          Calculating Analytics...
+                        </>
+                      ) : (
+                        <>
+                          <span className="me-2">🔢</span> 
+                          Generate Financial Report
+                        </>
+                      )}
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
       
-      {/* FontAwesome Fallback CSS */}
+      {/* Enhanced FontAwesome Fallback CSS & Premium Animations */}
       <style>{`
         /* Ensure FontAwesome icons have proper font family and fallback */
         .fas {
           font-family: "Font Awesome 5 Free", "FontAwesome", sans-serif !important;
           font-weight: 900 !important;
+        }
+        
+        /* Premium Animations */
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(200%); }
+        }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        /* Modal enhancements */
+        .modal {
+          animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal-content {
+          animation: slideIn 0.4s ease-out;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        /* Button hover effects */
+        .btn:hover {
+          transform: translateY(-2px) !important;
+        }
+        
+        /* Card hover animations */
+        .card {
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        }
+        
+        /* Badge animations */
+        .badge {
+          animation: slideIn 0.3s ease-out;
+          transition: all 0.2s ease;
+        }
+        
+        .badge:hover {
+          transform: scale(1.05);
+        }
+        
+        /* Progress bar animations */
+        .progress-bar {
+          animation: progressFill 1.5s ease-out;
+        }
+        
+        @keyframes progressFill {
+          from { width: 0% !important; }
         }
         
         /* Specific icon mappings with fallbacks */
@@ -1006,6 +1384,25 @@ export default function FinancialDashboard() {
         .fas:empty:after {
           display: inline-block;
           font-size: inherit;
+        }
+        
+        /* Premium scrollbar */
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+          background: linear-gradient(45deg, #667eea, #764ba2);
+          border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(45deg, #764ba2, #667eea);
         }
       `}</style>
     </>

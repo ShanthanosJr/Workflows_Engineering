@@ -31,7 +31,7 @@ const chatConversationSchema = new mongoose.Schema({
     },
     messageType: {
       type: String,
-      enum: ['text', 'suggestion', 'data', 'calculation'],
+      enum: ['text', 'suggestion', 'data', 'calculation', 'guidance', 'clarification', 'knowledge', 'greeting', 'error'],
       default: 'text'
     },
     metadata: {

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import './App.css';
+import ProjectHome from './Components/Home/ProjectHome';
 import ProjectsDisplay from './Components/Projects/ProjectsDisplay';
 import AddProjects from './Components/Projects/AddProjects';
 import UpdateProjects from './Components/Projects/UpdateProjects';
@@ -22,8 +23,10 @@ export default function App() {
   return (
     <div>
       <Routes>
+        {/* Home route */}
+        <Route path="/" element={<ProjectHome />} />
+        <Route path="/home" element={<ProjectHome />} />
         {/* Add project routes here */}
-        <Route path="/" element={<Navigate to="/projects" replace />} />
         <Route path="/projects" element={<ProjectsDisplay />} />
         <Route path="/add-project" element={<AddProjects />} />
         <Route path="projects/:id" element={<UpdateProjects />} />
@@ -44,15 +47,6 @@ export default function App() {
         {/* ChatBot routes */}
         <Route path="/chatbot" element={<ChatBot />} />
       </Routes>
-
-      <footer className="App-footer bg-dark text-light py-3 mt-5 border-top shadow-sm">
-        <div className="container text-center">
-          <p className="mb-1 fw-semibold" style={{ letterSpacing: "1px", fontSize: "1.1rem" }}>
-            &copy; 2025 <span className="text-info">PTFD</span>
-          </p>
-          <small className="text-secondary"> Smart Construction Workflow & Safety Management System</small>
-        </div>
-      </footer>
     </div>
   );
 }

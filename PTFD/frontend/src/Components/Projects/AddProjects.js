@@ -8,7 +8,7 @@ export default function AddProjects() {
     pnumber: "",
     pcode: "",
     plocation: "",
-    pimg: "",
+    pimg: [], // Changed to array for multiple images
     ptype: "",
     pownerid: "",
     pownername: "",
@@ -21,6 +21,9 @@ export default function AddProjects() {
     pissues: "",
     pobservations: "",
   });
+
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState([]);
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,6 +40,87 @@ export default function AddProjects() {
     setFormData((prev) => ({ ...prev, pissues: value }));
   };
 
+  // Handle multiple image selection
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    
+    if (files.length + selectedImages.length > 10) {
+      alert('Maximum 10 images allowed');
+      return;
+    }
+    
+    // Validate file types
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const invalidFiles = files.filter(file => !validTypes.includes(file.type));
+    
+    if (invalidFiles.length > 0) {
+      alert('Please select only image files (JPEG, PNG, GIF, WebP)');
+      return;
+    }
+    
+    // Check file sizes (max 2MB each to prevent CORS timeout)
+    const largeFiles = files.filter(file => file.size > 2 * 1024 * 1024);
+    if (largeFiles.length > 0) {
+      alert('Each image must be less than 2MB for better performance');
+      return;
+    }
+    
+    // Convert images to base64 with compression
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        // Create an image element to resize
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Calculate new dimensions (max width/height: 800px)
+          const maxSize = 800;
+          let { width, height } = img;
+          
+          if (width > height) {
+            if (width > maxSize) {
+              height = (height * maxSize) / width;
+              width = maxSize;
+            }
+          } else {
+            if (height > maxSize) {
+              width = (width * maxSize) / height;
+              height = maxSize;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Draw and compress
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
+          
+          setSelectedImages(prev => [...prev, file]);
+          setImagePreviewUrls(prev => [...prev, compressedBase64]);
+          setFormData(prev => ({ 
+            ...prev, 
+            pimg: [...prev.pimg, compressedBase64] 
+          }));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Remove image
+  const removeImage = (index) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+    setFormData(prev => ({ 
+      ...prev, 
+      pimg: prev.pimg.filter((_, i) => i !== index) 
+    }));
+  };
+
   // submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,13 +128,30 @@ export default function AddProjects() {
     setMessage("");
 
     try {
+      // Validate that at least one image is selected
+      if (formData.pimg.length === 0) {
+        setMessage("❌ Please select at least one image for the project.");
+        setLoading(false);
+        return;
+      }
+
       // Convert issues string to array before sending
       const submitData = {
         ...formData,
         pissues: formData.pissues ? formData.pissues.split(",").map(issue => issue.trim()) : []
       };
       
-      const res = await axios.post("http://localhost:5050/projects", submitData);
+      console.log('Submitting project data:', {
+        ...submitData,
+        pimg: `[${submitData.pimg.length} images]` // Don't log full base64 data
+      });
+      
+      const res = await axios.post("http://localhost:5050/projects", submitData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000 // 30 second timeout for large images
+      });
       setMessage("✅ Project added successfully!");
       console.log("Project created:", res.data);
       
@@ -60,7 +161,7 @@ export default function AddProjects() {
         pnumber: "",
         pcode: "",
         plocation: "",
-        pimg: "",
+        pimg: [],
         ptype: "",
         pownerid: "",
         pownername: "",
@@ -73,9 +174,16 @@ export default function AddProjects() {
         pissues: "",
         pobservations: "",
       });
+      setSelectedImages([]);
+      setImagePreviewUrls([]);
+      
+      // Reset file input
+      document.getElementById('pimg').value = '';
+      
     } catch (err) {
-      console.error(err);
-      setMessage("❌ Failed to add project. Please try again.");
+      console.error('Error submitting project:', err);
+      console.error('Error response:', err.response?.data);
+      setMessage(`❌ Failed to add project: ${err.response?.data?.message || err.message || 'Please try again.'}`);
     } finally {
       setLoading(false);
     }
@@ -202,20 +310,74 @@ export default function AddProjects() {
                         </select>
                       </div>
                       
-                      <div className="col-md-6">
+                      <div className="col-12">
                         <label htmlFor="pimg" className="form-label fw-semibold">
-                          Project Images URL <span className="text-danger">*</span>
+                          Project Images <span className="text-danger">*</span>
                         </label>
                         <input
-                          type="url"
+                          type="file"
                           id="pimg"
                           name="pimg"
                           className="form-control form-control-lg"
-                          value={formData.pimg}
-                          onChange={handleChange}
-                          placeholder="Enter image URL"
-                          required
+                          multiple
+                          accept="image/*"
+                          onChange={handleImageChange}
                         />
+                        <div className="form-text">
+                          Select multiple images (max 10 files, 2MB each). Images will be automatically compressed for optimal performance. Supported formats: JPEG, PNG, GIF, WebP
+                        </div>
+                        
+                        {/* Image Preview Section */}
+                        {imagePreviewUrls.length > 0 && (
+                          <div className="mt-3">
+                            <h6 className="fw-semibold mb-2">📷 Selected Images Preview</h6>
+                            <div className="row g-3">
+                              {imagePreviewUrls.map((url, index) => (
+                                <div key={index} className="col-lg-3 col-md-4 col-sm-6">
+                                  <div className="position-relative">
+                                    <img
+                                      src={url}
+                                      alt={`Preview ${index + 1}`}
+                                      className="img-fluid rounded shadow-sm"
+                                      style={{
+                                        height: '120px',
+                                        width: '100%',
+                                        objectFit: 'cover',
+                                        border: '2px solid #e9ecef'
+                                      }}
+                                    />
+                                    <button
+                                      type="button"
+                                      className="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
+                                      onClick={() => removeImage(index)}
+                                      style={{
+                                        width: '30px',
+                                        height: '30px',
+                                        borderRadius: '50%',
+                                        padding: '0',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                      }}
+                                      title="Remove image"
+                                    >
+                                      ❌
+                                    </button>
+                                    <div className="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 text-white text-center py-1 rounded-bottom">
+                                      <small>{selectedImages[index]?.name}</small>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-2">
+                              <small className="text-muted">
+                                📊 {selectedImages.length} image{selectedImages.length !== 1 ? 's' : ''} selected
+                                {selectedImages.length < 10 && ' (you can add ' + (10 - selectedImages.length) + ' more)'}
+                              </small>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

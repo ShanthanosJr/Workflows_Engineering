@@ -128,7 +128,12 @@ export default function ProjectsDisplay() {
   };
 
   const getProjectImage = (project) => {
-    if (project.pimg) {
+    // Handle multiple images - return first image or fallback
+    if (project.pimg && Array.isArray(project.pimg) && project.pimg.length > 0) {
+      return project.pimg[0]; // Use first image for table view
+    }
+    
+    if (project.pimg && typeof project.pimg === 'string') {
       return project.pimg;
     }
     
@@ -440,15 +445,32 @@ export default function ProjectsDisplay() {
                       <tr key={project._id}>
                         <td>
                           <div className="d-flex align-items-center">
-                            <img 
-                              src={getProjectImage(project)} 
-                              alt={project.pname}
-                              className="rounded me-2"
-                              style={{width: '40px', height: '40px', objectFit: 'cover'}}
-                              onError={(e) => {
-                                e.target.src = 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=400&h=250&fit=crop&auto=format';
-                              }}
-                            />
+                            <div className="position-relative me-2">
+                              <img 
+                                src={getProjectImage(project)} 
+                                alt={project.pname}
+                                className="rounded"
+                                style={{width: '40px', height: '40px', objectFit: 'cover'}}
+                                onError={(e) => {
+                                  e.target.src = 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=400&h=250&fit=crop&auto=format';
+                                }}
+                              />
+                              {/* Multiple images indicator */}
+                              {project.pimg && Array.isArray(project.pimg) && project.pimg.length > 1 && (
+                                <span 
+                                  className="position-absolute top-0 end-0 badge bg-primary rounded-circle"
+                                  style={{
+                                    fontSize: '0.6rem',
+                                    width: '16px',
+                                    height: '16px',
+                                    transform: 'translate(25%, -25%)'
+                                  }}
+                                  title={`${project.pimg.length} images`}
+                                >
+                                  {project.pimg.length}
+                                </span>
+                              )}
+                            </div>
                             <div>
                               <strong>{project.pname}</strong>
                               <br />

@@ -18,8 +18,14 @@ const { initializeKnowledgeBase } = require('./Controllers/ChatBotCtrl');
 const app = express();
 
 // Middleware
-app.use(express.json()); // Parse JSON bodies
-app.use(cors({ origin: "*" })); // Enable CORS for all routes
+app.use(express.json({ limit: '50mb' })); // Parse JSON bodies with larger limit for images
+app.use(express.urlencoded({ limit: '50mb', extended: true })); // Parse URL-encoded bodies
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+})); // Enable CORS with specific configuration
 
 // Routes
 app.use("/projects", projectRoutes);

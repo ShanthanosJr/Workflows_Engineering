@@ -1,12 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Projects({ project, onDelete }) {
   const navigate = useNavigate();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
 
-  const getProjectImage = (project) => {
-    if (project.pimg) {
+  // Get project images array or fallback to single image/default
+  const getProjectImages = (project) => {
+    if (project.pimg && Array.isArray(project.pimg) && project.pimg.length > 0) {
       return project.pimg;
+    }
+    
+    if (project.pimg && typeof project.pimg === 'string') {
+      return [project.pimg];
     }
     
     const defaultImages = {
@@ -17,7 +24,35 @@ export default function Projects({ project, onDelete }) {
       default: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=400&h=250&fit=crop&auto=format'
     };
     
-    return defaultImages[project.ptype] || defaultImages.default;
+    return [defaultImages[project.ptype] || defaultImages.default];
+  };
+
+  const projectImages = getProjectImages(project);
+  const hasMultipleImages = projectImages.length > 1;
+
+  // Auto-carousel effect (3 seconds) when hovering over the image area
+  useEffect(() => {
+    let intervalId;
+    if (isAutoPlaying && hasMultipleImages) {
+      intervalId = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => 
+          prevIndex === projectImages.length - 1 ? 0 : prevIndex + 1
+        );
+      }, 3000); // 3 second interval
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isAutoPlaying, hasMultipleImages, projectImages.length]);
+
+  const handlePreviousImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex(currentImageIndex === 0 ? projectImages.length - 1 : currentImageIndex - 1);
+  };
+
+  const handleNextImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex(currentImageIndex === projectImages.length - 1 ? 0 : currentImageIndex + 1);
   };
 
   const getStatusColor = (status) => {
@@ -51,11 +86,16 @@ export default function Projects({ project, onDelete }) {
              e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
            }}>
         
-        {/* Project Image */}
-        <div className="position-relative" style={{height: '200px', overflow: 'hidden'}}>
+        {/* Project Image Carousel */}
+        <div 
+          className="position-relative" 
+          style={{height: '200px', overflow: 'hidden'}}
+          onMouseEnter={() => setIsAutoPlaying(true)}
+          onMouseLeave={() => setIsAutoPlaying(false)}
+        >
           <img 
-            src={getProjectImage(project)} 
-            alt={project.pname}
+            src={projectImages[currentImageIndex]} 
+            alt={`${project.pname} - ${currentImageIndex + 1}`}
             className="card-img-top"
             style={{
               height: '100%',
@@ -67,6 +107,79 @@ export default function Projects({ project, onDelete }) {
               e.target.src = 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=400&h=250&fit=crop&auto=format';
             }}
           />
+          
+          {/* Navigation buttons for multiple images */}
+          {hasMultipleImages && (
+            <>
+              <button
+                className="btn btn-dark btn-sm position-absolute top-50 start-0 translate-middle-y ms-2"
+                onClick={handlePreviousImage}
+                style={{
+                  width: '35px',
+                  height: '35px',
+                  borderRadius: '50%',
+                  opacity: 0.8,
+                  zIndex: 2
+                }}
+                onMouseEnter={(e) => e.target.style.opacity = '1'}
+                onMouseLeave={(e) => e.target.style.opacity = '0.8'}
+                title="Previous image"
+              >
+                ←
+              </button>
+              <button
+                className="btn btn-dark btn-sm position-absolute top-50 end-0 translate-middle-y me-2"
+                onClick={handleNextImage}
+                style={{
+                  width: '35px',
+                  height: '35px',
+                  borderRadius: '50%',
+                  opacity: 0.8,
+                  zIndex: 2
+                }}
+                onMouseEnter={(e) => e.target.style.opacity = '1'}
+                onMouseLeave={(e) => e.target.style.opacity = '0.8'}
+                title="Next image"
+              >
+                →
+              </button>
+              
+              {/* Image counter */}
+              <div className="position-absolute bottom-0 end-0 mb-2 me-2">
+                <span 
+                  className="badge bg-dark bg-opacity-75 text-white"
+                  style={{fontSize: '0.75rem'}}
+                >
+                  {currentImageIndex + 1} / {projectImages.length}
+                </span>
+              </div>
+              
+              {/* Image dots indicator */}
+              <div className="position-absolute bottom-0 start-50 translate-middle-x mb-2">
+                <div className="d-flex gap-1">
+                  {projectImages.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`btn p-0 rounded-circle ${
+                        index === currentImageIndex ? 'btn-light' : 'btn-secondary'
+                      }`}
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        opacity: index === currentImageIndex ? 1 : 0.6
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(index);
+                      }}
+                      title={`Go to image ${index + 1}`}
+                    >
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
           
           {/* Status Badge */}
           <div className="position-absolute top-0 start-0 m-3">

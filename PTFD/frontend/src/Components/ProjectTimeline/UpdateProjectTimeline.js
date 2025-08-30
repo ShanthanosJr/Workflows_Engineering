@@ -70,11 +70,6 @@ export default function UpdateProjectTimeline() {
     "Construction Apps", "Inspection Tools", "Generator"
   ];
 
-  // Fetch existing timeline data
-  useEffect(() => {
-    fetchTimelineData();
-  }, [id, fetchTimelineData]);
-
   const fetchTimelineData = useCallback(async () => {
     try {
       setLoading(true);
@@ -122,7 +117,12 @@ export default function UpdateProjectTimeline() {
       setLoading(false);
       alert('Error loading timeline data. Please try again.');
     }
-  }, [id]); // Added dependency
+  }, [id]);
+
+  // Fetch existing timeline data
+  useEffect(() => {
+    fetchTimelineData();
+  }, [id, fetchTimelineData]);
 
   // Project validation function (used only for auto-validation during data load)
   const validateProject = async (code) => {

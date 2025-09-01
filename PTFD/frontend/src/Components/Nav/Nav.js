@@ -1,349 +1,255 @@
-import React from 'react';
+import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 
 export default function Nav() {
+  const [open, setOpen] = useState(false);
+  const [expandPD, setExpandPD] = useState(false); // collapsed by default
+  const location = useLocation();
+
+  const closeMenu = () => setOpen(false);
+  const toggleMenu = () => setOpen((v) => !v);
+
+  // Helper to compute active class for hash-based items
+  const activeLink = (path, hash = '') => {
+    const currentHash = location.hash || '';
+    return location.pathname === path && currentHash === hash ? 'active' : '';
+  };
+
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-light shadow-lg" style={{
-        background: 'linear-gradient(135deg, #74b9ff 0%, #0984e3 25%, #6c5ce7 50%, #fd79a8 75%, #fdcb6e 100%)',
-        borderBottom: '3px solid rgba(255,255,255,0.3)'
-      }}>
-        <div className="container">
-          <NavLink 
-            className="navbar-brand fw-bold d-flex align-items-center" 
-            to="/projects"
-            style={{ 
-              fontSize: '1.5rem',
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              transition: 'all 0.3s ease',
-              color: 'white',
-              fontWeight: '700'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
-            }}
-          >
-            <span className="me-2">🏗️</span>
-            WorkFlows Engineering
-          </NavLink>
+      {/* Top-left hamburger button */}
+      <button
+        type="button"
+        className={`hamburger-btn ${open ? 'open' : ''}`}
+        aria-label="Open navigation menu"
+        aria-expanded={open}
+        aria-controls="side-nav"
+        onClick={toggleMenu}
+      >
+        <span className="bar" />
+        <span className="bar" />
+        <span className="bar" />
+      </button>
 
-          <button
-            className="navbar-toggler border-0"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-            style={{
-              padding: '8px 12px',
-              borderRadius: '12px',
-              background: 'rgba(255,255,255,0.25)',
-              transition: 'all 0.3s ease',
-              border: '2px solid rgba(255,255,255,0.3)'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255,255,255,0.4)';
-              e.target.style.transform = 'rotate(90deg) scale(1.1)';
-              e.target.style.borderColor = 'rgba(255,255,255,0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'rgba(255,255,255,0.25)';
-              e.target.style.transform = 'rotate(0deg) scale(1)';
-              e.target.style.borderColor = 'rgba(255,255,255,0.3)';
-            }}
-          >
-            <span className="navbar-toggler-icon" />
-          </button>
+      {/* Screen overlay when drawer is open */}
+      <div
+        className={`overlay ${open ? 'show' : ''}`}
+        onClick={closeMenu}
+        role="button"
+        aria-label="Close navigation overlay"
+      />
 
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav ms-auto">
-              <li className="nav-item mx-2">
-                <NavLink 
-                  to="/projects" 
-                  end
-                  className={({ isActive }) =>
-                    `nav-link px-4 py-2 rounded-pill fw-semibold position-relative overflow-hidden ${
-                      isActive ? 'active' : ''
-                    }`
-                  }
-                >
-                  <span className="me-2">📊</span>
-                  Projects
-                </NavLink>
-              </li>
-              <li className="nav-item mx-2">
-                <NavLink 
-                  to="/project-timelines" 
-                  end
-                  className={({ isActive }) =>
-                    `nav-link px-4 py-2 rounded-pill fw-semibold position-relative overflow-hidden ${
-                      isActive ? 'active project-timeline-nav' : 'project-timeline-nav'
-                    }`
-                  }
-                >
-                  <span className="me-2">📈</span>
-                  Project Timeline
-                  <span className="badge bg-success ms-2" style={{fontSize: '0.7rem', padding: '2px 6px'}}>Pro</span>
-                </NavLink>
-              </li>
-              <li className="nav-item mx-2">
-                <NavLink 
-                  to="/financial-dashboard" 
-                  end
-                  className={({ isActive }) =>
-                    `nav-link px-4 py-2 rounded-pill fw-semibold position-relative overflow-hidden ${
-                      isActive ? 'active financial-dashboard-nav' : 'financial-dashboard-nav'
-                    }`
-                  }
-                >
-                  <span className="me-2">💰</span>
-                  Financial Dashboard
-                  <span className="badge bg-warning text-dark ms-2" style={{fontSize: '0.7rem', padding: '2px 6px'}}>Premium</span>
-                </NavLink>
-              </li>
-              <li className="nav-item mx-2">
-                <NavLink 
-                  to="/chatbot" 
-                  end
-                  className={({ isActive }) =>
-                    `nav-link px-4 py-2 rounded-pill fw-semibold position-relative overflow-hidden ${
-                      isActive ? 'active chatbot-nav' : 'chatbot-nav'
-                    }`
-                  }
-                >
-                  <span className="me-2">🤖</span>
-                  AI Assistant
-                  <span className="badge bg-info ms-2" style={{fontSize: '0.7rem', padding: '2px 6px'}}>AI</span>
-                </NavLink>
-              </li>
-              <li className="nav-item mx-2">
-                <NavLink 
-                  to="/timelines" 
-                  end
-                  className={({ isActive }) =>
-                    `nav-link px-4 py-2 rounded-pill fw-semibold position-relative overflow-hidden ${
-                      isActive ? 'active' : ''
-                    }`
-                  }
-                >
-                  <span className="me-2">📅</span>
-                  Basic Timeline
-                </NavLink>
-              </li>
-            </ul>
+      {/* Left slide-out drawer */}
+      <aside id="side-nav" className={`side-nav ${open ? 'open' : ''}`} aria-hidden={!open}>
+        <div className="side-nav-header d-flex align-items-center justify-content-between">
+          <div className="brand d-flex align-items-center gap-2 text-warning fw-bold">
+            <span className="logo" aria-hidden="true">🏗️</span>
+            <span>WORKFLOWS <span className="text-white">ENGINEERING</span></span>
           </div>
+          <button className="btn btn-sm btn-outline-warning close-btn" onClick={closeMenu} aria-label="Close menu">✕</button>
         </div>
-      </nav>
 
+        <div className="caution-divider" aria-hidden="true">
+          <div className="stripe" /><div className="stripe dark" /><div className="stripe" />
+        </div>
+
+        <nav className="menu" aria-label="Primary">
+          <ul className="list-unstyled m-0 p-0">
+            <li className="menu-item">
+              <NavLink
+                to="/construction"
+                className={`link ${activeLink('/construction', '')}`}
+                onClick={closeMenu}
+              >
+                <span className="icon" aria-hidden>🏠</span>
+                Home
+              </NavLink>
+            </li>
+
+            <li className="menu-item">
+              <NavLink
+                to="/construction#safety"
+                className={`link ${activeLink('/construction', '#safety')}`}
+                onClick={closeMenu}
+              >
+                <span className="icon" aria-hidden>🦺</span>
+                Workers & Safety
+              </NavLink>
+            </li>
+
+            <li className="menu-item">
+              {/* Map Tools to the Types section (closest available) */}
+              <NavLink
+                to="/construction#types"
+                className={`link ${activeLink('/construction', '#types')}`}
+                onClick={closeMenu}
+              >
+                <span className="icon" aria-hidden>🧰</span>
+                Tools
+              </NavLink>
+            </li>
+
+            <li className="menu-item">
+              {/* Map Materials to Project showcase section (placeholder) */}
+              <NavLink
+                to="/construction#project"
+                className={`link ${activeLink('/construction', '#project')}`}
+                onClick={closeMenu}
+              >
+                <span className="icon" aria-hidden>🧱</span>
+                Materials
+              </NavLink>
+            </li>
+
+            <li className="menu-item">
+              {/* Map Inspections to Timeline section */}
+              <NavLink
+                to="/construction#timeline"
+                className={`link ${activeLink('/construction', '#timeline')}`}
+                onClick={closeMenu}
+              >
+                <span className="icon" aria-hidden>🔍</span>
+                Inspections
+              </NavLink>
+            </li>
+
+            {/* Projects & Dashboard (accordion) */}
+            <li className="menu-item group">
+              <button
+                className="group-toggle"
+                aria-expanded={expandPD}
+                aria-controls="group-pd"
+                onClick={() => setExpandPD((v) => !v)}
+              >
+                <span className="icon" aria-hidden>📊</span>
+                Projects & Dashboard
+                <span className={`chev ${expandPD ? 'open' : ''}`} aria-hidden>▸</span>
+              </button>
+              <ul id="group-pd" className={`sub-list ${expandPD ? 'open' : ''}`}>
+                <li>
+                  <NavLink to="/construction" className={({ isActive }) => `sublink ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    Projects
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/projects" className={({ isActive }) => `sublink ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    Projects Dashboard
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/project-timelines" className={({ isActive }) => `sublink ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    Timeline Dashboard
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/financial-dashboard" className={({ isActive }) => `sublink ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    Financial Dashboard
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/chatbot" className={({ isActive }) => `sublink ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    ChatBot
+                  </NavLink>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      {/* Styles aligned with ConstructionHome theme (dark + caution yellow) */}
       <style jsx global>{`
-        .navbar-nav .nav-link {
-          transition: all 0.3s ease;
-          background: rgba(255,255,255,0.2);
-          backdropFilter: blur(10px);
-          border: 2px solid rgba(255,255,255,0.3);
-          color: white;
-          font-weight: 600;
-          text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        :root {
+          --nav-bg: #0e0f12;
+          --nav-bg-2: #15171c;
+          --nav-border: rgba(255, 193, 7, 0.35);
+          --nav-accent: #ffc107; /* Bootstrap warning/caution */
+          --nav-text: #ffffff;
+          --nav-muted: #cfd3da;
         }
 
-        .navbar-nav .nav-link:hover:not(.active) {
-          background: rgba(255,255,255,0.35);
-          transform: translateY(-3px);
-          box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-          color: white;
-          border-color: rgba(255,255,255,0.5);
-        }
+        html { scroll-behavior: smooth; }
 
-        .navbar-nav .nav-link.active {
-          background: rgba(255,255,255,0.4) !important;
-          color: white !important;
-          box-shadow: 0 8px 25px rgba(0,0,0,0.3) !important;
-          transform: translateY(-3px) !important;
-          border-color: rgba(255,255,255,0.6) !important;
+        .hamburger-btn {
+          position: fixed;
+          top: 16px;
+          left: 16px;
+          z-index: 1100;
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
+          border: 2px solid var(--nav-border);
+          background: linear-gradient(180deg, var(--nav-bg), var(--nav-bg-2));
+          display: grid;
+          place-items: center;
+          box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+          transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+          color: var(--nav-text);
         }
-
-        /* Special styling for Project Timeline nav item */
-        .project-timeline-nav {
-          background: linear-gradient(45deg, rgba(255,255,255,0.3), rgba(46, 213, 115, 0.4)) !important;
-          border: 2px solid rgba(46, 213, 115, 0.6) !important;
-          box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3) !important;
-          color: white !important;
+        .hamburger-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.45); border-color: var(--nav-accent); }
+        .hamburger-btn .bar {
+          display: block;
+          width: 22px; height: 2px; margin: 3px 0;
+          background: var(--nav-text);
+          border-radius: 2px;
+          transition: transform .2s ease, opacity .2s ease;
         }
+        .hamburger-btn.open .bar:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+        .hamburger-btn.open .bar:nth-child(2) { opacity: 0; }
+        .hamburger-btn.open .bar:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
 
-        .project-timeline-nav:hover {
-          background: linear-gradient(45deg, rgba(255,255,255,0.4), rgba(46, 213, 115, 0.5)) !important;
-          transform: translateY(-4px) !important;
-          box-shadow: 0 8px 25px rgba(46, 213, 115, 0.4) !important;
-          border-color: rgba(46, 213, 115, 0.8) !important;
+        .overlay {
+          position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px);
+          opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s ease; z-index: 1040;
         }
+        .overlay.show { opacity: 1; visibility: visible; }
 
-        .project-timeline-nav.active {
-          background: linear-gradient(45deg, rgba(255,255,255,0.5), rgba(46, 213, 115, 0.6)) !important;
-          transform: translateY(-4px) !important;
-          box-shadow: 0 10px 30px rgba(46, 213, 115, 0.5) !important;
-          border-color: rgba(46, 213, 115, 1) !important;
+        .side-nav {
+          position: fixed; top: 0; left: 0; height: 100vh; width: 320px;
+          background: linear-gradient(180deg, var(--nav-bg), var(--nav-bg-2));
+          color: var(--nav-text);
+          transform: translateX(-100%);
+          transition: transform .25s ease; z-index: 1050;
+          border-right: 2px solid var(--nav-border);
+          box-shadow: 0 16px 48px rgba(0,0,0,0.5);
         }
+        .side-nav.open { transform: translateX(0); }
 
-        /* Special styling for Financial Dashboard nav item */
-        .financial-dashboard-nav {
-          background: linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255, 193, 7, 0.4)) !important;
-          border: 2px solid rgba(255, 193, 7, 0.6) !important;
-          box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3) !important;
-          color: white !important;
-          position: relative;
-          overflow: hidden;
+        .side-nav-header { padding: 18px 16px; }
+        .side-nav .brand .logo { font-size: 1.2rem; }
+
+        .caution-divider { display:flex; height: 8px; }
+        .caution-divider .stripe { flex:1; background: repeating-linear-gradient(45deg, var(--nav-accent) 0 12px, #000 12px 24px); }
+        .caution-divider .stripe.dark { background: #000; max-width: 12px; }
+
+        .menu { padding: 8px 10px 18px 10px; }
+        .menu .menu-item { margin: 6px 0; }
+
+        .link, .group-toggle {
+          width: 100%; display: flex; align-items: center; gap: 10px;
+          padding: 12px 14px; color: var(--nav-text); text-decoration: none;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px; transition: background .2s ease, transform .2s ease, border-color .2s ease;
         }
+        .link:hover, .group-toggle:hover { background: rgba(255,255,255,0.08); transform: translateX(2px); border-color: var(--nav-border); }
+        .link.active { background: rgba(255, 193, 7, 0.15); border-color: var(--nav-accent); color: #fff; }
 
-        .financial-dashboard-nav::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-          transition: left 0.5s ease;
-        }
+        .group { margin-top: 10px; }
+        .group-toggle { cursor: pointer; justify-content: space-between; font-weight: 600; }
+        .group-toggle .icon { margin-right: auto; }
+        .chev { transform: rotate(0deg); transition: transform .2s ease; }
+        .chev.open { transform: rotate(90deg); }
 
-        .financial-dashboard-nav:hover::before {
-          left: 100%;
-        }
+        .sub-list { list-style: none; padding-left: 8px; margin: 8px 0 0 26px; border-left: 2px dashed var(--nav-border); max-height: 0; overflow: hidden; transition: max-height .25s ease; }
+        .sub-list.open { max-height: 400px; }
+        .sublink { display:block; padding: 8px 12px; margin: 6px 0; color: var(--nav-muted); text-decoration:none; border-radius: 8px; transition: background .2s ease, color .2s ease; }
+        .sublink:hover { background: rgba(255,255,255,0.06); color: var(--nav-text); }
+        .sublink.active { color: #fff; background: rgba(255, 193, 7, 0.12); }
 
-        .financial-dashboard-nav:hover {
-          background: linear-gradient(45deg, rgba(255,255,255,0.4), rgba(255, 193, 7, 0.5)) !important;
-          transform: translateY(-4px) !important;
-          box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4) !important;
-          border-color: rgba(255, 193, 7, 0.8) !important;
-        }
-
-        .financial-dashboard-nav.active {
-          background: linear-gradient(45deg, rgba(255,255,255,0.5), rgba(255, 193, 7, 0.6)) !important;
-          transform: translateY(-4px) !important;
-          box-shadow: 0 10px 30px rgba(255, 193, 7, 0.5) !important;
-          border-color: rgba(255, 193, 7, 1) !important;
-        }
-
-        /* Special styling for ChatBot AI Assistant nav item */
-        .chatbot-nav {
-          background: linear-gradient(45deg, rgba(255,255,255,0.3), rgba(138, 43, 226, 0.4)) !important;
-          border: 2px solid rgba(138, 43, 226, 0.6) !important;
-          box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3) !important;
-          color: white !important;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .chatbot-nav::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-          transition: left 0.5s ease;
-        }
-
-        .chatbot-nav:hover::before {
-          left: 100%;
-        }
-
-        .chatbot-nav:hover {
-          background: linear-gradient(45deg, rgba(255,255,255,0.4), rgba(138, 43, 226, 0.5)) !important;
-          transform: translateY(-4px) !important;
-          box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4) !important;
-          border-color: rgba(138, 43, 226, 0.8) !important;
-        }
-
-        .chatbot-nav.active {
-          background: linear-gradient(45deg, rgba(255,255,255,0.5), rgba(138, 43, 226, 0.6)) !important;
-          transform: translateY(-4px) !important;
-          box-shadow: 0 10px 30px rgba(138, 43, 226, 0.5) !important;
-          border-color: rgba(138, 43, 226, 1) !important;
-        }
-
-        .navbar-brand {
-          position: relative;
-        }
-
-        .navbar-brand::after {
-          content: '';
-          position: absolute;
-          bottom: -2px;
-          left: 0;
-          width: 0;
-          height: 2px;
-          background: linear-gradient(90deg, #fff, transparent);
-          transition: width 0.3s ease;
-        }
-
-        .navbar-brand:hover::after {
-          width: 100%;
-        }
-
-        @media (max-width: 991.98px) {
-          .navbar-collapse {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            padding: 25px;
-            margin-top: 20px;
-            border: 2px solid rgba(255,255,255,0.2);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-          }
-          
-          .navbar-nav .nav-item {
-            margin: 10px 0 !important;
-          }
-
-          .navbar-nav .nav-link {
-            text-align: center;
-            padding: 15px 25px !important;
-            border-radius: 15px !important;
-          }
-        }
-
-        .navbar {
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-        }
-
-        html {
-          scroll-behavior: smooth;
-        }
-
-        .navbar {
-          animation: slideDown 0.5s ease-out;
-        }
-
-        @keyframes slideDown {
-          from {
-            transform: translateY(-100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-
-        .navbar-nav .nav-link:focus {
-          outline: 3px solid rgba(255,255,255,0.7);
-          outline-offset: 3px;
-          border-radius: 25px;
-        }
-
-        .navbar-brand:focus {
-          outline: 3px solid rgba(255,255,255,0.7);
-          outline-offset: 3px;
-          border-radius: 12px;
-        }
+        @media (max-width: 420px) { .side-nav { width: 88vw; } }
       `}</style>
     </>
   );

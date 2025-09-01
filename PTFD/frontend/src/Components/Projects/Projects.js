@@ -6,6 +6,15 @@ export default function Projects({ project, onDelete }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
 
+  // Fallback images at component level
+  const fallbackImages = {
+    'Residential': 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect width="400" height="250" fill="%23FFD700"/%3E%3Ctext x="200" y="125" text-anchor="middle" dy=".3em" font-family="Arial" font-size="18" fill="%23000"%3EResidential%3C/text%3E%3C/svg%3E',
+    'Commercial': 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect width="400" height="250" fill="%23FFA500"/%3E%3Ctext x="200" y="125" text-anchor="middle" dy=".3em" font-family="Arial" font-size="18" fill="%23000"%3ECommercial%3C/text%3E%3C/svg%3E',
+    'Infrastructure': 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect width="400" height="250" fill="%23FFD700"/%3E%3Ctext x="200" y="125" text-anchor="middle" dy=".3em" font-family="Arial" font-size="18" fill="%23000"%3EInfrastructure%3C/text%3E%3C/svg%3E',
+    'Industrial': 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect width="400" height="250" fill="%23FFA500"/%3E%3Ctext x="200" y="125" text-anchor="middle" dy=".3em" font-family="Arial" font-size="18" fill="%23000"%3EIndustrial%3C/text%3E%3C/svg%3E',
+    'default': 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect width="400" height="250" fill="%23FFD700"/%3E%3Ctext x="200" y="125" text-anchor="middle" dy=".3em" font-family="Arial" font-size="18" fill="%23000"%3EProject%3C/text%3E%3C/svg%3E'
+  };
+
   // Get project images array or fallback to single image/default
   const getProjectImages = (project) => {
     if (project.pimg && Array.isArray(project.pimg) && project.pimg.length > 0) {
@@ -17,11 +26,11 @@ export default function Projects({ project, onDelete }) {
     }
     
     const defaultImages = {
-      'Residential': 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&h=250&fit=crop&auto=format',
-      'Commercial': 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=250&fit=crop&auto=format',
-      'Infrastructure': 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=400&h=250&fit=crop&auto=format',
-      'Industrial': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&h=250&fit=crop&auto=format',
-      default: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=400&h=250&fit=crop&auto=format'
+      'Residential': 'https://picsum.photos/400/250?random=201',
+      'Commercial': 'https://picsum.photos/400/250?random=202',
+      'Infrastructure': 'https://picsum.photos/400/250?random=203',
+      'Industrial': 'https://picsum.photos/400/250?random=204',
+      default: 'https://picsum.photos/400/250?random=200'
     };
     
     return [defaultImages[project.ptype] || defaultImages.default];
@@ -104,7 +113,9 @@ export default function Projects({ project, onDelete }) {
               transition: 'transform 0.3s'
             }}
             onError={(e) => {
-              e.target.src = 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=400&h=250&fit=crop&auto=format';
+              if (!e.target.src.includes('data:image/svg+xml')) {
+                e.target.src = fallbackImages[project.ptype] || fallbackImages.default;
+              }
             }}
           />
           

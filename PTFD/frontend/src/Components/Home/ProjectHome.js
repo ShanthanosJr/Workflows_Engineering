@@ -6,13 +6,169 @@ const ProjectHome = () => {
   const navigate = useNavigate();
   const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState({});
-  const [activeVideo, setActiveVideo] = useState(null);
-  const [activeGallery, setActiveGallery] = useState(null);
-  const [videoLoaded, setVideoLoaded] = useState(false);
+  // Simplified video state management
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  // State for image loading
+  const [imageLoadState, setImageLoadState] = useState({});
+  const [loadingTimeouts, setLoadingTimeouts] = useState({});
   const sectionsRef = useRef([]);
   const heroRef = useRef(null);
 
-  // Handle scroll events with throttling for performance
+  // Function to handle image loading with fallback
+  const handleImageLoad = (imageId, originalSrc, fallbackSrc) => {
+    setImageLoadState(prev => ({ ...prev, [imageId]: 'loaded' }));
+    // Clear timeout if image loads successfully
+    if (loadingTimeouts[imageId]) {
+      clearTimeout(loadingTimeouts[imageId]);
+      setLoadingTimeouts(prev => {
+        const newTimeouts = { ...prev };
+        delete newTimeouts[imageId];
+        return newTimeouts;
+      });
+    }
+  };
+
+  const handleImageError = (imageId, fallbackSrc, imgElement) => {
+    if (imgElement.src !== fallbackSrc) {
+      imgElement.src = fallbackSrc;
+      setImageLoadState(prev => ({ ...prev, [imageId]: 'fallback' }));
+    } else {
+      setImageLoadState(prev => ({ ...prev, [imageId]: 'error' }));
+    }
+  };
+
+  // Set timeout for slow loading images
+  const setImageTimeout = (imageId, fallbackSrc, imgElement) => {
+    const timeoutId = setTimeout(() => {
+      if (imageLoadState[imageId] !== 'loaded') {
+        imgElement.src = fallbackSrc;
+        setImageLoadState(prev => ({ ...prev, [imageId]: 'timeout' }));
+      }
+    }, 3000); // 3 second timeout
+    
+    setLoadingTimeouts(prev => ({ ...prev, [imageId]: timeoutId }));
+  };
+
+  // Enhanced image component
+  const EnhancedImage = ({ src, fallbackSrc, alt, className, style, imageId }) => {
+    const imgRef = useRef(null);
+    
+    useEffect(() => {
+      if (imgRef.current) {
+        setImageTimeout(imageId, fallbackSrc, imgRef.current);
+      }
+      return () => {
+        if (loadingTimeouts[imageId]) {
+          clearTimeout(loadingTimeouts[imageId]);
+        }
+      };
+    }, [imageId, fallbackSrc]); // Removed loadingTimeouts from dependency array
+
+    return (
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        className={`${className || ''} ${imageLoadState[imageId] === 'loaded' ? 'loaded' : ''}`}
+        style={{
+          ...style,
+          opacity: imageLoadState[imageId] === 'loaded' ? 1 : 0.8,
+          transition: 'opacity 0.5s ease-in-out'
+        }}
+        onLoad={() => handleImageLoad(imageId, src, fallbackSrc)}
+        onError={() => handleImageError(imageId, fallbackSrc, imgRef.current)}
+      />
+    );
+  };
+
+  // Premium video backgrounds for different sections - Simplified reliable sources
+  const heroVideos = [
+    "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
+    "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+  ];
+
+  const sectionVideos = {
+    intro: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
+    types: "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+    process: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    materials: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
+    technology: "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+    break: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    history: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
+    thankyou: "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4"
+  };
+
+  // Demo videos for sections - Simplified sources
+  const demoVideos = {
+    process: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
+    technology: "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4"
+  };
+
+  // Photo booth images (construction-themed galleries) - Multiple reliable sources with fallbacks
+  const photoBooths = {
+    types: [
+      "https://picsum.photos/400/300?random=1",
+      "https://picsum.photos/400/300?random=2",
+      "https://picsum.photos/400/300?random=3",
+      "https://picsum.photos/400/300?random=4"
+    ],
+    materials: [
+      "https://picsum.photos/400/300?random=5",
+      "https://picsum.photos/400/300?random=6",
+      "https://picsum.photos/400/300?random=7"
+    ],
+    technology: [
+      "https://picsum.photos/400/300?random=8",
+      "https://picsum.photos/400/300?random=9",
+      "https://picsum.photos/400/300?random=10",
+      "https://picsum.photos/400/300?random=11"
+    ]
+  };
+
+  // Fallback images in case external sources fail
+  const fallbackImages = {
+    types: [
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23FFD700'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' fill='%23000'%3EResidential%3C/text%3E%3C/svg%3E",
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23FFA500'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' fill='%23000'%3ECommercial%3C/text%3E%3C/svg%3E",
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23FFD700'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' fill='%23000'%3EIndustrial%3C/text%3E%3C/svg%3E",
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23FFA500'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' fill='%23000'%3EInfrastructure%3C/text%3E%3C/svg%3E"
+    ],
+    materials: [
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23FFD700'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' fill='%23000'%3EConcrete%3C/text%3E%3C/svg%3E",
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23FFA500'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' fill='%23000'%3ESteel%3C/text%3E%3C/svg%3E",
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23FFD700'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' fill='%23000'%3EWood%3C/text%3E%3C/svg%3E"
+    ],
+    technology: [
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23FFD700'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' font-family='Arial' font-size='18' fill='%23000'%3E3D Printing%3C/text%3E%3C/svg%3E",
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23FFA500'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' font-family='Arial' font-size='18' fill='%23000'%3EDrones %26 AI%3C/text%3E%3C/svg%3E",
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23FFD700'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' font-family='Arial' font-size='18' fill='%23000'%3ESustainable%3C/text%3E%3C/svg%3E",
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23FFA500'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23000'%3ESmart Buildings%3C/text%3E%3C/svg%3E"
+    ]
+  };
+
+  // Auto-rotate hero videos - Faster rotation for better experience
+  useEffect(() => {
+    const videoInterval = setInterval(() => {
+      setCurrentVideoIndex((prev) => (prev + 1) % heroVideos.length);
+    }, 8000); // Reduced from 15000 to 8000 for better user experience
+    return () => clearInterval(videoInterval);
+  }, [heroVideos.length]);
+
+  // Track mouse movement for premium parallax effects
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2
+      });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Handle scroll events with premium throttling
   useEffect(() => {
     let ticking = false;
     const handleScroll = () => {
@@ -28,24 +184,16 @@ const ProjectHome = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Advanced Intersection Observer with Apple-style triggers
+  // Advanced Intersection Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           const id = entry.target.id;
-          const ratio = entry.intersectionRatio;
-          
           if (entry.isIntersecting) {
             setIsVisible(prev => ({
               ...prev,
               [id]: true
-            }));
-          } else if (ratio === 0 && isVisible[id]) {
-            // Apple-style: Remove visibility when completely out of view
-            setIsVisible(prev => ({
-              ...prev,
-              [id]: false
             }));
           }
         });
@@ -61,30 +209,7 @@ const ProjectHome = () => {
     });
 
     return () => observer.disconnect();
-  }, [isVisible]);
-
-  // Track current section for Apple-style navigation
-  // useEffect(() => {
-  //   const sections = sectionsRef.current;
-  //   const handleSectionTracking = () => {
-  //     const scrollPosition = window.scrollY + window.innerHeight / 2;
-  //     
-  //     sections.forEach((section, index) => {
-  //       if (section) {
-  //         const rect = section.getBoundingClientRect();
-  //         const sectionTop = rect.top + window.scrollY;
-  //         const sectionBottom = sectionTop + rect.height;
-  //         
-  //         if (scrollPosition >= sectionTop && scrollPosition <= sectionBottom) {
-  //           setCurrentSection(index);
-  //         }
-  //       }
-  //     });
-  //   };
-
-  //   window.addEventListener('scroll', handleSectionTracking, { passive: true });
-  //   return () => window.removeEventListener('scroll', handleSectionTracking);
-  // }, []);
+  }, []);
 
   const addToRefs = (el) => {
     if (el && !sectionsRef.current.includes(el)) {
@@ -92,175 +217,166 @@ const ProjectHome = () => {
     }
   };
 
-  const openVideoModal = (videoType) => {
-    setActiveVideo(videoType);
-  };
-
-  const closeVideoModal = () => {
-    setActiveVideo(null);
-  };
-
-  const openGalleryModal = (galleryType) => {
-    setActiveGallery(galleryType);
-  };
-
-  const closeGalleryModal = () => {
-    setActiveGallery(null);
-  };
-
-  const navigationCards = [
+  // Features for types of construction
+  const features = [
     {
-      title: 'Projects',
-      description: 'Manage construction workflows with multiple images, detailed tracking, and safety protocols.',
-      icon: '🏗️',
-      route: '/projects',
-      color: '#FFD700',
-      delay: '0s'
+      icon: '🏠',
+      title: 'Residential Construction',
+      description: 'Building homes with smart workflows.',
+      image: photoBooths.types[0],
+      fallback: fallbackImages.types[0],
+      type: 'Residential'
     },
     {
-      title: 'Timelines',
-      description: 'Create workflow timelines, track progress, and ensure safety compliance.',
-      icon: '📅',
-      route: '/timelines',
-      color: '#FFA500',
-      delay: '0.2s'
+      icon: '🏢',
+      title: 'Commercial Construction',
+      description: 'Office and retail spaces with AI optimization.',
+      image: photoBooths.types[1],
+      fallback: fallbackImages.types[1],
+      type: 'Commercial'
     },
     {
-      title: 'Project-Timelines',
-      description: 'Advanced workflow timeline management with integrated safety milestones.',
-      icon: '⏱️',
-      route: '/project-timelines',
-      color: '#FFD700',
-      delay: '0.4s'
+      icon: '🏭',
+      title: 'Industrial Construction',
+      description: 'Factories and warehouses with safety focus.',
+      image: photoBooths.types[2],
+      fallback: fallbackImages.types[2],
+      type: 'Industrial'
     },
     {
-      title: 'Dashboards',
-      description: 'Comprehensive analytics, cost calculation, and safety management dashboards.',
-      icon: '💰',
-      route: '/financial-dashboard',
-      color: '#FFA500',
-      delay: '0.6s'
-    },
-    {
-      title: 'Talk to an AI',
-      description: 'Get instant answers about workflows, safety protocols, and engineering solutions.',
-      icon: '🤖',
-      route: '/chatbot',
-      color: '#FFD700',
-      delay: '0.8s'
+      icon: '🌉',
+      title: 'Infrastructure Construction',
+      description: 'Bridges, roads, and public works.',
+      image: photoBooths.types[3],
+      fallback: fallbackImages.types[3],
+      type: 'Infrastructure'
     }
   ];
 
+  // Construction process steps
+  const processSteps = [
+    { number: 1, title: 'Planning', description: 'Initial design and planning.' },
+    { number: 2, title: 'Foundation', description: 'Building the base.' },
+    { number: 3, title: 'Structure', description: 'Erecting the framework.' },
+    { number: 4, title: 'Finishing', description: 'Interior and exterior completion.' }
+  ];
+
+  // Materials
+  const materials = [
+    { title: 'Concrete', description: 'Core building material.' },
+    { title: 'Steel', description: 'Structural support.' },
+    { title: 'Wood', description: 'Sustainable option.' }
+  ];
+
+  // Technology
+  const technologies = [
+    { title: '3D Printing', image: photoBooths.technology[0], fallback: fallbackImages.technology[0] },
+    { title: 'Drones & AI', image: photoBooths.technology[1], fallback: fallbackImages.technology[1] },
+    { title: 'Sustainable Materials', image: photoBooths.technology[2], fallback: fallbackImages.technology[2] },
+    { title: 'Smart Buildings', image: photoBooths.technology[3], fallback: fallbackImages.technology[3] }
+  ];
+
+  // History timeline
+  const history = [
+    { 
+      year: 2019, 
+      description: 'Founded with focus on smart workflows.', 
+      image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='150' viewBox='0 0 200 150'%3E%3Crect width='200' height='150' fill='%23FFD700'/%3E%3Ctext x='100' y='75' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' fill='%23000'%3E2019%3C/text%3E%3C/svg%3E"
+    },
+    { 
+      year: 2024, 
+      description: 'Expanded to AI integration and safety systems.', 
+      image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='150' viewBox='0 0 200 150'%3E%3Crect width='200' height='150' fill='%23FFA500'/%3E%3Ctext x='100' y='75' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' fill='%23000'%3E2024%3C/text%3E%3C/svg%3E"
+    }
+  ];
+
+
+
   return (
     <div className="project-home">
-      {/* Hero Section with Apple-style parallax */}
-      <section ref={heroRef} className="hero-section">
-        <div className="hero-background">
-          {!videoLoaded && (
-            <div className="video-loading-placeholder">
-              <div className="loading-spinner"></div>
-              <p>Loading construction video...</p>
-            </div>
-          )}
+      {/* Header with caution stripes */}
+      <header className="global-header">
+        <div className="caution-stripe top-stripe"></div>
+        <div className="header-content">
+          <h1 className="company-name">WORKFLOWS ENGINEERING</h1>
+        </div>
+      </header>
+
+      {/* Hero Section - Page 1 */}
+      <section ref={heroRef} id="hero" className="hero-section section">
+        <div className="section-background">
           <video 
-            className="hero-video"
+            key={currentVideoIndex}
+            className="section-video"
             autoPlay 
             muted 
             loop 
             playsInline
-            preload="metadata"
-            onLoadedData={() => setVideoLoaded(true)}
-            onError={() => setVideoLoaded(true)}
+            preload="auto"
             style={{
-              transform: `translateX(-50%) translateY(-50%) translateZ(0) scale(${1 + scrollY * 0.0005})`,
-              filter: `brightness(${Math.max(0.3, 1 - scrollY * 0.001)})`,
-              opacity: videoLoaded ? 1 : 0,
-              transition: 'opacity 1s ease-in-out'
+              transform: `translateX(-50%) translateY(-50%)`,
+              filter: `brightness(0.6) contrast(1.1)`,
+              opacity: 0.8,
+              transition: 'opacity 2s ease-in-out'
             }}
           >
-            {/* Construction, Engineering & Architecture project videos */}
-            <source src="https://videos.pexels.com/video-files/3209828/3209828-uhd_2560_1440_25fps.mp4" type="video/mp4" />
-            <source src="https://videos.pexels.com/video-files/8960228/8960228-hd_1920_1080_30fps.mp4" type="video/mp4" />
-            <source src="https://videos.pexels.com/video-files/3141211/3141211-hd_1920_1080_30fps.mp4" type="video/mp4" />
-            <source src="https://videos.pexels.com/video-files/7578555/7578555-hd_1920_1080_30fps.mp4" type="video/mp4" />
-            <source src="https://videos.pexels.com/video-files/3196271/3196271-hd_1920_1080_25fps.mp4" type="video/mp4" />
-            {/* Fallback image if video doesn't load */}
-            <img 
-              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&h=1080&fit=crop" 
-              alt="Construction Engineering Background"
-              style={{width: '100%', height: '100%', objectFit: 'cover'}}
-            />
+            <source src={heroVideos[currentVideoIndex]} type="video/mp4" />
+            Your browser does not support the video tag.
           </video>
-          <div className="construction-overlay" style={{
-            opacity: Math.min(1, 0.7 + scrollY * 0.001)
-          }}></div>
-          <div className="hero-particles">
-            {[...Array(50)].map((_, i) => (
-              <div key={i} className="particle" style={{
-                left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${3 + Math.random() * 4}s`,
-                transform: `translateY(${scrollY * (0.1 + Math.random() * 0.2)}px)`
-              }}></div>
-            ))}
+          
+          {/* Construction overlay */}
+          <div className="construction-overlay"></div>
+          
+          {/* Floating Construction Equipment */}
+          <div className="floating-equipment construction-equipment">
+            <div className="equipment-icon" style={{top: '15%', left: '10%', fontSize: '4rem'}}>🏗️</div>
+            <div className="equipment-icon" style={{top: '25%', right: '15%', fontSize: '3rem'}}>⚒️</div>
+            <div className="equipment-icon" style={{bottom: '30%', left: '20%', fontSize: '3.5rem'}}>🚧</div>
+            <div className="equipment-icon" style={{bottom: '20%', right: '10%', fontSize: '4.5rem'}}>🏢</div>
           </div>
-          <div className="animated-shapes">
-            <div className="shape shape-1" style={{
-              transform: `translateY(${scrollY * 0.3}px) rotate(${scrollY * 0.5}deg)`
-            }}></div>
-            <div className="shape shape-2" style={{
-              transform: `translateY(${scrollY * 0.4}px) rotate(${-scrollY * 0.3}deg)`
-            }}></div>
-            <div className="shape shape-3" style={{
-              transform: `translateY(${scrollY * 0.2}px) rotate(${scrollY * 0.4}deg)`
-            }}></div>
+          
+          {/* Video Progress Indicator */}
+          <div className="video-progress-indicator">
+            {heroVideos.map((_, index) => (
+              <div 
+                key={index}
+                className={`progress-dot ${index === currentVideoIndex ? 'active' : ''}`}
+                onClick={() => setCurrentVideoIndex(index)}
+              />
+            ))}
           </div>
         </div>
         
-        <div className="hero-content" style={{
-          transform: `translateY(${scrollY * 0.3}px)`,
-          opacity: Math.max(0, 1 - scrollY * 0.002)
+        <div className="hero-content construction-hero-content" style={{
+          transform: `translateY(${scrollY * 0.1}px) translateX(${mousePosition.x * 5}px)`,
+          opacity: Math.max(0.3, 1 - scrollY * 0.0015)
         }}>
-          <div className="hero-text">
-            <h1 className="hero-title apple-fade-in">
-              <span className="highlight glitch apple-slide-left" data-text="Workflows Engineering">Workflows Engineering</span>
+          <div className="hero-text construction-hero-text">
+            <h1 className="hero-title construction-title">
+              <span className="clean-title">The World of</span>
               <br />
-              <span className="typewriter apple-slide-right">Smart Construction Workflow &</span>
+              <span className="construction-highlight">Construction</span>
               <br />
-              <span className="typewriter-2 apple-slide-left">Safety Management System</span>
+              <span className="construction-subtitle">Building Excellence Since 2019</span>
             </h1>
-            <p className="hero-subtitle apple-fade-up animate-delay-1">
-              Advanced Engineering Solutions for Digital Construction Workflow Management and Safety Protocols
+            <p className="construction-company">
+              WORKFLOWS ENGINEERING<br/>
+              SMART CONSTRUCTION WORKFLOW & SAFETY MANAGEMENT
             </p>
-            <div className="hero-stats apple-fade-up animate-delay-2">
-              <div className="stat apple-scale-in" style={{ animationDelay: '0.5s' }}>
-                <span className="stat-number">500+</span>
-                <span className="stat-label">Projects Completed</span>
-              </div>
-              <div className="stat apple-scale-in" style={{ animationDelay: '0.7s' }}>
-                <span className="stat-number">95%</span>
-                <span className="stat-label">Success Rate</span>
-              </div>
-              <div className="stat apple-scale-in" style={{ animationDelay: '0.9s' }}>
-                <span className="stat-number">24/7</span>
-                <span className="stat-label">AI Support</span>
-              </div>
-            </div>
-            <div className="hero-buttons apple-fade-up animate-delay-3">
+            
+            {/* Action Buttons */}
+            <div className="hero-buttons construction-buttons">
               <button 
-                className="btn btn-primary btn-lg pulse-btn apple-button-hover me-4"
+                className="btn construction-btn"
                 onClick={() => navigate('/projects')}
               >
-                <span className="btn-icon">🏗️</span>
-                <span className="btn-text">Explore Projects</span>
-                <div className="btn-ripple"></div>
+                <span className="btn-text">Get Started</span>
               </button>
               <button 
-                className="btn btn-outline-warning btn-lg glow-btn apple-button-hover"
+                className="btn construction-outline-btn"
                 onClick={() => navigate('/chatbot')}
               >
-                <span className="btn-icon">🤖</span>
-                <span className="btn-text">Talk to AI</span>
+                <span className="btn-text">AI Assistant</span>
               </button>
             </div>
           </div>
@@ -269,409 +385,457 @@ const ProjectHome = () => {
         <div className="scroll-indicator" style={{
           opacity: Math.max(0, 1 - scrollY * 0.01)
         }}>
-          <div className="scroll-arrow bounce apple-bounce">
+          <div className="scroll-arrow">
             <span>⬇</span>
           </div>
           <span>Scroll to Explore</span>
         </div>
       </section>
 
-      {/* Features Section with Apple-style animations */}
-      <section 
-        id="features" 
-        ref={addToRefs}
-        className={`features-section apple-section ${isVisible.features ? 'apple-animate-in' : 'apple-animate-out'}`}
-        style={{
-          transform: isVisible.features ? 'translateY(0)' : 'translateY(100px)',
-          opacity: isVisible.features ? 1 : 0,
-          transition: 'all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-        }}
-      >
+      {/* Introduction - Page 2 */}
+      <section id="intro" className="section intro-section" ref={addToRefs}>
+        <div className="section-background">
+          <video 
+            className="section-video"
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            preload="auto"
+            style={{ opacity: 0.8 }}
+          >
+            <source src={sectionVideos.intro} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div className="construction-overlay"></div>
+        </div>
+        <div className="section-content">
+          <div className="text-column">
+            <h2 className="construction-title">Introduction<br/>to <span className="construction-highlight">Construction</span></h2>
+            <h3>What is Construction?</h3>
+            <p>Construction is the process of creating structures, buildings, and infrastructure that form the backbone of our modern society. At Workflows Engineering, we bring decades of expertise, cutting-edge technology, and unwavering commitment to quality in every project we undertake.</p>
+            <p><strong>Smart Construction Workflow & Safety Management System</strong> - Building excellence with AI-powered tools, real-time collaboration, and premium analytics that transform your workflow.</p>
+          </div>
+          <div className="image-column">
+            <EnhancedImage 
+              src="https://picsum.photos/600/400?random=100" 
+              fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23FFD700'/%3E%3Ctext x='300' y='200' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' fill='%23000'%3EConstruction Management%3C/text%3E%3C/svg%3E"
+              alt="Construction Management" 
+              imageId="intro-main"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Types of Construction - Page 3 */}
+      <section id="types" className="section types-section" ref={addToRefs}>
+        <div className="section-background">
+          <video 
+            className="section-video"
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            preload="none"
+            style={{ opacity: 0.8 }}
+          >
+            <source src={sectionVideos.types} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div className="construction-overlay"></div>
+          <div className="warning-stripe"></div>
+        </div>
         <div className="container">
-          <div className="section-header apple-section-header">
-            <h2 className="apple-slide-up" style={{
-              transform: isVisible.features ? 'translateY(0)' : 'translateY(50px)',
-              opacity: isVisible.features ? 1 : 0,
-              transition: 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-            }}>Modern Construction Management</h2>
-            <p className="apple-slide-up" style={{
-              transform: isVisible.features ? 'translateY(0)' : 'translateY(30px)',
-              opacity: isVisible.features ? 1 : 0,
-              transition: 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s'
-            }}>Cutting-edge tools for today's construction professionals</p>
+          <div className="section-header construction-section-header">
+            <h2 className="construction-title">Types of<br/><span className="construction-highlight">Construction</span></h2>
+            <p className="construction-subtitle">Different Sectors in Construction Management</p>
           </div>
           
-          <div className="features-grid apple-grid">
-            {[
-              {
-                id: 'projects',
-                title: 'Advanced Workflow Tracking',
-                description: 'Real-time workflow monitoring with interactive dashboards and comprehensive safety reporting.',
-                image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&h=250&fit=crop&auto=format',
-                alt: 'Construction Management',
-                icon: '▶️',
-                label: 'Workflow Management Demo'
-              },
-              {
-                id: 'analytics',
-                title: 'Safety Analytics',
-                description: 'Smart safety management and risk analysis with real-time monitoring',
-                image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop&auto=format',
-                alt: 'Safety Analytics Dashboard',
-                icon: '📊',
-                label: 'Safety Analytics Demo'
-              },
-              {
-                id: 'realtime',
-                title: 'Real-time Updates',
-                description: 'Live workflow status and safety protocol tracking',
-                image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop&auto=format',
-                alt: 'Real-time Updates Dashboard',
-                icon: '🔄',
-                label: 'Real-time Updates Demo'
-              },
-              {
-                id: 'mobile',
-                title: 'Mobile Ready',
-                description: 'Access workflows and safety protocols anywhere, anytime',
-                image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=250&fit=crop&auto=format',
-                alt: 'Mobile Construction App',
-                icon: '📱',
-                label: 'Mobile App Demo'
-              }
-            ].map((feature, index) => (
+          <div className="construction-grid">
+            {features.map((feature, index) => (
               <div 
-                key={feature.id}
-                className="feature-card apple-card" 
-                onClick={() => feature.id === 'projects' || feature.id === 'realtime' ? openVideoModal(feature.id) : openGalleryModal(feature.id)}
+                key={index}
+                className="construction-card" 
+                onClick={() => navigate(feature.route || '/projects')}
                 style={{
-                  transform: isVisible.features ? 'translateX(0) scale(1)' : 'translateX(-100px) scale(0.8)',
-                  opacity: isVisible.features ? 1 : 0,
+                  transform: isVisible.types ? 'translateY(0) scale(1)' : 'translateY(100px) scale(0.8)',
+                  opacity: isVisible.types ? 1 : 0,
                   transition: `all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${0.1 * index}s`
                 }}
               >
-                <div className="feature-video apple-media">
-                  <img 
-                    src={feature.image}
-                    alt={feature.alt}
-                    className="feature-image apple-image"
+                <div className="construction-icon">
+                  {feature.icon}
+                </div>
+                <h3 className="construction-feature-title">{feature.title}</h3>
+                <div className="construction-type">{feature.type}</div>
+                <p className="construction-description">{feature.description}</p>
+                
+                <div className="construction-button" onClick={() => navigate('/projects')}>
+                  <span>Explore Now</span>
+                  <div className="construction-arrow">→</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Photo Booth for Types */}
+          <div className="photo-booth construction-gallery">
+            <h3 className="gallery-title">Construction Gallery</h3>
+            <div className="photo-grid">
+              {photoBooths.types.map((img, index) => (
+                <EnhancedImage 
+                  key={index} 
+                  src={img} 
+                  fallbackSrc={fallbackImages.types[index]}
+                  alt={`Construction Type ${index + 1}`} 
+                  imageId={`types-gallery-${index}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Construction Process - Page 4 */}
+      <section id="process" className="section process-section construction-process-section" ref={addToRefs}>
+        <div className="section-background">
+          <video 
+            className="section-video"
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            preload="none"
+            style={{ opacity: 0.8 }}
+          >
+            <source src={sectionVideos.process} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div className="construction-overlay"></div>
+          <div className="warning-stripe construction-stripe-bottom"></div>
+        </div>
+        <div className="container">
+          <div className="section-header construction-section-header" style={{textAlign: 'center', marginBottom: '50px'}}>
+            <h2 className="construction-title">Construction<br/><span className="construction-highlight">Process</span></h2>
+            <p className="construction-subtitle">Steps to Build a Structure</p>
+          </div>
+          
+          <div className="process-grid construction-process-grid">
+            {processSteps.map((step, index) => (
+              <div 
+                key={step.number}
+                className="construction-step"
+                style={{
+                  transform: isVisible.process ? 'translateY(0) scale(1)' : 'translateY(80px) scale(0.9)',
+                  opacity: isVisible.process ? 1 : 0,
+                  transition: `all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${0.1 * index}s`
+                }}
+              >
+                <div className="construction-number">{step.number}</div>
+                <h4 className="construction-step-title">{step.title}</h4>
+                <p className="construction-step-description">{step.description}</p>
+              </div>
+            ))}
+          </div>
+          
+          {/* Video Demo Booth */}
+          <div className="demo-section">
+            <h3 className="demo-title">Process Demonstration</h3>
+            <video className="demo-video" controls preload="metadata">
+              <source src={demoVideos.process} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+      </section>
+
+      {/* Essential Materials - Page 5 */}
+      <section id="materials" className="section materials-section" ref={addToRefs}>
+        <div className="section-background">
+          <video 
+            className="section-video"
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            preload="none"
+            style={{ opacity: 0.8 }}
+          >
+            <source src={sectionVideos.materials} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div className="construction-overlay"></div>
+        </div>
+        <div className="container">
+          <div className="section-header construction-section-header">
+            <h2 className="construction-title">Essential Materials<br/>in <span className="construction-highlight">Construction</span></h2>
+            <p className="construction-subtitle">Key Building Components</p>
+          </div>
+          
+          <div className="section-content">
+            <div className="text-column">
+              <p>High-quality materials tracked with our Smart Construction Workflow & Safety Management System. We ensure quality control and optimal resource allocation for every project.</p>
+              <div className="materials-list">
+                {materials.map((material, index) => (
+                  <div key={index} className="material-item">
+                    <h4>{material.title}</h4>
+                    <p>{material.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="image-column">
+              <EnhancedImage 
+                src="https://picsum.photos/600/400?random=101" 
+                fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23FFA500'/%3E%3Ctext x='300' y='200' text-anchor='middle' dy='.3em' font-family='Arial' font-size='20' fill='%23000'%3EConstruction Materials%3C/text%3E%3C/svg%3E"
+                alt="Construction Materials" 
+                imageId="materials-main"
+              />
+            </div>
+          </div>
+          
+          {/* Photo Booth */}
+          <div className="photo-booth construction-gallery">
+            <h3 className="gallery-title">Materials Gallery</h3>
+            <div className="photo-grid">
+              {photoBooths.materials.map((img, index) => (
+                <EnhancedImage 
+                  key={index} 
+                  src={img} 
+                  fallbackSrc={fallbackImages.materials[index]}
+                  alt={`Material ${index + 1}`} 
+                  imageId={`materials-gallery-${index}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Modern Technology - Page 6 */}
+      <section id="technology" className="section technology-section" ref={addToRefs}>
+        <div className="section-background">
+          <video 
+            className="section-video"
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            preload="none"
+            style={{ opacity: 0.8 }}
+          >
+            <source src={sectionVideos.technology} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div className="construction-overlay"></div>
+        </div>
+        <div className="container">
+          <div className="section-header construction-section-header">
+            <h2 className="construction-title">Modern Technology<br/>in <span className="construction-highlight">Construction</span></h2>
+            <p className="construction-subtitle">Innovation in the Industry</p>
+          </div>
+          
+          <div className="section-content">
+            <div className="text-column">
+              <p>Integrating cutting-edge technology for better results. Our Smart Construction Workflow & Safety Management System leverages the latest innovations to improve efficiency, safety, and precision in construction projects.</p>
+            </div>
+            <div className="tech-grid">
+              {technologies.map((tech, index) => (
+                <div 
+                  key={index} 
+                  className="tech-item"
+                  style={{
+                    transform: isVisible.technology ? 'translateY(0) scale(1)' : 'translateY(50px) scale(0.9)',
+                    opacity: isVisible.technology ? 1 : 0,
+                    transition: `all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${0.1 * index}s`
+                  }}
+                >
+                  <EnhancedImage 
+                    src={tech.image} 
+                    fallbackSrc={tech.fallback}
+                    alt={tech.title} 
+                    imageId={`tech-${index}`}
                   />
-                  <div className="video-overlay apple-overlay">
-                    <div className="play-button pulse apple-play-button">
-                      <div className="play-icon">{feature.icon}</div>
-                    </div>
-                    <div className="video-label apple-label">{feature.label}</div>
-                  </div>
+                  <h4>{tech.title}</h4>
                 </div>
-                <div className="feature-content apple-content">
-                  <h3 className="apple-heading">{feature.title}</h3>
-                  <p className="apple-description">{feature.description}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+          
+          {/* Video Demo */}
+          <div className="demo-section">
+            <h3 className="demo-title">Technology Demonstration</h3>
+            <video className="demo-video" controls preload="metadata">
+              <source src={demoVideos.technology} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          
+          {/* Photo Booth */}
+          <div className="photo-booth construction-gallery">
+            <h3 className="gallery-title">Technology Gallery</h3>
+            <div className="photo-grid">
+              {photoBooths.technology.map((img, index) => (
+                <EnhancedImage 
+                  key={index} 
+                  src={img} 
+                  fallbackSrc={fallbackImages.technology[index]}
+                  alt={`Tech ${index + 1}`} 
+                  imageId={`tech-gallery-${index}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Navigation Cards Section with Apple-style staggered animations */}
-      <section 
-        id="navigation" 
-        ref={addToRefs}
-        className={`navigation-section apple-section ${isVisible.navigation ? 'apple-animate-in' : 'apple-animate-out'}`}
-        style={{
-          transform: isVisible.navigation ? 'translateY(0)' : 'translateY(100px)',
-          opacity: isVisible.navigation ? 1 : 0,
-          transition: 'all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s'
-        }}
-      >
+      {/* Break Slides - Page 7 */}
+      <section id="break" className="section break-section" ref={addToRefs}>
+        <div className="section-background">
+          <video 
+            className="section-video"
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            preload="none"
+            style={{ opacity: 0.8 }}
+          >
+            <source src={sectionVideos.break} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div className="construction-overlay"></div>
+        </div>
         <div className="container">
-          <div className="section-header apple-section-header">
-            <h2 className="apple-slide-up" style={{
-              transform: isVisible.navigation ? 'translateY(0)' : 'translateY(50px)',
-              opacity: isVisible.navigation ? 1 : 0,
-              transition: 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-            }}>Explore Our Platform</h2>
-            <p className="apple-slide-up" style={{
-              transform: isVisible.navigation ? 'translateY(0)' : 'translateY(30px)',
-              opacity: isVisible.navigation ? 1 : 0,
-              transition: 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s'
-            }}>Discover powerful tools designed for construction professionals</p>
-          </div>
-          
-          <div className="navigation-grid apple-grid">
-            {navigationCards.map((card, index) => (
-              <div 
-                key={index}
-                className="nav-card apple-card"
-                style={{ 
-                  animationDelay: card.delay,
-                  transform: isVisible.navigation ? 'translateX(0) rotateY(0deg) scale(1)' : `translateX(${index % 2 === 0 ? '-100px' : '100px'}) rotateY(${index % 2 === 0 ? '-15deg' : '15deg'}) scale(0.8)`,
-                  opacity: isVisible.navigation ? 1 : 0,
-                  transition: `all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${0.1 * index}s`
-                }}
-                onClick={() => navigate(card.route)}
-              >
-                <div className="card-background apple-card-bg"></div>
-                <div className="card-content apple-content">
-                  <div className="card-icon apple-icon" style={{ color: card.color }}>
-                    {card.icon}
-                  </div>
-                  <h3 className="apple-heading">{card.title}</h3>
-                  <p className="apple-description">{card.description}</p>
-                  <div className="card-button apple-button">
-                    <span>Explore Now</span>
-                    <div className="button-arrow apple-arrow">→</div>
-                  </div>
-                </div>
-                <div className="card-hover-effect apple-hover"></div>
-              </div>
-            ))}
+          <div className="section-content">
+            <div className="text-column">
+              <h2 className="construction-title">Innovation<br/><span className="construction-highlight">Showcase</span></h2>
+              <p>Discover how our Smart Construction Workflow & Safety Management System transforms traditional construction practices through innovative technology and data-driven insights.</p>
+            </div>
+            <div className="image-column">
+              <EnhancedImage 
+                src="https://picsum.photos/600/400?random=102" 
+                fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23FFD700'/%3E%3Ctext x='300' y='200' text-anchor='middle' dy='.3em' font-family='Arial' font-size='20' fill='%23000'%3EConstruction Innovation%3C/text%3E%3C/svg%3E"
+                alt="Construction Innovation" 
+                imageId="break-main"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Gallery Section with Apple-style reveal animations */}
-      <section 
-        id="gallery" 
-        ref={addToRefs}
-        className={`gallery-section apple-section ${isVisible.gallery ? 'apple-animate-in' : 'apple-animate-out'}`}
-        style={{
-          transform: isVisible.gallery ? 'translateY(0)' : 'translateY(100px)',
-          opacity: isVisible.gallery ? 1 : 0,
-          transition: 'all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s'
-        }}
-      >
+      {/* Our History - Pages 8-9 */}
+      <section id="history" className="section history-section" ref={addToRefs}>
+        <div className="section-background">
+          <video 
+            className="section-video"
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            preload="none"
+            style={{ opacity: 0.8 }}
+          >
+            <source src={sectionVideos.history} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div className="construction-overlay"></div>
+        </div>
         <div className="container">
-          <div className="section-header apple-section-header">
-            <h2 className="apple-slide-up" style={{
-              transform: isVisible.gallery ? 'translateY(0)' : 'translateY(50px)',
-              opacity: isVisible.gallery ? 1 : 0,
-              transition: 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-            }}>Workflow Showcase</h2>
-            <p className="apple-slide-up" style={{
-              transform: isVisible.gallery ? 'translateY(0)' : 'translateY(30px)',
-              opacity: isVisible.gallery ? 1 : 0,
-              transition: 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s'
-            }}>See our engineering solutions in action across various construction workflows</p>
+          <div className="section-header construction-section-header">
+            <h2 className="construction-title">Our <span className="construction-highlight">History</span></h2>
+            <p className="construction-subtitle">WORKFLOWS ENGINEERING</p>
           </div>
           
-          <div className="gallery-grid apple-gallery">
-            {[
-              {
-                route: '/projects',
-                image: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&h=400&fit=crop',
-                alt: 'Construction Workflow',
-                title: 'Workflow Management',
-                description: 'Advanced project workflow with safety protocols',
-                buttonText: 'View Projects →'
-              },
-              {
-                route: '/financial-dashboard',
-                image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop',
-                alt: 'Dashboard Analytics',
-                title: 'Analytics Dashboard',
-                description: 'Real-time workflow analytics',
-                buttonText: 'View Dashboard →'
-              },
-              {
-                route: '/timelines',
-                image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&h=300&fit=crop',
-                alt: 'Safety Management',
-                title: 'Safety Timeline',
-                description: 'Construction safety management',
-                buttonText: 'View Timelines →'
-              },
-              {
-                route: '/chatbot',
-                image: 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=400&h=300&fit=crop',
-                alt: 'AI Assistant',
-                title: 'AI Engineering',
-                description: 'Smart workflow assistance',
-                buttonText: 'Talk to AI →'
-              }
-            ].map((item, index) => (
+          <div className="timeline">
+            {history.map((item, index) => (
               <div 
-                key={index}
-                className="gallery-item apple-gallery-item" 
-                onClick={() => navigate(item.route)}
+                key={index} 
+                className="timeline-item"
                 style={{
-                  transform: isVisible.gallery ? 'scale(1) rotateY(0deg)' : 'scale(0.8) rotateY(5deg)',
-                  opacity: isVisible.gallery ? 1 : 0,
-                  transition: `all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${0.1 * index}s`
+                  transform: isVisible.history ? 'translateX(0)' : 'translateX(-100px)',
+                  opacity: isVisible.history ? 1 : 0,
+                  transition: `all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${0.2 * index}s`
                 }}
               >
-                <div className="gallery-image apple-gallery-image">
-                  <img src={item.image} alt={item.alt} className="apple-image" />
-                  <div className="gallery-overlay apple-overlay">
-                    <h4 className="apple-heading">{item.title}</h4>
-                    <p className="apple-description">{item.description}</p>
-                    <div className="view-button apple-button">{item.buttonText}</div>
-                  </div>
+                <div className="year">{item.year}</div>
+                <div className="timeline-content">
+                  <p>{item.description}</p>
                 </div>
+                <EnhancedImage 
+                  src={item.image} 
+                  fallbackSrc={item.image}
+                  alt={`History ${item.year}`} 
+                  imageId={`history-${index}`}
+                />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Stats Section with Apple-style counters */}
-      <section 
-        id="stats" 
-        ref={addToRefs}
-        className={`stats-section apple-section ${isVisible.stats ? 'apple-animate-in' : 'apple-animate-out'}`}
-        style={{
-          transform: isVisible.stats ? 'translateY(0)' : 'translateY(100px)',
-          opacity: isVisible.stats ? 1 : 0,
-          transition: 'all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s'
-        }}
-      >
+      {/* Thank You - Page 10 */}
+      <section id="thankyou" className="section thankyou-section" ref={addToRefs}>
+        <div className="section-background">
+          <video 
+            className="section-video"
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            preload="none"
+            style={{ opacity: 0.8 }}
+          >
+            <source src={sectionVideos.thankyou} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div className="construction-overlay"></div>
+        </div>
         <div className="container">
-          <div className="stats-grid apple-stats">
-            {[
-              { icon: '🏗️', number: '1,250+', label: 'Projects Managed' },
-              { icon: '👥', number: '150+', label: 'Active Teams' },
-              { icon: '💰', number: '$50M+', label: 'Budget Managed' },
-              { icon: '⏱️', number: '99.5%', label: 'On-Time Delivery' }
-            ].map((stat, index) => (
-              <div 
-                key={index}
-                className="stat-card apple-stat-card"
-                style={{
-                  transform: isVisible.stats ? 'translateY(0) scale(1)' : 'translateY(50px) scale(0.8)',
-                  opacity: isVisible.stats ? 1 : 0,
-                  transition: `all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${0.1 * index}s`
-                }}
-              >
-                <div className="stat-icon apple-stat-icon">{stat.icon}</div>
-                <div className="stat-number apple-stat-number">{stat.number}</div>
-                <div className="stat-label apple-stat-label">{stat.label}</div>
+          <div className="section-content">
+            <div className="text-column" style={{textAlign: 'center'}}>
+              <h2 className="construction-title" style={{fontSize: '4rem', marginBottom: '2rem'}}>Thank You!</h2>
+              <p className="construction-company">
+                WORKFLOWS ENGINEERING<br/>
+                SMART CONSTRUCTION WORKFLOW & SAFETY MANAGEMENT<br/>
+                WWW.WORKFLOWSENGINEERING.COM
+              </p>
+              
+              {/* Final CTA Buttons */}
+              <div className="hero-buttons construction-buttons" style={{marginTop: '3rem'}}>
+                <button 
+                  className="btn construction-btn"
+                  onClick={() => navigate('/projects')}
+                >
+                  <span className="btn-text">Start Your Project</span>
+                </button>
+                <button 
+                  className="btn construction-outline-btn"
+                  onClick={() => navigate('/chatbot')}
+                >
+                  <span className="btn-text">Contact Us</span>
+                </button>
               </div>
-            ))}
+            </div>
+            <div className="image-column">
+              <EnhancedImage 
+                src="https://picsum.photos/600/400?random=103" 
+                fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23FFA500'/%3E%3Ctext x='300' y='200' text-anchor='middle' dy='.3em' font-family='Arial' font-size='20' fill='%23000'%3EConstruction Excellence%3C/text%3E%3C/svg%3E"
+                alt="Construction Excellence" 
+                imageId="thankyou-main"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-content">
-            <div className="footer-section">
-              <h3>Workflows Engineering</h3>
-              <p>Smart Construction Workflow & Safety Management System</p>
-              <div className="social-links">
-                <button className="social-btn" aria-label="Facebook">📘</button>
-                <button className="social-btn" aria-label="Twitter">🐦</button>
-                <button className="social-btn" aria-label="LinkedIn">💼</button>
-                <button className="social-btn" aria-label="Instagram">📷</button>
-              </div>
-            </div>
-            
-            <div className="footer-section">
-              <h4>Platform</h4>
-              <ul>
-                <li><button className="footer-link-btn" onClick={() => navigate('/projects')}>Projects</button></li>
-                <li><button className="footer-link-btn" onClick={() => navigate('/timelines')}>Timelines</button></li>
-                <li><button className="footer-link-btn" onClick={() => navigate('/project-timelines')}>Project-Timelines</button></li>
-                <li><button className="footer-link-btn" onClick={() => navigate('/financial-dashboard')}>Dashboards</button></li>
-              </ul>
-            </div>
-            
-            <div className="footer-section">
-              <h4>Support</h4>
-              <ul>
-                <li><button className="footer-link-btn" onClick={() => navigate('/chatbot')}>Talk to an AI</button></li>
-                <li><button className="footer-link-btn">Documentation</button></li>
-                <li><button className="footer-link-btn">Help Center</button></li>
-                <li><button className="footer-link-btn">Contact Us</button></li>
-              </ul>
-            </div>
-            
-            <div className="footer-section">
-              <h4>Contact</h4>
-              <div className="contact-info">
-                <p>📧 info@scwms.com</p>
-                <p>📞 +1 (555) 123-4567</p>
-                <p>📍 123 Construction Ave, City, State 12345</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="footer-bottom">
-            <p>&copy; 2024 Workflows Engineering - Smart Construction Workflow & Safety Management. All rights reserved.</p>
-            <div className="footer-links">
-              <button className="footer-link-btn">Privacy Policy</button>
-              <button className="footer-link-btn">Terms of Service</button>
-              <button className="footer-link-btn">Cookie Policy</button>
-            </div>
-          </div>
+      {/* Footer with caution stripes */}
+      <footer className="global-footer">
+        <div className="footer-content">
+          <p>WWW.WORKFLOWSENGINEERING.COM</p>
         </div>
+        <div className="caution-stripe bottom-stripe"></div>
       </footer>
-
-      {/* Video Modal */}
-      {activeVideo && (
-        <div className="modal-overlay" onClick={closeVideoModal}>
-          <div className="modal-content video-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={closeVideoModal}>✕</button>
-            <div className="modal-header">
-              <h3>
-                {activeVideo === 'projects' && 'Project Management Demo'}
-                {activeVideo === 'realtime' && 'Real-time Updates Demo'}
-                {activeVideo === 'ai' && 'AI Assistant Demo'}
-              </h3>
-            </div>
-            <div className="video-container">
-              <div className="video-placeholder">
-                <div className="play-icon-large">▶️</div>
-                <p>Video content would be embedded here</p>
-                <small>Click to play demo video</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Gallery Modal */}
-      {activeGallery && (
-        <div className="modal-overlay" onClick={closeGalleryModal}>
-          <div className="modal-content gallery-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={closeGalleryModal}>✕</button>
-            <div className="modal-header">
-              <h3>
-                {activeGallery === 'analytics' && 'Financial Analytics Gallery'}
-                {activeGallery === 'mobile' && 'Mobile App Screenshots'}
-                {activeGallery === 'projects' && 'Project Showcase'}
-                {activeGallery === 'timelines' && 'Timeline Management Gallery'}
-              </h3>
-            </div>
-            <div className="gallery-grid-modal">
-              <div className="gallery-item-modal">
-                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop" alt="Dashboard" />
-                <div className="image-overlay">
-                  <span>Dashboard Overview</span>
-                </div>
-              </div>
-              <div className="gallery-item-modal">
-                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop" alt="Analytics" />
-                <div className="image-overlay">
-                  <span>Analytics View</span>
-                </div>
-              </div>
-              <div className="gallery-item-modal">
-                <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&h=300&fit=crop" alt="Mobile" />
-                <div className="image-overlay">
-                  <span>Mobile Interface</span>
-                </div>
-              </div>
-              <div className="gallery-item-modal">
-                <img src="https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=400&h=300&fit=crop" alt="Reports" />
-                <div className="image-overlay">
-                  <span>Reports & Charts</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

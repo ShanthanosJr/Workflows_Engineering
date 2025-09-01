@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import ProjectHome from './Components/Home/ProjectHome';
+import ConstructionHome from './Components/Home/ConstructionHome';
 import ProjectsDisplay from './Components/Projects/ProjectsDisplay';
 import AddProjects from './Components/Projects/AddProjects';
 import UpdateProjects from './Components/Projects/UpdateProjects';
@@ -17,15 +18,26 @@ import UpdateProjectTimeline from './Components/ProjectTimeline/UpdateProjectTim
 import FinancialDashboard from './Components/FinancialDashboard/FinancialDashboard';
 import FinancialDashboardView from './Components/FinancialDashboard/FinancialDashboardView';
 import ChatBot from './Components/ChatBot/ChatBot';
-
+import SignIn from './Components/Auth/SignIn';
+import SignUp from './Components/Auth/SignUp';
+import UserProfile from './Components/UserProfile/UserProfile';
 
 export default function App() {
   return (
     <div>
+      {/* Global user profile on all pages */}
+      <div className="user-profile-wrapper">
+        <UserProfile />
+      </div>
+
       <Routes>
         {/* Home route */}
         <Route path="/" element={<ProjectHome />} />
         <Route path="/home" element={<ProjectHome />} />
+        <Route path="/construction" element={<ConstructionHome />} />
+        {/* Auth routes */}
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
         {/* Add project routes here */}
         <Route path="/projects" element={<ProjectsDisplay />} />
         <Route path="/add-project" element={<AddProjects />} />
@@ -37,7 +49,7 @@ export default function App() {
         <Route path="/add-timeline" element={<AddTimelines />} />
         <Route path="/update-timeline/:id" element={<UpdateTimelines />} />
         <Route path="/timeline/:id" element={<TimelinesView />} />
-        {/* Add timeline routes here */}
+        {/* Add Project-timeline routes here */}
         <Route path="/project-timelines" element={<ProjectTimeline />} />
         <Route path="/add-project-timeline" element={<AddProjectTimelines />} />
         <Route path="/update-project-timeline/:id" element={<UpdateProjectTimeline />} />

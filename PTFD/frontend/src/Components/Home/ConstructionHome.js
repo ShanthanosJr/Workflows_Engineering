@@ -1,11 +1,11 @@
 // ConstructionHome.js
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import Nav from "../Nav/Nav";
 import "./ConstructionHome.css";
 
 const ConstructionHome = () => {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState("hero");
   const sectionsRef = useRef({});
 
   // Updated videos with reliable URLs or fallback handling
@@ -36,27 +36,7 @@ const ConstructionHome = () => {
       "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
   };
 
-  // Detect active section on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPos = window.scrollY + window.innerHeight / 2;
-      let current = "hero";
-      Object.entries(sectionsRef.current).forEach(([key, el]) => {
-        if (!el) return;
-        const top = el.offsetTop;
-        const bottom = top + el.offsetHeight;
-        if (scrollPos >= top && scrollPos < bottom) current = key;
-      });
-      setActiveSection(current);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const scrollToSection = (id) => {
-    sectionsRef.current[id]?.scrollIntoView({ behavior: "smooth" });
-  };
+  // Removed scroll-based active tracking and dot navigation
 
   const addRef = (id) => (el) => {
     if (el) sectionsRef.current[id] = el;
@@ -207,31 +187,19 @@ const ConstructionHome = () => {
 
   return (
     <div className="construction-home-advanced">
+      {/* Global Nav (hamburger) */}
+      <div style={{ position: 'relative', zIndex: 1200 }}>
+        <style>{`.hamburger-btn{ top: 72px !important; left: 16px !important; }`}</style>
+        <Nav />
+      </div>
+
       {/* Top caution tape bar */}
       <header className="caution-tape-bar top-bar" aria-hidden="true">
         <div className="caution-text">WORKFLOWS ENGINEERING</div>
         <div className="caution-stripes"></div>
       </header>
 
-      {/* Navigation Dots */}
-      <nav className="construction-nav fixed-top shadow-lg bg-dark bg-opacity-90">
-        <div className="container d-flex justify-content-between align-items-center py-2">
-          <div className="brand d-flex align-items-center gap-3 fw-bold fs-5 text-warning letter-spacing-wide">
-            WORKFLOWS <span className="text-white">ENGINEERING</span>
-          </div>
-          <div className="nav-indicators d-flex gap-4">
-            {Object.keys(videos).map((section) => (
-              <button
-                key={section}
-                className={`nav-dot btn btn-link p-0 ${activeSection === section ? "active" : ""}`}
-                onClick={() => scrollToSection(section)}
-                aria-label={`Scroll to ${section}`}
-                type="button"
-              />
-            ))}
-          </div>
-        </div>
-      </nav>
+
 
       {/* Hero Section */}
       <section
@@ -484,6 +452,7 @@ const ConstructionHome = () => {
       >
         <VideoBackground videoId="technology" />
         <div className="caution-tape-safety"></div>
+        <div className="caution-tape-safety-corner"></div>
         <div className="container text-white text-center">
           <h2 className="section-title mb-4">
             Safety & <span className="title-highlight">Innovation</span>
@@ -622,26 +591,64 @@ const ConstructionHome = () => {
         </div>
       </section>
 
-      {/* Footer with caution tape bottom bar */}
-      <footer className="construction-footer text-center py-4 bg-dark text-light border-top border-warning">
+      {/* Footer with social, links and contact */}
+      <footer className="construction-footer text-center bg-dark text-light border-top border-warning">
         <div className="container">
           <div className="footer-brand mb-2 d-flex justify-content-center gap-2 fs-4 fw-bold text-warning">
             <span>WORKFLOWS</span>
             <span>ENGINEERING</span>
           </div>
-          <p className="footer-tagline text-muted small text-uppercase mb-1">
-            Smart Construction Workflow & Safety Management
+
+          <p className="footer-tagline text-uppercase mb-2">
+            Smart Construction Workflow & Safety Management System
           </p>
-          <p className="footer-website fw-semibold text-warning mb-0">
+
+          {/* Social icons */}
+          <div className="footer-social" aria-label="Social media links">
+            <a href="https://facebook.com/workflowsengineering" target="_blank" rel="noopener noreferrer" aria-label="Visit our Facebook" title="Facebook">
+              <span role="img" aria-hidden>📘</span>
+            </a>
+            <a href="https://instagram.com/workflowsengineering" target="_blank" rel="noopener noreferrer" aria-label="Visit our Instagram" title="Instagram">
+              <span role="img" aria-hidden>📸</span>
+            </a>
+            <a href="https://linkedin.com/company/workflowsengineering" target="_blank" rel="noopener noreferrer" aria-label="Visit our LinkedIn" title="LinkedIn">
+              <span role="img" aria-hidden>💼</span>
+            </a>
+            <a href="https://x.com/workflowseng" target="_blank" rel="noopener noreferrer" aria-label="Visit our Twitter/X" title="Twitter/X">
+              <span role="img" aria-hidden>🐦</span>
+            </a>
+            <a href="https://youtube.com/@workflowsengineering" target="_blank" rel="noopener noreferrer" aria-label="Visit our YouTube" title="YouTube">
+              <span role="img" aria-hidden>▶️</span>
+            </a>
+          </div>
+
+          {/* Quick links */}
+          <div className="footer-links">
+            <a href="#hero">Home</a>
+            <a href="#project">Projects</a>
+            <a href="#timeline">Timelines</a>
+            <a href="#dashboard">Financial</a>
+            <a href="#safety">Safety</a>
+            <a href="#growth">Market</a>
+          </div>
+
+          {/* Contact */}
+          <div className="footer-contact">
+            <div>Email: contact@workflowsengineering.com</div>
+            <div>Phone: +1 (555) 123-4567</div>
+          </div>
+
+          <p className="footer-website fw-semibold text-warning mb-1">
             WWW.WORKFLOWSENGINEERING.COM
           </p>
+          <div className="footer-copy">© {new Date().getFullYear()} Workflows Engineering. All rights reserved.</div><br />
         </div>
       </footer>
 
       {/* Bottom caution tape bar */}
       <div className="caution-tape-bar bottom-bar" aria-hidden="true">
         <div className="caution-stripes"></div>
-        <div className="caution-text">WWW.WORKFLOWSENGINEERING.COM</div>
+        <div className="caution-text">WWW.WORKFLOWSENGINEERING.COM</div><br></br>
       </div>
     </div>
   );

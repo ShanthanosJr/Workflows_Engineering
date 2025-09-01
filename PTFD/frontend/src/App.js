@@ -21,6 +21,8 @@ import ChatBot from './Components/ChatBot/ChatBot';
 import SignIn from './Components/Auth/SignIn';
 import SignUp from './Components/Auth/SignUp';
 import UserProfile from './Components/UserProfile/UserProfile';
+import ProfilePage from './Components/Profile/ProfilePage';
+import ProtectedRoute from './Components/Auth/ProtectedRoute';
 
 export default function App() {
   return (
@@ -38,6 +40,12 @@ export default function App() {
         {/* Auth routes */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        {/* Protected Profile route */}
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        } />
         {/* Add project routes here */}
         <Route path="/projects" element={<ProjectsDisplay />} />
         <Route path="/add-project" element={<AddProjects />} />

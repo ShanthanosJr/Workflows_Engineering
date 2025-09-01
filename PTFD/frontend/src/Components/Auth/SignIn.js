@@ -56,8 +56,15 @@ const SignIn = () => {
     // Simulate sign in process
     console.log('Sign in attempt with:', credentials);
     
-    // For demo purposes, we'll just navigate to home
-    // In a real app, you would authenticate with your backend
+    // Store user data in localStorage to indicate authentication
+    const userData = {
+      email: credentials.email,
+      name: credentials.email.split('@')[0],
+      id: 'USR001'
+    };
+    localStorage.setItem('user', JSON.stringify(userData));
+    
+    // Navigate to construction home page
     navigate('/construction');
   };
 

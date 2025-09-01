@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './UserProfile.css';
 
 const UserProfile = () => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [user] = useState({
     name: 'Kavishka R',
@@ -14,8 +16,16 @@ const UserProfile = () => {
   };
 
   const handleSignOut = () => {
-    // Implement sign out logic here
+    // Clear user data from localStorage
+    localStorage.removeItem('user');
     console.log('User signed out');
+    setIsOpen(false);
+    // Redirect to sign in page
+    navigate('/signin');
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
     setIsOpen(false);
   };
 
@@ -54,7 +64,7 @@ const UserProfile = () => {
           </div>
           
           <div className="profile-actions">
-            <button className="profile-action-btn">
+            <button className="profile-action-btn" onClick={handleProfileClick}>
               <span className="action-icon">👤</span>
               My Profile
             </button>

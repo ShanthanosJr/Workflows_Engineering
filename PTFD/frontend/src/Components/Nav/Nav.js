@@ -70,6 +70,17 @@ export default function Nav() {
 
             <li className="menu-item">
               <NavLink
+                to="/profile"
+                className={({ isActive }) => `link ${isActive ? 'active' : ''}`}
+                onClick={closeMenu}
+              >
+                <span className="icon" aria-hidden>👤</span>
+                Profile
+              </NavLink>
+            </li>
+
+            <li className="menu-item">
+              <NavLink
                 to="/construction#safety"
                 className={`link ${activeLink('/construction', '#safety')}`}
                 onClick={closeMenu}
@@ -173,27 +184,19 @@ export default function Nav() {
         html { scroll-behavior: smooth; }
 
         .hamburger-btn {
-          position: fixed;
-          top: 16px;
-          left: 16px;
-          z-index: 1100;
-          width: 44px;
-          height: 44px;
-          border-radius: 10px;
+          position: fixed; top: 16px; left: 16px; z-index: 1100;
+          width: 44px; height: 44px; border-radius: 10px;
           border: 2px solid var(--nav-border);
           background: linear-gradient(180deg, var(--nav-bg), var(--nav-bg-2));
-          display: grid;
-          place-items: center;
+          display: grid; place-items: center;
           box-shadow: 0 6px 20px rgba(0,0,0,0.35);
           transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
           color: var(--nav-text);
         }
         .hamburger-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.45); border-color: var(--nav-accent); }
         .hamburger-btn .bar {
-          display: block;
-          width: 22px; height: 2px; margin: 3px 0;
-          background: var(--nav-text);
-          border-radius: 2px;
+          display: block; width: 22px; height: 2px; margin: 3px 0;
+          background: var(--nav-text); border-radius: 2px;
           transition: transform .2s ease, opacity .2s ease;
         }
         .hamburger-btn.open .bar:nth-child(1) { transform: translateY(5px) rotate(45deg); }

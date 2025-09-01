@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
-  const navigate = useNavigate();
   const [profileData, setProfileData] = useState({
     name: '',
     age: '',
@@ -78,7 +76,7 @@ const ProfilePage = () => {
     
     if (!profileData.phoneNumber.trim()) {
       newErrors.phoneNumber = 'Phone number is required';
-    } else if (!/^[\+]?[0-9\s\-\(\)]+$/.test(profileData.phoneNumber)) {
+    } else if (!/^[+]?[0-9\s\-()]+$/.test(profileData.phoneNumber)) {
       newErrors.phoneNumber = 'Please enter a valid phone number';
     }
     

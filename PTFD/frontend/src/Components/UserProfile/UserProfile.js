@@ -2,14 +2,24 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UserProfile.css';
 
-const UserProfile = () => {
+const UserProfile = ({ inSidebar = false }) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const [user] = useState({
-    name: 'Kavishka R',
-    email: 'Kavishka.R@gmail.com',
-    avatar: 'https://courseweb.sliit.lk/pluginfile.php/310596/user/icon/lambda/f1?rev=7824289'
-  });
+  
+  // Get user data from localStorage or use default
+  const getUserData = () => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      return JSON.parse(userData);
+    }
+    return {
+      name: 'Guest User',
+      email: 'guest@example.com',
+      avatar: 'https://courseweb.sliit.lk/pluginfile.php/310596/user/icon/lambda/f1?rev=7824289'
+    };
+  };
+
+  const [user] = useState(getUserData);
 
   const toggleProfile = () => {
     setIsOpen(!isOpen);
@@ -18,6 +28,7 @@ const UserProfile = () => {
   const handleSignOut = () => {
     // Clear user data from localStorage
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     console.log('User signed out');
     setIsOpen(false);
     // Redirect to sign in page
@@ -30,9 +41,9 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="user-profile-container">
+    <div className={`user-profile-container ${inSidebar ? 'sidebar-profile' : ''}`}>
       <button 
-        className="user-profile-button" 
+        className={`user-profile-button ${inSidebar ? 'sidebar-button' : ''}`} 
         onClick={toggleProfile}
         aria-label="User profile"
         aria-expanded={isOpen}
@@ -40,18 +51,24 @@ const UserProfile = () => {
         <img 
           src={user.avatar} 
           alt="User avatar" 
-          className="user-avatar"
+          className={`user-avatar ${inSidebar ? 'sidebar-avatar' : ''}`}
+          onError={(e) => {
+            e.target.src = 'https://courseweb.sliit.lk/pluginfile.php/310596/user/icon/lambda/f1?rev=7824289';
+          }}
         />
-        <span className="user-name">{user.name}</span>
+        <span className={`user-name ${inSidebar ? 'sidebar-name' : ''}`}>{user.name}</span>
       </button>
 
       {isOpen && (
-        <div className="user-profile-dropdown">
+        <div className={`user-profile-dropdown ${inSidebar ? 'sidebar-dropdown' : ''}`}>
           <div className="profile-header">
             <img 
               src={user.avatar} 
               alt="User avatar" 
               className="profile-avatar"
+              onError={(e) => {
+                e.target.src = 'https://courseweb.sliit.lk/pluginfile.php/310596/user/icon/lambda/f1?rev=7824289';
+              }}
             />
             <div className="profile-info">
               <h4 className="profile-name">{user.name}</h4>
@@ -60,7 +77,7 @@ const UserProfile = () => {
           </div>
           
           <div className="profile-welcome">
-            <p className="welcome-text">Welcome back!</p>
+            <p className="welcome-text">Welcome back, {user.name}!</p>
           </div>
           
           <div className="profile-actions">

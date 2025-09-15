@@ -8,36 +8,6 @@ const ConstructionHome = () => {
   const navigate = useNavigate();
   const sectionsRef = useRef({});
 
-  // Updated videos with reliable URLs or fallback handling
-  const videos = {
-    hero:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-    intro:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    types:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    process:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    materials:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-    technology:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    timeline:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
-    dashboard:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-    projectShowcase:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    timelineShowcase:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-    dashboardShowcase:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    growth:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-  };
-
-  // Removed scroll-based active tracking and dot navigation
-
   const addRef = (id) => (el) => {
     if (el) sectionsRef.current[id] = el;
   };
@@ -96,70 +66,241 @@ const ConstructionHome = () => {
         "https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=600&q=80",
       ],
     },
+    {
+      labelBox: "Renovation Projects",
+      icon: "🔨",
+      title: "Renovation Projects",
+      description: "Transforming existing structures with modern upgrades.",
+      type: "RENOVATION",
+      photoUrls: [
+        "https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1591123120675-6f7f1aae0e5b?auto=format&fit=crop&w=600&q=80",
+      ],
+    },
+    {
+      labelBox: "Green Construction",
+      icon: "🌱",
+      title: "Green Construction",
+      description: "Sustainable building practices for eco-friendly structures.",
+      type: "GREEN",
+      photoUrls: [
+        "https://images.unsplash.com/photo-1593062097818-0ff44e1c4f49?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1593062091724-31790e70f954?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1593062091724-31790e70f954?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1593062091724-31790e70f954?auto=format&fit=crop&w=600&q=80",
+      ],
+    },
   ];
 
   // Video Background with improved loading and fallback
   const VideoBackground = ({ videoId }) => {
     const [loaded, setLoaded] = useState(false);
     const [error, setError] = useState(false);
+    const [playing, setPlaying] = useState(false);
     const videoRef = useRef(null);
 
+    // Better video URLs - using more reliable sources
+    const videos = {
+      hero: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
+      intro: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4", 
+      types: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_5mb.mp4",
+      process: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+      projectShowcase: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+      timelineShowcase: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+      dashboardShowcase: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+      technology: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+      growth: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+    };
+
+    const posterImages = {
+      hero: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1600&h=900&fit=crop&q=80",
+      intro: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1600&h=900&fit=crop&q=80",
+      types: "https://images.unsplash.com/photo-1531834685032-c34bf0d84c77?w=1600&h=900&fit=crop&q=80",
+      process: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&h=900&fit=crop&q=80",
+      projectShowcase: "https://images.unsplash.com/photo-1508450859948-4e04fabaa4ea?w=1600&h=900&fit=crop&q=80",
+      timelineShowcase: "https://images.unsplash.com/photo-1626885930974-4b69aa21bbf9?w=1600&h=900&fit=crop&q=80",
+      dashboardShowcase: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1600&h=900&fit=crop&q=80",
+      technology: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1600&h=900&fit=crop&q=80",
+      growth: "https://images.unsplash.com/photo-1542621334-a254cf47733d?w=1600&h=900&fit=crop&q=80"
+    };
+
+    // Reset states when videoId changes
     useEffect(() => {
       setLoaded(false);
       setError(false);
-      
-      // Force video reload when videoId changes
-      if (videoRef.current) {
-        videoRef.current.load();
-      }
-      
-      // Set a timeout to show fallback if video doesn't load
-      const timeout = setTimeout(() => {
-        if (!loaded && !error) setError(true);
-      }, 5000);
-      
-      return () => clearTimeout(timeout);
-    }, [videoId, loaded, error]);
+      setPlaying(false);
+    }, [videoId]);
 
-    // Add poster images for better user experience while videos load
-    const posterImages = {
-      hero: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200",
-      intro: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200",
-      types: "https://images.unsplash.com/photo-1531834685032-c34bf0d84c77?w=1200",
-      process: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200",
-      projectShowcase: "https://images.unsplash.com/photo-1508450859948-4e04fabaa4ea?w=1200",
-      timelineShowcase: "https://images.unsplash.com/photo-1626885930974-4b69aa21bbf9?w=1200",
-      dashboardShowcase: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200",
-      growth: "https://images.unsplash.com/photo-1542621334-a254cf47733d?w=1200"
+    // Handle video interactions
+    const handleVideoLoad = () => {
+      console.log(`Video loaded for ${videoId}`);
+      setLoaded(true);
+      
+      // Try to play the video
+      if (videoRef.current) {
+        const playPromise = videoRef.current.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log(`Video playing for ${videoId}`);
+              setPlaying(true);
+            })
+            .catch((error) => {
+              console.log(`Autoplay failed for ${videoId}:`, error);
+              // Autoplay failed, but video is loaded - this is normal
+              setPlaying(false);
+            });
+        }
+      }
     };
+
+    const handleVideoError = (e) => {
+      console.error(`Video error for ${videoId}:`, e.target.error);
+      setError(true);
+    };
+
+    // Intersection Observer to play video when in view
+    useEffect(() => {
+      if (!videoRef.current) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && loaded && !playing) {
+              const video = entry.target;
+              video.play().catch(() => {
+                // Silently fail if autoplay is blocked
+              });
+            }
+          });
+        },
+        { threshold: 0.25 }
+      );
+
+      observer.observe(videoRef.current);
+
+      return () => observer.disconnect();
+    }, [loaded, playing]);
 
     return (
       <div className="video-background">
         {!error ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            onLoadedData={() => setLoaded(true)}
-            onError={() => setError(true)}
-            className={`section-video ${loaded ? "loaded" : ""}`}
-            poster={posterImages[videoId] || "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200"}
-          >
-            <source src={videos[videoId]} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+          <>
+            <video
+              ref={videoRef}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              onLoadedData={handleVideoLoad}
+              onError={handleVideoError}
+              onPlay={() => setPlaying(true)}
+              onPause={() => setPlaying(false)}
+              className={`section-video ${loaded ? "loaded" : ""}`}
+              poster={posterImages[videoId]}
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                minWidth: '100%',
+                minHeight: '100%',
+                width: 'auto',
+                height: 'auto',
+                transform: 'translate(-50%, -50%)',
+                objectFit: 'cover',
+                zIndex: 1,
+                opacity: loaded ? 1 : 0,
+                transition: 'opacity 1.5s ease-in-out'
+              }}
+            >
+              <source src={videos[videoId]} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            
+            {/* Static background image as fallback */}
+            <div 
+              className="video-poster-fallback"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                backgroundImage: `url(${posterImages[videoId]})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                filter: 'brightness(0.6) contrast(1.1)',
+                zIndex: 0,
+                opacity: loaded ? 0 : 1,
+                transition: 'opacity 1.5s ease-in-out'
+              }}
+            />
+          </>
         ) : (
-          <div className="video-fallback">
-            <div className="fallback-content">
-              <div className="fallback-icon" aria-hidden="true">🏗️</div>
-              <div className="fallback-text">Construction Video</div>
+          <div 
+            className="video-fallback"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundImage: `url(${posterImages[videoId]})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1
+            }}
+          >
+            <div className="video-overlay" style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(26, 26, 26, 0.5) 50%, rgba(0, 0, 0, 0.7) 100%)',
+              zIndex: 1
+            }} />
+            <div className="fallback-content" style={{
+              position: 'relative',
+              zIndex: 2,
+              textAlign: 'center',
+              color: '#f7df1e'
+            }}>
+              <div className="fallback-icon" style={{ fontSize: '4rem', marginBottom: '1rem' }}>🏗️</div>
+              <div className="fallback-text" style={{ 
+                fontSize: '1.3rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.15em',
+                fontWeight: '700'
+              }}>
+                Construction Project
+              </div>
             </div>
           </div>
         )}
-        <div className="video-overlay"></div>
+        
+        {/* Overlay for better text readability */}
+        <div 
+          className="video-overlay"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(26, 26, 26, 0.4) 50%, rgba(0, 0, 0, 0.6) 100%)',
+            pointerEvents: 'none',
+            zIndex: 2
+          }}
+        />
       </div>
     );
   };
@@ -233,10 +374,10 @@ const ConstructionHome = () => {
       {/* Introduction Section */}
       <section id="intro" className="section section-intro py-5" ref={addRef("intro")} tabIndex={-1}>
         <VideoBackground videoId="intro" />
-        <div className="caution-tape-intro"></div>
         <div className="container py-4 text-white">
           <div className="row align-items-center">
             <div className="col-lg-6 mb-4 mb-lg-0 intro-text">
+              <div className="caution-tape-section-bar" aria-hidden="true"></div>
               <h2 className="section-title mb-3">
                 Introduction to <span className="title-highlight">Construction</span>
               </h2>
@@ -291,7 +432,7 @@ const ConstructionHome = () => {
             <div className="caution-tape-side-bar" aria-hidden="true"></div>
             <h2 className="types-title">
               Types of <br />
-              Construction
+              <span className="title-highlight">Construction</span>
             </h2>
             <h4 className="types-subtitle">Different Sectors in Construction</h4>
             <p className="types-description">
@@ -321,8 +462,8 @@ const ConstructionHome = () => {
         tabIndex={-1}
       >
         <VideoBackground videoId="projectShowcase" />
-        <div className="caution-tape-project"></div>
         <div className="container text-white">
+          <div className="caution-tape-section-bar" aria-hidden="true"></div>
           <h2 className="section-title mb-4 text-center">
             Project <span className="title-highlight">Showcase</span>
           </h2>
@@ -351,8 +492,8 @@ const ConstructionHome = () => {
         tabIndex={-1}
       >
         <VideoBackground videoId="timelineShowcase" />
-        <div className="caution-tape-timeline"></div>
         <div className="container text-white text-center">
+          <div className="caution-tape-section-bar" aria-hidden="true"></div>
           <h2 className="section-title mb-4">
             Manage Your <span className="title-highlight">Project Timeline</span>
           </h2>
@@ -402,8 +543,8 @@ const ConstructionHome = () => {
         tabIndex={-1}
       >
         <VideoBackground videoId="dashboardShowcase" />
-        <div className="caution-tape-dashboard"></div>
         <div className="container text-white text-center">
+          <div className="caution-tape-section-bar" aria-hidden="true"></div>
           <h2 className="section-title mb-4">
             Financial <span className="title-highlight">Dashboard</span>
           </h2>
@@ -451,15 +592,14 @@ const ConstructionHome = () => {
         tabIndex={-1}
       >
         <VideoBackground videoId="technology" />
-        <div className="caution-tape-safety"></div>
-        <div className="caution-tape-safety-corner"></div>
         <div className="container text-white text-center">
+          <div className="caution-tape-section-bar" aria-hidden="true"></div>
           <h2 className="section-title mb-4">
             Safety & <span className="title-highlight">Innovation</span>
           </h2>
           <p className="section-description mb-5 px-lg-5 mx-auto">
             Embracing cutting-edge safety protocols and innovative construction technologies.
-          </p>
+          </p><br></br>
           <PhotoBooth
             photos={[
               "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=600&q=80",
@@ -479,8 +619,8 @@ const ConstructionHome = () => {
         tabIndex={-1}
       >
         <VideoBackground videoId="growth" />
-        <div className="caution-tape-growth"></div>
         <div className="container text-white text-center">
+          <div className="caution-tape-section-bar" aria-hidden="true"></div>
           <h2 className="section-title mb-4">
             Growth of <span className="title-highlight">Construction Market</span>
           </h2>
@@ -573,9 +713,8 @@ const ConstructionHome = () => {
 
       {/* Call to Action */}
       <section className="section section-cta py-5 text-center text-white bg-gradient-cta">
-        <div className="caution-tape-cta-top"></div>
-        <div className="caution-tape-cta-bottom"></div>
         <div className="container py-4">
+          <div className="caution-tape-section-bar" aria-hidden="true"></div>
           <h2 className="cta-title mb-3">Ready to Build the Future?</h2>
           <p className="cta-description mb-4 fs-5">
             Partner with Workflows Engineering for your next construction project.

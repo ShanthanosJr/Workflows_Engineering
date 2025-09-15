@@ -1,38 +1,70 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
   const [profileData, setProfileData] = useState({
     name: '',
     age: '',
-    id: '',
+    employeeId: '',
     nic: '',
     phoneNumber: '',
     address: '',
-    gmail: '',
-    birthYear: ''
+    email: '',
+    birthYear: '',
+    avatar: ''
   });
   const [errors, setErrors] = useState({});
   const [isEditing, setIsEditing] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Simulate fetching user data (in a real app, this would come from an API)
+  // Get user token from localStorage
+  const getToken = () => {
+    return localStorage.getItem('token');
+  };
+
+  // Fetch user profile data
+  const fetchProfile = async () => {
+    try {
+      const token = getToken();
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+
+      const response = await axios.get('http://localhost:5050/api/users/profile', config);
+      const userData = response.data;
+      
+      setProfileData({
+        name: userData.name || '',
+        age: userData.age || '',
+        employeeId: userData.employeeId || '',
+        nic: userData.nic || '',
+        phoneNumber: userData.phoneNumber || '',
+        address: userData.address || '',
+        email: userData.email || '',
+        birthYear: userData.birthYear || '',
+        avatar: userData.avatar || ''
+      });
+      
+      if (userData.avatar) {
+        setAvatarPreview(`http://localhost:5050${userData.avatar}`);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      alert('Failed to load profile data');
+    }
+  };
+
   useEffect(() => {
-    // Get user data from localStorage
-    const userData = JSON.parse(localStorage.getItem('user')) || {};
-    
-    // Simulate loading user profile data
-    const profileData = {
-      name: userData.name || 'Kavishka R',
-      age: '25',
-      id: userData.id || 'EMP001',
-      nic: '123456789V',
-      phoneNumber: '+94 77 123 4567',
-      address: '123 Construction Street, Colombo',
-      gmail: userData.email || 'kavishka.r@gmail.com',
-      birthYear: '1998'
-    };
-    
-    setProfileData(profileData);
+    fetchProfile();
   }, []);
 
   const handleChange = (e) => {
@@ -51,6 +83,24 @@ const ProfilePage = () => {
     }
   };
 
+  // Handle avatar file change
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfileData(prev => ({
+        ...prev,
+        avatar: file
+      }));
+      
+      // Preview image
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const validate = () => {
     const newErrors = {};
     
@@ -64,8 +114,8 @@ const ProfilePage = () => {
       newErrors.age = 'Please enter a valid age (18-100)';
     }
     
-    if (!profileData.id.trim()) {
-      newErrors.id = 'ID is required';
+    if (!profileData.employeeId.trim()) {
+      newErrors.employeeId = 'Employee ID is required';
     }
     
     if (!profileData.nic.trim()) {
@@ -84,10 +134,10 @@ const ProfilePage = () => {
       newErrors.address = 'Address is required';
     }
     
-    if (!profileData.gmail.trim()) {
-      newErrors.gmail = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(profileData.gmail)) {
-      newErrors.gmail = 'Please enter a valid email address';
+    if (!profileData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(profileData.email)) {
+      newErrors.email = 'Please enter a valid email address';
     }
     
     if (!profileData.birthYear) {
@@ -101,7 +151,7 @@ const ProfilePage = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
     
@@ -110,17 +160,61 @@ const ProfilePage = () => {
       return;
     }
     
-    // Simulate saving profile data (in a real app, this would be an API call)
-    console.log('Profile data saved:', profileData);
+    setLoading(true);
     
-    // Update user data in localStorage
-    const userData = JSON.parse(localStorage.getItem('user')) || {};
-    userData.name = profileData.name;
-    userData.email = profileData.gmail;
-    localStorage.setItem('user', JSON.stringify(userData));
-    
-    setIsEditing(false);
-    alert('Profile updated successfully!');
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
+      };
+
+      // Prepare form data
+      const formData = new FormData();
+      formData.append('name', profileData.name);
+      formData.append('age', profileData.age);
+      formData.append('employeeId', profileData.employeeId);
+      formData.append('nic', profileData.nic);
+      formData.append('phoneNumber', profileData.phoneNumber);
+      formData.append('address', profileData.address);
+      formData.append('email', profileData.email);
+      formData.append('birthYear', profileData.birthYear);
+      
+      // Only append avatar if it's a file (not a string URL)
+      if (profileData.avatar && typeof profileData.avatar !== 'string') {
+        formData.append('avatar', profileData.avatar);
+      }
+
+      const response = await axios.put('http://localhost:5050/api/users/profile', formData, config);
+      
+      // Update user data in localStorage
+      const userData = {
+        name: response.data.name,
+        email: response.data.email,
+        id: response.data._id
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('token', response.data.token);
+      
+      // Update avatar preview if a new one was uploaded
+      if (response.data.avatar) {
+        setAvatarPreview(`http://localhost:5050${response.data.avatar}`);
+      }
+      
+      setIsEditing(false);
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEdit = () => {
@@ -130,20 +224,39 @@ const ProfilePage = () => {
   const handleCancel = () => {
     setIsEditing(false);
     // Reset to original data
-    const userData = JSON.parse(localStorage.getItem('user')) || {};
-    const profileData = {
-      name: userData.name || 'Kavishka R',
-      age: '25',
-      id: userData.id || 'EMP001',
-      nic: '123456789V',
-      phoneNumber: '+94 77 123 4567',
-      address: '123 Construction Street, Colombo',
-      gmail: userData.email || 'kavishka.r@gmail.com',
-      birthYear: '1998'
-    };
-    
-    setProfileData(profileData);
+    fetchProfile();
     setErrors({});
+  };
+
+  const handleDeleteAccount = async () => {
+    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      try {
+        const token = getToken();
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        };
+
+        await axios.delete('http://localhost:5050/api/users/profile', config);
+        
+        // Clear user data from localStorage
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        
+        // Redirect to sign in page
+        window.location.href = '/signin';
+        
+        alert('Account deleted successfully');
+      } catch (error) {
+        console.error('Error deleting account:', error);
+        alert('Failed to delete account: ' + (error.response?.data?.message || error.message));
+      }
+    }
   };
 
   return (
@@ -155,6 +268,32 @@ const ProfilePage = () => {
         </div>
         
         <form onSubmit={handleSubmit} className="profile-form">
+          {/* Avatar section */}
+          <div className="avatar-section">
+            <div className="avatar-preview">
+              <img 
+                src={avatarPreview || 'https://via.placeholder.com/150/000000/FFFFFF?text=No+Image'} 
+                alt="Profile" 
+                className="avatar-image"
+              />
+            </div>
+            {isEditing && (
+              <div className="avatar-upload">
+                <label htmlFor="avatar" className="upload-label">
+                  Change Profile Photo
+                </label>
+                <input
+                  type="file"
+                  id="avatar"
+                  name="avatar"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="upload-input"
+                />
+              </div>
+            )}
+          </div>
+          
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="name" className="form-label">Full Name</label>
@@ -191,18 +330,18 @@ const ProfilePage = () => {
           
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="id" className="form-label">Employee ID</label>
+              <label htmlFor="employeeId" className="form-label">Employee ID</label>
               <input
                 type="text"
-                id="id"
-                name="id"
-                value={profileData.id}
+                id="employeeId"
+                name="employeeId"
+                value={profileData.employeeId}
                 onChange={handleChange}
-                className={`form-input ${errors.id ? 'error' : ''}`}
+                className={`form-input ${errors.employeeId ? 'error' : ''}`}
                 placeholder="Enter your employee ID"
                 disabled={!isEditing}
               />
-              {errors.id && <span className="error-message">{errors.id}</span>}
+              {errors.employeeId && <span className="error-message">{errors.employeeId}</span>}
             </div>
             
             <div className="form-group">
@@ -256,18 +395,18 @@ const ProfilePage = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="gmail" className="form-label">Email Address</label>
+            <label htmlFor="email" className="form-label">Email Address</label>
             <input
               type="email"
-              id="gmail"
-              name="gmail"
-              value={profileData.gmail}
+              id="email"
+              name="email"
+              value={profileData.email}
               onChange={handleChange}
-              className={`form-input ${errors.gmail ? 'error' : ''}`}
+              className={`form-input ${errors.email ? 'error' : ''}`}
               placeholder="Enter your email address"
               disabled={!isEditing}
             />
-            {errors.gmail && <span className="error-message">{errors.gmail}</span>}
+            {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
           
           <div className="form-group">
@@ -299,18 +438,28 @@ const ProfilePage = () => {
                 <button 
                   type="submit" 
                   className="save-button"
+                  disabled={loading}
                 >
-                  Save Changes
+                  {loading ? 'Saving...' : 'Save Changes'}
                 </button>
                 <button 
                   type="button" 
                   className="cancel-button"
                   onClick={handleCancel}
+                  disabled={loading}
                 >
                   Cancel
                 </button>
               </>
             )}
+            
+            <button 
+              type="button" 
+              className="delete-button"
+              onClick={handleDeleteAccount}
+            >
+              Delete Account
+            </button>
           </div>
         </form>
       </div>

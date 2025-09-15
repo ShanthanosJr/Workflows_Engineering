@@ -20,17 +20,14 @@ import FinancialDashboardView from './Components/FinancialDashboard/FinancialDas
 import ChatBot from './Components/ChatBot/ChatBot';
 import SignIn from './Components/Auth/SignIn';
 import SignUp from './Components/Auth/SignUp';
-import UserProfile from './Components/UserProfile/UserProfile';
+
 import ProfilePage from './Components/Profile/ProfilePage';
 import ProtectedRoute from './Components/Auth/ProtectedRoute';
 
 export default function App() {
   return (
     <div>
-      {/* Global user profile on all pages */}
-      <div className="user-profile-wrapper">
-        <UserProfile />
-      </div>
+
 
       <Routes>
         {/* Home route */}

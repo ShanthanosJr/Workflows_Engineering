@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './SignIn.css';
 
 const SignIn = () => {
@@ -8,6 +9,7 @@ const SignIn = () => {
     password: ''
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -44,7 +46,7 @@ const SignIn = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
     
@@ -53,19 +55,37 @@ const SignIn = () => {
       return;
     }
     
-    // Simulate sign in process
-    console.log('Sign in attempt with:', credentials);
+    setLoading(true);
     
-    // Store user data in localStorage to indicate authentication
-    const userData = {
-      email: credentials.email,
-      name: credentials.email.split('@')[0],
-      id: 'USR001'
-    };
-    localStorage.setItem('user', JSON.stringify(userData));
-    
-    // Navigate to construction home page
-    navigate('/construction');
+    try {
+      // Sign in with backend API
+      const response = await axios.post('http://localhost:5050/api/users/login', {
+        email: credentials.email,
+        password: credentials.password
+      });
+      
+      const userData = response.data;
+      
+      // Store user data and token in localStorage
+      localStorage.setItem('user', JSON.stringify({
+        name: userData.name,
+        email: userData.email,
+        id: userData._id
+      }));
+      localStorage.setItem('token', userData.token);
+      
+      // Navigate to construction home page
+      navigate('/construction');
+    } catch (error) {
+      console.error('Sign in error:', error);
+      if (error.response && error.response.data) {
+        alert('Sign in failed: ' + error.response.data.message);
+      } else {
+        alert('Sign in failed. Please check your credentials and try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -105,8 +125,12 @@ const SignIn = () => {
             {errors.password && <span className="error-message">{errors.password}</span>}
           </div>
           
-          <button type="submit" className="signin-button">
-            Sign In
+          <button 
+            type="submit" 
+            className="signin-button"
+            disabled={loading}
+          >
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
         

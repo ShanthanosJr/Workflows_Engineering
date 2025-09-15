@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './SignUp.css';
 
 const SignUp = () => {
@@ -10,6 +11,7 @@ const SignUp = () => {
     confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -56,7 +58,7 @@ const SignUp = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
     
@@ -65,12 +67,38 @@ const SignUp = () => {
       return;
     }
     
-    // Simulate sign up process
-    console.log('Sign up attempt with:', userData);
+    setLoading(true);
     
-    // For demo purposes, we'll just navigate to sign in
-    // In a real app, you would register with your backend
-    navigate('/signin');
+    try {
+      // Register with backend API
+      const response = await axios.post('http://localhost:5050/api/users/register', {
+        name: userData.name,
+        email: userData.email,
+        password: userData.password
+      });
+      
+      const userDataResponse = response.data;
+      
+      // Store user data and token in localStorage
+      localStorage.setItem('user', JSON.stringify({
+        name: userDataResponse.name,
+        email: userDataResponse.email,
+        id: userDataResponse._id
+      }));
+      localStorage.setItem('token', userDataResponse.token);
+      
+      // Navigate to construction home page
+      navigate('/construction');
+    } catch (error) {
+      console.error('Sign up error:', error);
+      if (error.response && error.response.data) {
+        alert('Sign up failed: ' + error.response.data.message);
+      } else {
+        alert('Sign up failed. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -138,8 +166,12 @@ const SignUp = () => {
             {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
           </div>
           
-          <button type="submit" className="signup-button">
-            Create Account
+          <button 
+            type="submit" 
+            className="signup-button"
+            disabled={loading}
+          >
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
         

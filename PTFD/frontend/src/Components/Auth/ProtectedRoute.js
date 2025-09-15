@@ -1,11 +1,15 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
-// Simple authentication check (in a real app, this would check for a valid token)
+// Enhanced authentication check
 const isAuthenticated = () => {
+  // Check if there's a user and token in localStorage
+  const user = localStorage.getItem('user');
+  const token = localStorage.getItem('token');
+  
   // For demo purposes, we'll check if there's a user in localStorage
-  // In a real application, you would check for a valid JWT token or session
-  return localStorage.getItem('user') !== null;
+  // In a real application, you would check for a valid JWT token
+  return user !== null && token !== null;
 };
 
 const ProtectedRoute = ({ children }) => {

@@ -139,6 +139,37 @@
   font-size: 1.2rem;
 }
 
+/* Sidebar specific styles */
+.sidebar-profile {
+  width: 100%;
+}
+
+.sidebar-button {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 10px 12px;
+  height: auto;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.sidebar-avatar {
+  width: 28px;
+  height: 28px;
+}
+
+.sidebar-name {
+  font-size: 0.9rem;
+  max-width: none;
+}
+
+.sidebar-dropdown {
+  width: calc(100% - 20px);
+  right: 10px;
+  left: 10px;
+  margin-top: 6px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .user-name {
@@ -152,5 +183,9 @@
   .user-profile-dropdown {
     right: -20px;
     width: 260px;
+  }
+  
+  .sidebar-name {
+    display: block;
   }
 }

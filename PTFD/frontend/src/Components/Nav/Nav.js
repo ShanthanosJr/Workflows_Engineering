@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { NavLink, useLocation } from 'react-router-dom';
+import UserProfile from '../UserProfile/UserProfile'; // Added import
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
@@ -168,6 +169,14 @@ export default function Nav() {
             </li>
           </ul>
         </nav>
+
+        {/* Profile section at the bottom of the sidebar */}
+        <div className="profile-section">
+          <div className="welcome-message">
+            Welcome to Workflows Engineering
+          </div>
+          <UserProfile inSidebar={true} />
+        </div>
       </aside>
 
       {/* Styles aligned with ConstructionHome theme (dark + caution yellow) */}
@@ -214,9 +223,11 @@ export default function Nav() {
           background: linear-gradient(180deg, var(--nav-bg), var(--nav-bg-2));
           color: var(--nav-text);
           transform: translateX(-100%);
-          transition: transform .25s ease; z-index: 1050;
+          transition: transform .25s ease; z-index: 1250;
           border-right: 2px solid var(--nav-border);
           box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+          display: flex;
+          flex-direction: column;
         }
         .side-nav.open { transform: translateX(0); }
 
@@ -227,7 +238,7 @@ export default function Nav() {
         .caution-divider .stripe { flex:1; background: repeating-linear-gradient(45deg, var(--nav-accent) 0 12px, #000 12px 24px); }
         .caution-divider .stripe.dark { background: #000; max-width: 12px; }
 
-        .menu { padding: 8px 10px 18px 10px; }
+        .menu { padding: 8px 10px 18px 10px; flex: 1 1 auto; overflow-y: auto; }
         .menu .menu-item { margin: 6px 0; }
 
         .link, .group-toggle {
@@ -251,6 +262,38 @@ export default function Nav() {
         .sublink { display:block; padding: 8px 12px; margin: 6px 0; color: var(--nav-muted); text-decoration:none; border-radius: 8px; transition: background .2s ease, color .2s ease; }
         .sublink:hover { background: rgba(255,255,255,0.06); color: var(--nav-text); }
         .sublink.active { color: #fff; background: rgba(255, 193, 7, 0.12); }
+
+        /* Profile section styles */
+        .profile-section {
+          padding: 12px 8px;
+          border-top: 2px solid var(--nav-border);
+          background: rgba(255, 193, 7, 0.05);
+          margin-top: auto;
+          flex-shrink: 0;
+          flex: 0 0 auto;
+        }
+
+        .welcome-message {
+          color: var(--nav-accent);
+          text-align: center;
+          padding: 8px 0;
+          font-weight: 700;
+          font-size: 1rem;
+          margin-bottom: 8px;
+          border-bottom: 1px dashed var(--nav-border);
+        }
+
+        /* Adjust UserProfile styles for sidebar */
+        .profile-section .user-profile-container {
+          width: 100%;
+        }
+
+        .profile-section .user-profile-button {
+          width: 100%;
+          justify-content: center;
+          padding: 12px;
+          font-size: 1.1rem;
+        }
 
         @media (max-width: 420px) { .side-nav { width: 88vw; } }
       `}</style>

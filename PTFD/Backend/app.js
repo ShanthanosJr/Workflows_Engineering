@@ -1,9 +1,12 @@
 console.log("Starting PTFD Backend...");
 // vQSVBzYWHfOo7wa5
 
+require('dotenv').config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 
 // Import Routes
 const projectRoutes = require("./Route/ProjectRoutes");
@@ -11,6 +14,7 @@ const timelineRoutes = require("./Route/TimelineRoutes"); // 👈 add timeline
 const projectTimelineRoutes = require("./Route/ProjectTimelineRts"); // 👈 add project timeline
 const financialDashboardRoutes = require("./Route/FinancialDashboardRts"); // 👈 add financial dashboard
 const chatbotRoutes = require("./Route/ChatBotRts"); // 👈 add chatbot routes
+const userRoutes = require("./Route/UserRoutes"); // 👈 add user routes
 
 // Import ChatBot controller for initialization
 const { initializeKnowledgeBase } = require('./Controllers/ChatBotCtrl');
@@ -27,12 +31,16 @@ app.use(cors({
   credentials: true
 })); // Enable CORS with specific configuration
 
+// Serve static files from uploads directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // Routes
 app.use("/projects", projectRoutes);
 app.use("/timelines", timelineRoutes); // 👈 mount timeline CRUD
 app.use("/project-timelines", projectTimelineRoutes); // 👈 mount project timeline CRUD
 app.use("/financial-dashboard", financialDashboardRoutes); // 👈 mount financial dashboard CRUD
 app.use("/chatbot", chatbotRoutes); // 👈 mount chatbot CRUD
+app.use("/api/users", userRoutes); // 👈 mount user routes
 
 // Test route
 app.get("/test", (req, res) => {
@@ -40,7 +48,7 @@ app.get("/test", (req, res) => {
 });
 
 // MongoDB Connection
-mongoose.connect("mongodb+srv://Kavishka:vQSVBzYWHfOo7wa5@cluster0.6vdnmh3.mongodb.net/test?retryWrites=true&w=majority")
+mongoose.connect(process.env.MONGO_URI || "mongodb+srv://Kavishka:vQSVBzYWHfOo7wa5@cluster0.6vdnmh3.mongodb.net/test?retryWrites=true&w=majority")
   .then(async () => {
     console.log("Connected to MongoDB");
     

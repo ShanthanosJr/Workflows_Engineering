@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './ProfilePage.css';
 
@@ -19,13 +19,13 @@ const ProfilePage = () => {
   const [avatarPreview, setAvatarPreview] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Get user token from localStorage
-  const getToken = () => {
+  // Get user token from localStorage (stable reference)
+  const getToken = useCallback(() => {
     return localStorage.getItem('token');
-  };
+  }, []);
 
-  // Fetch user profile data
-  const fetchProfile = async () => {
+  // Fetch user profile data (stable reference for useEffect)
+  const fetchProfile = useCallback(async () => {
     try {
       const token = getToken();
       if (!token) {
@@ -61,11 +61,11 @@ const ProfilePage = () => {
       console.error('Error fetching profile:', error);
       alert('Failed to load profile data');
     }
-  };
+  }, [getToken]);
 
   useEffect(() => {
     fetchProfile();
-  }, []);
+  }, [fetchProfile]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

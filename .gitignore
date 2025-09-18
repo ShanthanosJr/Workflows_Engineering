@@ -126,3 +126,6 @@ PTFD/Backend/uploads/*.jpeg
 # IDE files
 .vscode/
 .idea/
+
+# Zencoder files
+.zencoder/

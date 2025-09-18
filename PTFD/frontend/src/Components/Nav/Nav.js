@@ -1,301 +1,748 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import UserProfile from '../UserProfile/UserProfile'; // Added import
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
   const [expandPD, setExpandPD] = useState(false); // collapsed by default
-  const location = useLocation();
 
   const closeMenu = () => setOpen(false);
   const toggleMenu = () => setOpen((v) => !v);
 
-  // Helper to compute active class for hash-based items
-  const activeLink = (path, hash = '') => {
-    const currentHash = location.hash || '';
-    return location.pathname === path && currentHash === hash ? 'active' : '';
-  };
-
   return (
     <>
-      {/* Top-left hamburger button */}
+      {/* Modern hamburger button */}
       <button
         type="button"
-        className={`hamburger-btn ${open ? 'open' : ''}`}
+        className={`nav-hamburger-btn ${open ? 'nav-hamburger-open' : ''}`}
         aria-label="Open navigation menu"
         aria-expanded={open}
         aria-controls="side-nav"
         onClick={toggleMenu}
+        style={{ zIndex: 1202 }}
       >
-        <span className="bar" />
-        <span className="bar" />
-        <span className="bar" />
+        <div className="nav-hamburger-lines">
+          <span className="nav-hamburger-line" />
+          <span className="nav-hamburger-line" />
+          <span className="nav-hamburger-line" />
+        </div>
       </button>
 
-      {/* Screen overlay when drawer is open */}
+      {/* Enhanced screen overlay */}
       <div
-        className={`overlay ${open ? 'show' : ''}`}
+        className={`nav-overlay ${open ? 'nav-overlay-show' : ''}`}
         onClick={closeMenu}
         role="button"
         aria-label="Close navigation overlay"
+        style={{ zIndex: 1040 }}
       />
 
-      {/* Left slide-out drawer */}
-      <aside id="side-nav" className={`side-nav ${open ? 'open' : ''}`} aria-hidden={!open}>
-        <div className="side-nav-header d-flex align-items-center justify-content-between">
-          <div className="brand d-flex align-items-center gap-2 text-warning fw-bold">
-            <span className="logo" aria-hidden="true">🏗️</span>
-            <span>WORKFLOWS <span className="text-white">ENGINEERING</span></span>
+      {/* Modern left slide-out drawer */}
+      <aside id="side-nav" className={`nav-side-drawer ${open ? 'nav-side-drawer-open' : ''}`} aria-hidden={!open} style={{ zIndex: 1250 }}>
+        {/* Enhanced profile section at the TOP */}
+        <div className="nav-profile-section">
+          <div className="nav-profile-header">
+            <div className="nav-welcome-badge">
+              <span className="nav-welcome-icon">👋</span>
+              <span>Welcome to</span>
+            </div>
+            <div className="nav-brand-title">
+              <span className="nav-brand-icon">🏗️</span>
+              Workflows Engineering
+            </div>
           </div>
-          <button className="btn btn-sm btn-outline-warning close-btn" onClick={closeMenu} aria-label="Close menu">✕</button>
+          <div className="nav-profile-content">
+            <UserProfile inSidebar={true} />
+          </div>
         </div>
 
-        <div className="caution-divider" aria-hidden="true">
-          <div className="stripe" /><div className="stripe dark" /><div className="stripe" />
+        {/* Modern divider */}
+        <div className="nav-divider">
+          <div className="nav-divider-line"></div>
+          <div className="nav-divider-icon">⚙️</div>
+          <div className="nav-divider-line"></div>
         </div>
 
-        <nav className="menu" aria-label="Primary">
-          <ul className="list-unstyled m-0 p-0">
-            <li className="menu-item">
-              <NavLink
-                to="/construction"
-                className={`link ${activeLink('/construction', '')}`}
-                onClick={closeMenu}
-              >
-                <span className="icon" aria-hidden>🏠</span>
-                Home
-              </NavLink>
-            </li>
+        {/* Enhanced navigation menu */}
+        <nav className="nav-menu" aria-label="Primary">
+          <div className="nav-menu-section">
+            <h3 className="nav-section-title">
+              <span className="nav-title-icon">🏠</span>
+              Main Menu
+            </h3>
+            
+            <ul className="nav-menu-list">
+              <li className="nav-menu-item">
+                <NavLink
+                  to="/#"
+                  className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
+                  onClick={closeMenu}
+                >
+                  <div className="nav-link-content">
+                    <span className="nav-link-icon">🏠</span>
+                    <div className="nav-link-text">
+                      <span className="nav-primary-text">Home</span>
+                      <span className="nav-secondary-text">Main dashboard</span>
+                    </div>
+                  </div>
+                  <span className="nav-link-arrow">→</span>
+                </NavLink>
+              </li>
 
-            <li className="menu-item">
-              <NavLink
-                to="/profile"
-                className={({ isActive }) => `link ${isActive ? 'active' : ''}`}
-                onClick={closeMenu}
-              >
-                <span className="icon" aria-hidden>👤</span>
-                Profile
-              </NavLink>
-            </li>
+              <li className="nav-menu-item">
+                <NavLink
+                  to="/profile"
+                  className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
+                  onClick={closeMenu}
+                >
+                  <div className="nav-link-content">
+                    <span className="nav-link-icon">👤</span>
+                    <div className="nav-link-text">
+                      <span className="nav-primary-text">Profile</span>
+                      <span className="nav-secondary-text">Personal settings</span>
+                    </div>
+                  </div>
+                  <span className="nav-link-arrow">→</span>
+                </NavLink>
+              </li>
 
-            <li className="menu-item">
-              <NavLink
-                to="/construction#safety"
-                className={`link ${activeLink('/construction', '#safety')}`}
-                onClick={closeMenu}
-              >
-                <span className="icon" aria-hidden>🦺</span>
-                Workers & Safety
-              </NavLink>
-            </li>
+              <li className="nav-menu-item">
+                <NavLink
+                  to="/#"
+                  className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
+                  onClick={closeMenu}
+                >
+                  <div className="nav-link-content">
+                    <span className="nav-link-icon">🦺</span>
+                    <div className="nav-link-text">
+                      <span className="nav-primary-text">Workers & Safety</span>
+                      <span className="nav-secondary-text">Safety protocols</span>
+                    </div>
+                  </div>
+                  <span className="nav-link-arrow">→</span>
+                </NavLink>
+              </li>
 
-            <li className="menu-item">
-              {/* Map Tools to the Types section (closest available) */}
-              <NavLink
-                to="/construction#types"
-                className={`link ${activeLink('/construction', '#types')}`}
-                onClick={closeMenu}
-              >
-                <span className="icon" aria-hidden>🧰</span>
-                Tools
-              </NavLink>
-            </li>
+              <li className="nav-menu-item">
+                <NavLink
+                  to="/#"
+                  className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
+                  onClick={closeMenu}
+                >
+                  <div className="nav-link-content">
+                    <span className="nav-link-icon">🧰</span>
+                    <div className="nav-link-text">
+                      <span className="nav-primary-text">Tools</span>
+                      <span className="nav-secondary-text">Equipment management</span>
+                    </div>
+                  </div>
+                  <span className="nav-link-arrow">→</span>
+                </NavLink>
+              </li>
 
-            <li className="menu-item">
-              {/* Map Materials to Project showcase section (placeholder) */}
-              <NavLink
-                to="/construction#project"
-                className={`link ${activeLink('/construction', '#project')}`}
-                onClick={closeMenu}
-              >
-                <span className="icon" aria-hidden>🧱</span>
-                Materials
-              </NavLink>
-            </li>
+              <li className="nav-menu-item">
+                <NavLink
+                  to="/#"
+                  className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
+                  onClick={closeMenu}
+                >
+                  <div className="nav-link-content">
+                    <span className="nav-link-icon">🧱</span>
+                    <div className="nav-link-text">
+                      <span className="nav-primary-text">Materials</span>
+                      <span className="nav-secondary-text">Resource inventory</span>
+                    </div>
+                  </div>
+                  <span className="nav-link-arrow">→</span>
+                </NavLink>
+              </li>
 
-            <li className="menu-item">
-              {/* Map Inspections to Timeline section */}
-              <NavLink
-                to="/construction#timeline"
-                className={`link ${activeLink('/construction', '#timeline')}`}
-                onClick={closeMenu}
-              >
-                <span className="icon" aria-hidden>🔍</span>
-                Inspections
-              </NavLink>
-            </li>
+              <li className="nav-menu-item">
+                <NavLink
+                  to="/#"
+                  className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
+                  onClick={closeMenu}
+                >
+                  <div className="nav-link-content">
+                    <span className="nav-link-icon">📋</span>
+                    <div className="nav-link-text">
+                      <span className="nav-primary-text">Inspections</span>
+                      <span className="nav-secondary-text">Quality control</span>
+                    </div>
+                  </div>
+                  <span className="nav-link-arrow">→</span>
+                </NavLink>
+              </li>
+            </ul>
+          </div>
 
-            {/* Projects & Dashboard (accordion) */}
-            <li className="menu-item group">
+          {/* Enhanced Projects & Dashboard accordion */}
+          <div className="nav-menu-section">
+            <div className="nav-accordion-item">
               <button
-                className="group-toggle"
+                className={`nav-accordion-header ${expandPD ? 'nav-accordion-expanded' : ''}`}
                 aria-expanded={expandPD}
-                aria-controls="group-pd"
+                aria-controls="projects-submenu"
                 onClick={() => setExpandPD((v) => !v)}
               >
-                <span className="icon" aria-hidden>📊</span>
-                Projects & Dashboard
-                <span className={`chev ${expandPD ? 'open' : ''}`} aria-hidden>▸</span>
+                <div className="nav-accordion-title">
+                  <span className="nav-title-icon">📊</span>
+                  <div className="nav-title-text">
+                    <span className="nav-primary-text">Projects & Dashboard</span>
+                    <span className="nav-secondary-text">Analytics & insights</span>
+                  </div>
+                </div>
+                <span className={`nav-expand-icon ${expandPD ? 'nav-expand-rotated' : ''}`}>▼</span>
               </button>
-              <ul id="group-pd" className={`sub-list ${expandPD ? 'open' : ''}`}>
-                <li>
-                  <NavLink to="/construction" className={({ isActive }) => `sublink ${isActive ? 'active' : ''}`} onClick={closeMenu}>
-                    Projects
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/projects" className={({ isActive }) => `sublink ${isActive ? 'active' : ''}`} onClick={closeMenu}>
-                    Projects Dashboard
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/project-timelines" className={({ isActive }) => `sublink ${isActive ? 'active' : ''}`} onClick={closeMenu}>
-                    Timeline Dashboard
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/financial-dashboard" className={({ isActive }) => `sublink ${isActive ? 'active' : ''}`} onClick={closeMenu}>
-                    Financial Dashboard
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/chatbot" className={({ isActive }) => `sublink ${isActive ? 'active' : ''}`} onClick={closeMenu}>
-                    ChatBot
-                  </NavLink>
-                </li>
-              </ul>
-            </li>
-          </ul>
+              
+              <div id="projects-submenu" className={`nav-accordion-content ${expandPD ? 'nav-accordion-content-expanded' : ''}`}>
+                <ul className="nav-submenu-list">
+                  <li>
+                    <NavLink 
+                      to="/construction" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">📁</span>
+                      <span className="nav-submenu-text">Projects</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/projects-fd" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">📈</span>
+                      <span className="nav-submenu-text">Projects Dashboard</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/project-timelines" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">⏱️</span>
+                      <span className="nav-submenu-text">Timeline Dashboard</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/financial-dashboard" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">💰</span>
+                      <span className="nav-submenu-text">Financial Dashboard</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/chatbot" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">🤖</span>
+                      <span className="nav-submenu-text">ChatBot</span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </nav>
 
-        {/* Profile section at the bottom of the sidebar */}
-        <div className="profile-section">
-          <div className="welcome-message">
-            Welcome to Workflows Engineering
-          </div>
-          <UserProfile inSidebar={true} />
+        {/* Footer section */}
+        <div className="nav-footer">
+          <button className="nav-close-btn" onClick={closeMenu} aria-label="Close menu">
+            <span className="nav-close-icon">✕</span>
+            <span className="nav-close-text">Close Menu</span>
+          </button>
         </div>
       </aside>
 
-      {/* Styles aligned with ConstructionHome theme (dark + caution yellow) */}
+      {/* Enhanced Styles - All Prefixed to Avoid Global Conflicts */}
       <style jsx global>{`
-        :root {
-          --nav-bg: #0e0f12;
-          --nav-bg-2: #15171c;
-          --nav-border: rgba(255, 193, 7, 0.35);
-          --nav-accent: #ffc107; /* Bootstrap warning/caution */
-          --nav-text: #ffffff;
-          --nav-muted: #cfd3da;
+        /* Navigation-specific styles - All prefixed with 'nav-' to avoid conflicts */
+        
+        /* Modern Hamburger Button */
+        .nav-hamburger-btn {
+          position: fixed;
+          top: 60px;
+          left: 20px;
+          z-index: 1100;
+          width: 52px;
+          height: 52px;
+          border-radius: 16px;
+          border: none;
+          background: #yellow-500;
+          box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          backdrop-filter: blur(10px);
         }
 
-        html { scroll-behavior: smooth; }
-
-        .hamburger-btn {
-          position: fixed; top: 16px; left: 16px; z-index: 1100;
-          width: 44px; height: 44px; border-radius: 10px;
-          border: 2px solid var(--nav-border);
-          background: linear-gradient(180deg, var(--nav-bg), var(--nav-bg-2));
-          display: grid; place-items: center;
-          box-shadow: 0 6px 20px rgba(0,0,0,0.35);
-          transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-          color: var(--nav-text);
+        .nav-hamburger-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+          background: #f8fafc;
         }
-        .hamburger-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.45); border-color: var(--nav-accent); }
-        .hamburger-btn .bar {
-          display: block; width: 22px; height: 2px; margin: 3px 0;
-          background: var(--nav-text); border-radius: 2px;
-          transition: transform .2s ease, opacity .2s ease;
-        }
-        .hamburger-btn.open .bar:nth-child(1) { transform: translateY(5px) rotate(45deg); }
-        .hamburger-btn.open .bar:nth-child(2) { opacity: 0; }
-        .hamburger-btn.open .bar:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
 
-        .overlay {
-          position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px);
-          opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s ease; z-index: 1040;
-        }
-        .overlay.show { opacity: 1; visibility: visible; }
-
-        .side-nav {
-          position: fixed; top: 0; left: 0; height: 100vh; width: 320px;
-          background: linear-gradient(180deg, var(--nav-bg), var(--nav-bg-2));
-          color: var(--nav-text);
-          transform: translateX(-100%);
-          transition: transform .25s ease; z-index: 1250;
-          border-right: 2px solid var(--nav-border);
-          box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+        .nav-hamburger-lines {
           display: flex;
           flex-direction: column;
-        }
-        .side-nav.open { transform: translateX(0); }
-
-        .side-nav-header { padding: 18px 16px; }
-        .side-nav .brand .logo { font-size: 1.2rem; }
-
-        .caution-divider { display:flex; height: 8px; }
-        .caution-divider .stripe { flex:1; background: repeating-linear-gradient(45deg, var(--nav-accent) 0 12px, #000 12px 24px); }
-        .caution-divider .stripe.dark { background: #000; max-width: 12px; }
-
-        .menu { padding: 8px 10px 18px 10px; flex: 1 1 auto; overflow-y: auto; }
-        .menu .menu-item { margin: 6px 0; }
-
-        .link, .group-toggle {
-          width: 100%; display: flex; align-items: center; gap: 10px;
-          padding: 12px 14px; color: var(--nav-text); text-decoration: none;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 12px; transition: background .2s ease, transform .2s ease, border-color .2s ease;
-        }
-        .link:hover, .group-toggle:hover { background: rgba(255,255,255,0.08); transform: translateX(2px); border-color: var(--nav-border); }
-        .link.active { background: rgba(255, 193, 7, 0.15); border-color: var(--nav-accent); color: #fff; }
-
-        .group { margin-top: 10px; }
-        .group-toggle { cursor: pointer; justify-content: space-between; font-weight: 600; }
-        .group-toggle .icon { margin-right: auto; }
-        .chev { transform: rotate(0deg); transition: transform .2s ease; }
-        .chev.open { transform: rotate(90deg); }
-
-        .sub-list { list-style: none; padding-left: 8px; margin: 8px 0 0 26px; border-left: 2px dashed var(--nav-border); max-height: 0; overflow: hidden; transition: max-height .25s ease; }
-        .sub-list.open { max-height: 400px; }
-        .sublink { display:block; padding: 8px 12px; margin: 6px 0; color: var(--nav-muted); text-decoration:none; border-radius: 8px; transition: background .2s ease, color .2s ease; }
-        .sublink:hover { background: rgba(255,255,255,0.06); color: var(--nav-text); }
-        .sublink.active { color: #fff; background: rgba(255, 193, 7, 0.12); }
-
-        /* Profile section styles */
-        .profile-section {
-          padding: 12px 8px;
-          border-top: 2px solid var(--nav-border);
-          background: rgba(255, 193, 7, 0.05);
-          margin-top: auto;
-          flex-shrink: 0;
-          flex: 0 0 auto;
+          gap: 4px;
         }
 
-        .welcome-message {
-          color: var(--nav-accent);
-          text-align: center;
-          padding: 8px 0;
-          font-weight: 700;
-          font-size: 1rem;
+        .nav-hamburger-btn .nav-hamburger-line {
+          width: 20px;
+          height: 2px;
+          background: #1e293b;
+          border-radius: 1px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-hamburger-btn.nav-hamburger-open .nav-hamburger-line:nth-child(1) {
+          transform: translateY(6px) rotate(45deg);
+        }
+        .nav-hamburger-btn.nav-hamburger-open .nav-hamburger-line:nth-child(2) {
+          opacity: 0;
+        }
+        .nav-hamburger-btn.nav-hamburger-open .nav-hamburger-line:nth-child(3) {
+          transform: translateY(-6px) rotate(-45deg);
+        }
+
+        /* Enhanced Overlay */
+        .nav-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.4);
+          backdrop-filter: blur(4px);
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: 1040;
+        }
+        .nav-overlay.nav-overlay-show {
+          opacity: 1;
+          visibility: visible;
+        }
+
+        /* Modern Side Navigation */
+        .nav-side-drawer {
+          position: fixed;
+          top: 0;
+          left: 0;
+          height: 100vh;
+          width: 360px;
+          background: #ffffff;
+          color: #1e293b;
+          transform: translateX(-100%);
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: 1250;
+          box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .nav-side-drawer.nav-side-drawer-open {
+          transform: translateX(0);
+        }
+
+        /* Enhanced Profile Section */
+        .nav-profile-section {
+          padding: 24px 20px;
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-bottom: 1px solid #e2e8f0;
+        }
+
+        .nav-profile-header {
+          margin-bottom: 16px;
+        }
+
+        .nav-welcome-badge {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.875rem;
+          color: #64748b;
           margin-bottom: 8px;
-          border-bottom: 1px dashed var(--nav-border);
         }
 
-        /* Adjust UserProfile styles for sidebar */
-        .profile-section .user-profile-container {
+        .nav-welcome-icon {
+          font-size: 1rem;
+        }
+
+        .nav-brand-title {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #f59e0b;
+        }
+
+        .nav-brand-icon {
+          font-size: 1.5rem;
+        }
+
+        .nav-profile-content {
+          margin-top: 16px;
+        }
+
+        /* Modern Divider */
+        .nav-divider {
+          display: flex;
+          align-items: center;
+          padding: 16px 20px;
+          background: #f1f5f9;
+        }
+
+        .nav-divider-line {
+          flex: 1;
+          height: 1px;
+          background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+        }
+
+        .nav-divider-icon {
+          margin: 0 16px;
+          font-size: 1.2rem;
+          color: #f59e0b;
+        }
+
+        /* Enhanced Navigation Menu */
+        .nav-menu {
+          flex: 1;
+          overflow-y: auto;
+          padding: 20px 0;
+        }
+
+        .nav-menu-section {
+          margin-bottom: 32px;
+        }
+
+        .nav-section-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 0 0 16px 20px;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #64748b;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .nav-title-icon {
+          font-size: 1rem;
+        }
+
+        .nav-menu-list {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+        }
+
+        .nav-menu-item {
+          margin: 4px 16px;
+        }
+
+        /* Modern Navigation Links */
+        .nav-link {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 20px;
+          color: #1e293b;
+          text-decoration: none;
+          border-radius: 12px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .nav-link::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          opacity: 0;
+          transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: -1;
+        }
+
+        .nav-link:hover {
+          transform: translateX(4px);
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+          color: #1e293b;
+        }
+
+        .nav-link:hover::before {
+          opacity: 0.1;
+        }
+
+        .nav-link.nav-link-active {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          color: white;
+          box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        .nav-link.nav-link-active::before {
+          opacity: 1;
+        }
+
+        .nav-link-content {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .nav-link-icon {
+          font-size: 1.25rem;
+          width: 24px;
+          text-align: center;
+        }
+
+        .nav-link-text {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .nav-primary-text {
+          font-weight: 600;
+          font-size: 0.95rem;
+        }
+
+        .nav-secondary-text {
+          font-size: 0.8rem;
+          opacity: 0.7;
+        }
+
+        .nav-link-arrow {
+          font-size: 1rem;
+          opacity: 0;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-link:hover .nav-link-arrow {
+          opacity: 1;
+          transform: translateX(4px);
+        }
+
+        /* Enhanced Accordion */
+        .nav-accordion-item {
+          margin: 4px 16px;
+        }
+
+        .nav-accordion-header {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 20px;
+          background: none;
+          border: none;
+          color: #1e293b;
+          cursor: pointer;
+          border-radius: 12px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-accordion-header:hover {
+          background: #f1f5f9;
+          transform: translateX(2px);
+        }
+
+        .nav-accordion-header.nav-accordion-expanded {
+          background: #f1f5f9;
+          color: #f59e0b;
+        }
+
+        .nav-accordion-title {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .nav-title-text {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 2px;
+        }
+
+        .nav-expand-icon {
+          font-size: 0.875rem;
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-expand-icon.nav-expand-rotated {
+          transform: rotate(180deg);
+        }
+
+        .nav-accordion-content {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-accordion-content.nav-accordion-content-expanded {
+          max-height: 400px;
+        }
+
+        .nav-submenu-list {
+          list-style: none;
+          margin: 8px 0 0 0;
+          padding: 0;
+          padding-left: 40px;
+          border-left: 2px solid #e2e8f0;
+        }
+
+        .nav-submenu-link {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          margin: 4px 0;
+          color: #64748b;
+          text-decoration: none;
+          border-radius: 8px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          font-size: 0.9rem;
+        }
+
+        .nav-submenu-link:hover {
+          background: #f1f5f9;
+          color: #1e293b;
+          transform: translateX(4px);
+        }
+
+        .nav-submenu-link.nav-submenu-link-active {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          color: white;
+          font-weight: 600;
+        }
+
+        .nav-submenu-icon {
+          font-size: 1rem;
+          width: 16px;
+          text-align: center;
+        }
+
+        .nav-submenu-text {
+          font-weight: 500;
+        }
+
+        /* Enhanced Footer */
+        .nav-footer {
+          padding: 20px;
+          border-top: 1px solid #e2e8f0;
+          background: #f1f5f9;
+        }
+
+        .nav-close-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 12px 16px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          color: #64748b;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          font-weight: 500;
+        }
+
+        .nav-close-btn:hover {
+          background: #f59e0b;
+          color: white;
+          border-color: #f59e0b;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        .nav-close-icon {
+          font-size: 1rem;
+        }
+
+        .nav-close-text {
+          font-size: 0.9rem;
+        }
+
+        /* Enhanced Profile Styles for Sidebar */
+        .nav-profile-section .user-profile-container {
           width: 100%;
         }
 
-        .profile-section .user-profile-button {
+        .nav-profile-section .user-profile-button {
           width: 100%;
           justify-content: center;
-          padding: 12px;
-          font-size: 1.1rem;
+          padding: 16px;
+          font-size: 1rem;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @media (max-width: 420px) { .side-nav { width: 88vw; } }
+        .nav-profile-section .user-profile-button:hover {
+          background: #f1f5f9;
+          border-color: #f59e0b;
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+          transform: translateY(-1px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+          .nav-side-drawer {
+            width: 320px;
+          }
+        }
+
+        @media (max-width: 420px) {
+          .nav-side-drawer {
+            width: 90vw;
+          }
+          
+          .nav-hamburger-btn {
+            top: 16px;
+            left: 16px;
+            width: 48px;
+            height: 48px;
+          }
+        }
+
+        /* Scrollbar Styling for Navigation Only */
+        .nav-menu::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .nav-menu::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .nav-menu::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 3px;
+        }
+
+        .nav-menu::-webkit-scrollbar-thumb:hover {
+          background: #f59e0b;
+        }
       `}</style>
     </>
   );

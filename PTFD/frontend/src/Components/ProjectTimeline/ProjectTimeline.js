@@ -5,21 +5,21 @@ import Nav from "../Nav/Nav";
 
 export default function ProjectTimelines() {
   const navigate = useNavigate();
-  
+
   // Debug logging
   useEffect(() => {
     console.log('📍 ProjectTimelines component mounted');
     console.log('🔍 Current URL:', window.location.href);
     console.log('🔍 Navigate function:', typeof navigate, navigate);
   }, [navigate]);
-  
+
   const [timelines, setTimelines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState("date");
   const [sortDirection, setSortDirection] = useState("desc");
   const [filterProject, setFilterProject] = useState("");
-  
+
   // Enhanced state for modern features
   const [viewMode, setViewMode] = useState("table"); // table, grid, timeline
   const [selectedTimelines, setSelectedTimelines] = useState([]);
@@ -57,7 +57,7 @@ export default function ProjectTimelines() {
         await axios.delete(`http://localhost:5050/project-timelines/${id}`);
         setTimelines(timelines.filter(t => t._id !== id));
         setSelectedTimelines(selectedTimelines.filter(selectedId => selectedId !== id));
-        
+
         showNotification("success", "Project timeline deleted successfully!");
       } catch (error) {
         console.error("Error deleting timeline:", error);
@@ -72,14 +72,14 @@ export default function ProjectTimelines() {
       showNotification("warning", "Please select timelines to delete.");
       return;
     }
-    
+
     if (window.confirm(`Are you sure you want to delete ${selectedTimelines.length} selected timeline(s)? This action cannot be undone.`)) {
       try {
-        const deletePromises = selectedTimelines.map(id => 
+        const deletePromises = selectedTimelines.map(id =>
           axios.delete(`http://localhost:5050/project-timelines/${id}`)
         );
         await Promise.all(deletePromises);
-        
+
         setTimelines(timelines.filter(t => !selectedTimelines.includes(t._id)));
         setSelectedTimelines([]);
         showNotification("success", `${selectedTimelines.length} timeline(s) deleted successfully!`);
@@ -98,7 +98,7 @@ export default function ProjectTimelines() {
       warning: 'alert-warning',
       info: 'alert-info'
     }[type];
-    
+
     const alert = document.createElement('div');
     alert.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
     alert.style.cssText = 'top: 20px; right: 20px; z-index: 1055; min-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
@@ -117,8 +117,8 @@ export default function ProjectTimelines() {
 
   // Toggle timeline selection
   const toggleTimelineSelection = (timelineId) => {
-    setSelectedTimelines(prev => 
-      prev.includes(timelineId) 
+    setSelectedTimelines(prev =>
+      prev.includes(timelineId)
         ? prev.filter(id => id !== timelineId)
         : [...prev, timelineId]
     );
@@ -144,31 +144,31 @@ export default function ProjectTimelines() {
   const getSortedAndFilteredTimelines = () => {
     let filtered = timelines.filter(timeline => {
       // Search filter
-      const matchesSearch = 
+      const matchesSearch =
         new Date(timeline.date).toLocaleDateString().toLowerCase().includes(searchTerm.toLowerCase()) ||
         (timeline.tnotes && timeline.tnotes.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (timeline.projectDetails?.pname && timeline.projectDetails.pname.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (timeline.pcode && timeline.pcode.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (timeline.projectDetails?.pcode && timeline.projectDetails.pcode.toLowerCase().includes(searchTerm.toLowerCase()));
-      
+
       // Project filter
       const matchesProject = !filterProject || timeline.pcode === filterProject;
-      
+
       // Date range filter
       const matchesDateRange = (
         !dateRange.start || new Date(timeline.date) >= new Date(dateRange.start)
       ) && (
-        !dateRange.end || new Date(timeline.date) <= new Date(dateRange.end)
-      );
-      
+          !dateRange.end || new Date(timeline.date) <= new Date(dateRange.end)
+        );
+
       // Cost range filter
       const timelineCost = calculateTotalCost(timeline);
       const matchesCostRange = (
         !costRange.min || timelineCost >= parseFloat(costRange.min)
       ) && (
-        !costRange.max || timelineCost <= parseFloat(costRange.max)
-      );
-      
+          !costRange.max || timelineCost <= parseFloat(costRange.max)
+        );
+
       // Quick filters
       const matchesQuickFilter = (() => {
         switch (quickFilter) {
@@ -190,13 +190,13 @@ export default function ProjectTimelines() {
             return true;
         }
       })();
-      
+
       return matchesSearch && matchesProject && matchesDateRange && matchesCostRange && matchesQuickFilter;
     });
 
     return filtered.sort((a, b) => {
       let aVal, bVal;
-      
+
       switch (sortField) {
         case "date":
           aVal = new Date(a.date);
@@ -276,12 +276,12 @@ export default function ProjectTimelines() {
 
   const exportToCSV = () => {
     setExportLoading(true);
-    
+
     const headers = [
-      'Date', 'Project Code', 'Project Name', 'Workers', 'Engineers', 
+      'Date', 'Project Code', 'Project Name', 'Workers', 'Engineers',
       'Architects', 'Total Hours', 'Total Cost', 'Notes'
     ];
-    
+
     const data = getSortedAndFilteredTimelines().map(timeline => [
       new Date(timeline.date).toLocaleDateString(),
       timeline.pcode,
@@ -293,11 +293,11 @@ export default function ProjectTimelines() {
       calculateTotalCost(timeline),
       timeline.tnotes || 'No notes'
     ]);
-    
+
     const csvContent = [headers, ...data]
       .map(row => row.map(cell => `"${cell}"`).join(','))
       .join('\n');
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -307,7 +307,7 @@ export default function ProjectTimelines() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     setTimeout(() => {
       setExportLoading(false);
       showNotification('success', 'Data exported successfully!');
@@ -336,9 +336,9 @@ export default function ProjectTimelines() {
       <>
         <Nav />
         <div className="container-fluid mt-4">
-          <div className="d-flex justify-content-center align-items-center" style={{minHeight: '60vh'}}>
+          <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
             <div className="text-center">
-              <div className="spinner-border text-primary mb-3" style={{width: '4rem', height: '4rem'}} role="status">
+              <div className="spinner-border text-primary mb-3" style={{ width: '4rem', height: '4rem' }} role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
               <h5 className="text-muted">Loading Timeline Dashboard...</h5>
@@ -357,7 +357,7 @@ export default function ProjectTimelines() {
   return (
     <div className="timeline-dashboard">
       <Nav />
-      
+
       {/* Modern Header Section */}
       <div className="bg-gradient" style={{
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -372,15 +372,15 @@ export default function ProjectTimelines() {
                 Advanced project activity tracking and resource management system
               </p>
             </div>
-            <div className="col-lg-4 text-end" style={{position: 'relative', zIndex: 1000}}>
+            <div className="col-lg-4" style={{ position: 'relative', zIndex: 1000 }}>
               {/* Primary Add Button */}
-              <button 
+              <button
                 className="btn btn-light btn-lg shadow-sm"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   console.log('🔴 Add New Timeline Button Clicked!');
-                  
+
                   try {
                     navigate('/add-project-timeline');
                     console.log('✅ Navigation successful');
@@ -391,7 +391,7 @@ export default function ProjectTimelines() {
                   }
                 }}
                 style={{
-                  borderRadius: '50px', 
+                  borderRadius: '50px',
                   padding: '12px 30px',
                   cursor: 'pointer',
                   pointerEvents: 'auto',
@@ -411,12 +411,12 @@ export default function ProjectTimelines() {
       <div className="container-fluid mt-4">
         <div className="row g-4 mb-4">
           <div className="col-xl-3 col-md-6">
-            <div className="card border-0 shadow-sm h-100" style={{borderLeft: '4px solid #3b82f6'}}>
+            <div className="card border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #3b82f6' }}>
               <div className="card-body">
                 <div className="d-flex align-items-center">
                   <div className="flex-shrink-0">
                     <div className="bg-primary bg-opacity-10 rounded-circle p-3">
-                      <span style={{fontSize: '1.5rem'}}>📈</span>
+                      <span style={{ fontSize: '1.5rem' }}>📈</span>
                     </div>
                   </div>
                   <div className="flex-grow-1 ms-3">
@@ -431,14 +431,14 @@ export default function ProjectTimelines() {
               </div>
             </div>
           </div>
-          
+
           <div className="col-xl-3 col-md-6">
-            <div className="card border-0 shadow-sm h-100" style={{borderLeft: '4px solid #10b981'}}>
+            <div className="card border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #10b981' }}>
               <div className="card-body">
                 <div className="d-flex align-items-center">
                   <div className="flex-shrink-0">
                     <div className="bg-success bg-opacity-10 rounded-circle p-3">
-                      <span style={{fontSize: '1.5rem'}}>🏢</span>
+                      <span style={{ fontSize: '1.5rem' }}>🏢</span>
                     </div>
                   </div>
                   <div className="flex-grow-1 ms-3">
@@ -453,14 +453,14 @@ export default function ProjectTimelines() {
               </div>
             </div>
           </div>
-          
+
           <div className="col-xl-3 col-md-6">
-            <div className="card border-0 shadow-sm h-100" style={{borderLeft: '4px solid #f59e0b'}}>
+            <div className="card border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #f59e0b' }}>
               <div className="card-body">
                 <div className="d-flex align-items-center">
                   <div className="flex-shrink-0">
                     <div className="bg-warning bg-opacity-10 rounded-circle p-3">
-                      <span style={{fontSize: '1.5rem'}}>⏱️</span>
+                      <span style={{ fontSize: '1.5rem' }}>⏱️</span>
                     </div>
                   </div>
                   <div className="flex-grow-1 ms-3">
@@ -477,14 +477,14 @@ export default function ProjectTimelines() {
               </div>
             </div>
           </div>
-          
+
           <div className="col-xl-3 col-md-6">
-            <div className="card border-0 shadow-sm h-100" style={{borderLeft: '4px solid #ef4444'}}>
+            <div className="card border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #ef4444' }}>
               <div className="card-body">
                 <div className="d-flex align-items-center">
                   <div className="flex-shrink-0">
                     <div className="bg-danger bg-opacity-10 rounded-circle p-3">
-                      <span style={{fontSize: '1.5rem'}}>💰</span>
+                      <span style={{ fontSize: '1.5rem' }}>💰</span>
                     </div>
                   </div>
                   <div className="flex-grow-1 ms-3">
@@ -511,57 +511,52 @@ export default function ProjectTimelines() {
                 {/* Quick Actions Bar */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
                   <div className="d-flex gap-2">
-                    <button 
-                      className={`btn btn-sm ${
-                        quickFilter === 'today' ? 'btn-primary' : 'btn-outline-primary'
-                      }`}
+                    <button
+                      className={`btn btn-sm ${quickFilter === 'today' ? 'btn-primary' : 'btn-outline-primary'
+                        }`}
                       onClick={() => setQuickFilter(quickFilter === 'today' ? '' : 'today')}
                     >
                       📅 Today
                     </button>
-                    <button 
-                      className={`btn btn-sm ${
-                        quickFilter === 'week' ? 'btn-success' : 'btn-outline-success'
-                      }`}
+                    <button
+                      className={`btn btn-sm ${quickFilter === 'week' ? 'btn-success' : 'btn-outline-success'
+                        }`}
                       onClick={() => setQuickFilter(quickFilter === 'week' ? '' : 'week')}
                     >
                       📆 This Week
                     </button>
-                    <button 
-                      className={`btn btn-sm ${
-                        quickFilter === 'month' ? 'btn-info' : 'btn-outline-info'
-                      }`}
+                    <button
+                      className={`btn btn-sm ${quickFilter === 'month' ? 'btn-info' : 'btn-outline-info'
+                        }`}
                       onClick={() => setQuickFilter(quickFilter === 'month' ? '' : 'month')}
                     >
                       📅 This Month
                     </button>
-                    <button 
-                      className={`btn btn-sm ${
-                        quickFilter === 'high-cost' ? 'btn-warning' : 'btn-outline-warning'
-                      }`}
+                    <button
+                      className={`btn btn-sm ${quickFilter === 'high-cost' ? 'btn-warning' : 'btn-outline-warning'
+                        }`}
                       onClick={() => setQuickFilter(quickFilter === 'high-cost' ? '' : 'high-cost')}
                     >
                       💰 High Cost
                     </button>
-                    <button 
-                      className={`btn btn-sm ${
-                        quickFilter === 'high-activity' ? 'btn-danger' : 'btn-outline-danger'
-                      }`}
+                    <button
+                      className={`btn btn-sm ${quickFilter === 'high-activity' ? 'btn-danger' : 'btn-outline-danger'
+                        }`}
                       onClick={() => setQuickFilter(quickFilter === 'high-activity' ? '' : 'high-activity')}
                     >
                       👥 High Activity
                     </button>
                   </div>
-                  
+
                   <div className="d-flex gap-2">
-                    <button 
+                    <button
                       className="btn btn-outline-secondary btn-sm"
                       onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
                     >
                       <span className="me-1">🔧</span>
                       {showAdvancedFilters ? 'Hide' : 'Advanced'} Filters
                     </button>
-                    <button 
+                    <button
                       className="btn btn-outline-info btn-sm"
                       onClick={clearAllFilters}
                     >
@@ -569,13 +564,13 @@ export default function ProjectTimelines() {
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Main Search and Filter Row */}
                 <div className="row g-3 mb-3">
                   <div className="col-lg-4">
                     <div className="input-group">
                       <span className="input-group-text bg-light border-end-0">
-                        <span style={{fontSize: '1.1rem'}}>🔍</span>
+                        <span style={{ fontSize: '1.1rem' }}>🔍</span>
                       </span>
                       <input
                         type="text"
@@ -583,10 +578,10 @@ export default function ProjectTimelines() {
                         placeholder="Search projects, dates, notes..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{boxShadow: 'none'}}
+                        style={{ boxShadow: 'none' }}
                       />
                       {searchTerm && (
-                        <button 
+                        <button
                           className="btn btn-outline-secondary border-start-0"
                           onClick={() => setSearchTerm("")}
                         >
@@ -595,9 +590,9 @@ export default function ProjectTimelines() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="col-lg-3">
-                    <select 
+                    <select
                       className="form-select"
                       value={filterProject}
                       onChange={(e) => setFilterProject(e.target.value)}
@@ -610,9 +605,9 @@ export default function ProjectTimelines() {
                       ))}
                     </select>
                   </div>
-                  
+
                   <div className="col-lg-2">
-                    <select 
+                    <select
                       className="form-select"
                       value={itemsPerPage}
                       onChange={(e) => {
@@ -626,18 +621,17 @@ export default function ProjectTimelines() {
                       <option value={100}>Show 100</option>
                     </select>
                   </div>
-                  
+
                   <div className="col-lg-3">
                     <div className="btn-group w-100" role="group">
-                      <button 
-                        className={`btn ${
-                          viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'
-                        }`}
+                      <button
+                        className={`btn ${viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'
+                          }`}
                         onClick={() => setViewMode('table')}
                       >
                         📋 Table
                       </button>
-                      <button 
+                      <button
                         className="btn btn-outline-success"
                         onClick={exportToCSV}
                         disabled={exportLoading}
@@ -652,7 +646,7 @@ export default function ProjectTimelines() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Advanced Filters - Collapsible */}
                 {showAdvancedFilters && (
                   <div className="border-top pt-4 mt-4">
@@ -666,7 +660,7 @@ export default function ProjectTimelines() {
                           type="date"
                           className="form-control"
                           value={dateRange.start}
-                          onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
+                          onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
                         />
                       </div>
                       <div className="col-lg-3">
@@ -675,7 +669,7 @@ export default function ProjectTimelines() {
                           type="date"
                           className="form-control"
                           value={dateRange.end}
-                          onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
+                          onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
                         />
                       </div>
                       <div className="col-lg-3">
@@ -685,7 +679,7 @@ export default function ProjectTimelines() {
                           className="form-control"
                           placeholder="0"
                           value={costRange.min}
-                          onChange={(e) => setCostRange({...costRange, min: e.target.value})}
+                          onChange={(e) => setCostRange({ ...costRange, min: e.target.value })}
                         />
                       </div>
                       <div className="col-lg-3">
@@ -695,13 +689,13 @@ export default function ProjectTimelines() {
                           className="form-control"
                           placeholder="∞"
                           value={costRange.max}
-                          onChange={(e) => setCostRange({...costRange, max: e.target.value})}
+                          onChange={(e) => setCostRange({ ...costRange, max: e.target.value })}
                         />
                       </div>
                     </div>
                   </div>
                 )}
-                
+
                 {/* Results Summary */}
                 <div className="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                   <div className="d-flex align-items-center gap-3">
@@ -710,10 +704,10 @@ export default function ProjectTimelines() {
                     </span>
                     {selectedTimelines.length > 0 && (
                       <>
-                        <span className="badge bg-primary">      
+                        <span className="badge bg-primary">
                           {selectedTimelines.length} selected
                         </span>
-                        <button 
+                        <button
                           className="btn btn-sm btn-outline-danger"
                           onClick={handleBulkDelete}
                         >
@@ -723,7 +717,7 @@ export default function ProjectTimelines() {
                       </>
                     )}
                   </div>
-                  <button 
+                  <button
                     className="btn btn-outline-primary btn-sm"
                     onClick={fetchTimelines}
                   >
@@ -751,12 +745,12 @@ export default function ProjectTimelines() {
                 </div>
               </div>
             </div>
-            
+
             <div className="card-body p-0">
               {paginatedData.totalItems === 0 ? (
                 <div className="text-center py-5">
                   <div className="mb-4">
-                    <span style={{fontSize: '4rem', opacity: 0.3}}>📎</span>
+                    <span style={{ fontSize: '4rem', opacity: 0.3 }}>📎</span>
                   </div>
                   <h4 className="text-muted mb-3">No timeline records found</h4>
                   <p className="text-muted mb-4">
@@ -765,10 +759,10 @@ export default function ProjectTimelines() {
                       : 'Start by creating your first project timeline entry.'}
                   </p>
                   {!searchTerm && !filterProject && !quickFilter && (
-                    <button 
+                    <button
                       className="btn btn-primary btn-lg"
                       onClick={() => navigate("/add-project-timeline")}
-                      style={{borderRadius: '50px', padding: '12px 30px'}}
+                      style={{ borderRadius: '50px', padding: '12px 30px' }}
                     >
                       <span className="me-2">✨</span>
                       Create First Timeline
@@ -781,7 +775,7 @@ export default function ProjectTimelines() {
                     <table className="table table-hover mb-0">
                       <thead className="table-dark">
                         <tr>
-                          <th style={{width: '50px'}}>
+                          <th style={{ width: '50px' }}>
                             <div className="form-check">
                               <input
                                 className="form-check-input"
@@ -791,8 +785,8 @@ export default function ProjectTimelines() {
                               />
                             </div>
                           </th>
-                          <th 
-                            style={{cursor: 'pointer', userSelect: 'none', minWidth: '140px'}}
+                          <th
+                            style={{ cursor: 'pointer', userSelect: 'none', minWidth: '140px' }}
                             onClick={() => handleSort("date")}
                           >
                             <div className="d-flex align-items-center">
@@ -800,8 +794,8 @@ export default function ProjectTimelines() {
                               Date {getSortIcon("date")}
                             </div>
                           </th>
-                          <th 
-                            style={{cursor: 'pointer', userSelect: 'none', minWidth: '200px'}}
+                          <th
+                            style={{ cursor: 'pointer', userSelect: 'none', minWidth: '200px' }}
                             onClick={() => handleSort("project")}
                           >
                             <div className="d-flex align-items-center">
@@ -809,8 +803,8 @@ export default function ProjectTimelines() {
                               Project {getSortIcon("project")}
                             </div>
                           </th>
-                          <th 
-                            style={{cursor: 'pointer', userSelect: 'none', textAlign: 'center'}}
+                          <th
+                            style={{ cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
                             onClick={() => handleSort("workers")}
                           >
                             <div className="d-flex align-items-center justify-content-center">
@@ -818,8 +812,8 @@ export default function ProjectTimelines() {
                               Workers {getSortIcon("workers")}
                             </div>
                           </th>
-                          <th 
-                            style={{cursor: 'pointer', userSelect: 'none', textAlign: 'center'}}
+                          <th
+                            style={{ cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
                             onClick={() => handleSort("engineers")}
                           >
                             <div className="d-flex align-items-center justify-content-center">
@@ -827,8 +821,8 @@ export default function ProjectTimelines() {
                               Engineers {getSortIcon("engineers")}
                             </div>
                           </th>
-                          <th 
-                            style={{cursor: 'pointer', userSelect: 'none', textAlign: 'center'}}
+                          <th
+                            style={{ cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
                             onClick={() => handleSort("architects")}
                           >
                             <div className="d-flex align-items-center justify-content-center">
@@ -836,8 +830,8 @@ export default function ProjectTimelines() {
                               Architects {getSortIcon("architects")}
                             </div>
                           </th>
-                          <th 
-                            style={{cursor: 'pointer', userSelect: 'none', textAlign: 'center'}}
+                          <th
+                            style={{ cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
                             onClick={() => handleSort("hours")}
                           >
                             <div className="d-flex align-items-center justify-content-center">
@@ -845,8 +839,8 @@ export default function ProjectTimelines() {
                               Hours {getSortIcon("hours")}
                             </div>
                           </th>
-                          <th 
-                            style={{cursor: 'pointer', userSelect: 'none', textAlign: 'center'}}
+                          <th
+                            style={{ cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
                             onClick={() => handleSort("expenses")}
                           >
                             <div className="d-flex align-items-center justify-content-center">
@@ -854,20 +848,20 @@ export default function ProjectTimelines() {
                               Cost {getSortIcon("expenses")}
                             </div>
                           </th>
-                          <th style={{minWidth: '150px'}}>
+                          <th style={{ minWidth: '150px' }}>
                             <span className="me-1">📝</span>Notes
                           </th>
-                          <th style={{width: '140px', textAlign: 'center'}}>
+                          <th style={{ width: '140px', textAlign: 'center' }}>
                             <span className="me-1">🔧</span>Actions
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         {paginatedData.data.map(timeline => (
-                          <tr 
+                          <tr
                             key={timeline._id}
                             className={selectedTimelines.includes(timeline._id) ? 'table-active' : ''}
-                            style={{cursor: 'pointer'}}
+                            style={{ cursor: 'pointer' }}
                             onDoubleClick={() => openDetailModal(timeline)}
                           >
                             <td>
@@ -907,62 +901,56 @@ export default function ProjectTimelines() {
                                   Number: {timeline.projectDetails?.pnumber || 'N/A'}
                                 </small>
                                 <div className="mt-1">
-                                  <span className={`badge ${
-                                    timeline.projectDetails?.pstatus === 'Active' ? 'bg-success' :
-                                    timeline.projectDetails?.pstatus === 'Completed' ? 'bg-primary' :
-                                    timeline.projectDetails?.pstatus === 'On Hold' ? 'bg-warning' :
-                                    'bg-secondary'
-                                  } bg-opacity-10 text-dark`}>
+                                  <span className={`badge ${timeline.projectDetails?.pstatus === 'Active' ? 'bg-success' :
+                                      timeline.projectDetails?.pstatus === 'Completed' ? 'bg-primary' :
+                                        timeline.projectDetails?.pstatus === 'On Hold' ? 'bg-warning' :
+                                          'bg-secondary'
+                                    } bg-opacity-10 text-dark`}>
                                     {timeline.projectDetails?.pstatus || 'Unknown'}
                                   </span>
                                 </div>
                               </div>
                             </td>
                             <td className="text-center">
-                              <span className={`badge fs-6 ${
-                                (timeline.workerCount || 0) > 5 ? 'bg-success' :
-                                (timeline.workerCount || 0) > 2 ? 'bg-warning' : 'bg-light text-dark'
-                              }`}>
+                              <span className={`badge fs-6 ${(timeline.workerCount || 0) > 5 ? 'bg-success' :
+                                  (timeline.workerCount || 0) > 2 ? 'bg-warning' : 'bg-light text-dark'
+                                }`}>
                                 {timeline.workerCount || 0}
                               </span>
                             </td>
                             <td className="text-center">
-                              <span className={`badge fs-6 ${
-                                (timeline.tengineerCount || 0) > 3 ? 'bg-info' :
-                                (timeline.tengineerCount || 0) > 1 ? 'bg-primary' : 'bg-light text-dark'
-                              }`}>
+                              <span className={`badge fs-6 ${(timeline.tengineerCount || 0) > 3 ? 'bg-info' :
+                                  (timeline.tengineerCount || 0) > 1 ? 'bg-primary' : 'bg-light text-dark'
+                                }`}>
                                 {timeline.tengineerCount || 0}
                               </span>
                             </td>
                             <td className="text-center">
-                              <span className={`badge fs-6 ${
-                                (timeline.architectCount || 0) > 2 ? 'bg-danger' :
-                                (timeline.architectCount || 0) > 0 ? 'bg-warning' : 'bg-light text-dark'
-                              }`}>
+                              <span className={`badge fs-6 ${(timeline.architectCount || 0) > 2 ? 'bg-danger' :
+                                  (timeline.architectCount || 0) > 0 ? 'bg-warning' : 'bg-light text-dark'
+                                }`}>
                                 {timeline.architectCount || 0}
                               </span>
                             </td>
                             <td className="text-center">
-                              <span className={`badge text-dark fs-6 ${
-                                calculateTotalHours(timeline) > 40 ? 'bg-warning' :
-                                calculateTotalHours(timeline) > 20 ? 'bg-info' : 'bg-light'
-                              }`}>
+                              <span className={`badge text-dark fs-6 ${calculateTotalHours(timeline) > 40 ? 'bg-warning' :
+                                  calculateTotalHours(timeline) > 20 ? 'bg-info' : 'bg-light'
+                                }`}>
                                 {calculateTotalHours(timeline)}h
                               </span>
                             </td>
                             <td className="text-center">
-                              <span className={`fw-bold ${
-                                calculateTotalCost(timeline) > 10000 ? 'text-danger' :
-                                calculateTotalCost(timeline) > 5000 ? 'text-warning' : 'text-success'
-                              }`}>
+                              <span className={`fw-bold ${calculateTotalCost(timeline) > 10000 ? 'text-danger' :
+                                  calculateTotalCost(timeline) > 5000 ? 'text-warning' : 'text-success'
+                                }`}>
                                 ${calculateTotalCost(timeline).toLocaleString()}
                               </span>
                             </td>
                             <td>
                               {timeline.tnotes ? (
-                                <div 
-                                  className="text-truncate" 
-                                  style={{maxWidth: '150px'}}
+                                <div
+                                  className="text-truncate"
+                                  style={{ maxWidth: '150px' }}
                                   title={timeline.tnotes}
                                 >
                                   <small>{timeline.tnotes}</small>
@@ -975,7 +963,7 @@ export default function ProjectTimelines() {
                             </td>
                             <td>
                               <div className="btn-group" role="group">
-                                <button 
+                                <button
                                   className="btn btn-outline-info btn-sm"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -985,7 +973,7 @@ export default function ProjectTimelines() {
                                 >
                                   👁️
                                 </button>
-                                <button 
+                                <button
                                   className="btn btn-outline-warning btn-sm"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -995,11 +983,11 @@ export default function ProjectTimelines() {
                                 >
                                   ✏️
                                 </button>
-                                <button 
+                                <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleDelete(timeline._id);
-                                  }} 
+                                  }}
                                   className="btn btn-outline-danger btn-sm"
                                   title="Delete Timeline"
                                 >
@@ -1021,11 +1009,11 @@ export default function ProjectTimelines() {
                           Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, paginatedData.totalItems)} of {paginatedData.totalItems} entries
                         </span>
                       </div>
-                      
+
                       <nav aria-label="Timeline pagination">
                         <ul className="pagination pagination-sm mb-0">
                           <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                            <button 
+                            <button
                               className="page-link"
                               onClick={() => setCurrentPage(1)}
                               disabled={currentPage === 1}
@@ -1034,7 +1022,7 @@ export default function ProjectTimelines() {
                             </button>
                           </li>
                           <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                            <button 
+                            <button
                               className="page-link"
                               onClick={() => setCurrentPage(currentPage - 1)}
                               disabled={currentPage === 1}
@@ -1042,17 +1030,17 @@ export default function ProjectTimelines() {
                               ⬅️
                             </button>
                           </li>
-                          
+
                           {[...Array(Math.min(5, paginatedData.totalPages))].map((_, index) => {
                             const pageNumber = Math.max(1, Math.min(
                               paginatedData.totalPages - 4,
                               currentPage - 2
                             )) + index;
-                            
+
                             if (pageNumber <= paginatedData.totalPages) {
                               return (
                                 <li key={pageNumber} className={`page-item ${currentPage === pageNumber ? 'active' : ''}`}>
-                                  <button 
+                                  <button
                                     className="page-link"
                                     onClick={() => setCurrentPage(pageNumber)}
                                   >
@@ -1063,9 +1051,9 @@ export default function ProjectTimelines() {
                             }
                             return null;
                           })}
-                          
+
                           <li className={`page-item ${currentPage === paginatedData.totalPages ? 'disabled' : ''}`}>
-                            <button 
+                            <button
                               className="page-link"
                               onClick={() => setCurrentPage(currentPage + 1)}
                               disabled={currentPage === paginatedData.totalPages}
@@ -1074,7 +1062,7 @@ export default function ProjectTimelines() {
                             </button>
                           </li>
                           <li className={`page-item ${currentPage === paginatedData.totalPages ? 'disabled' : ''}`}>
-                            <button 
+                            <button
                               className="page-link"
                               onClick={() => setCurrentPage(paginatedData.totalPages)}
                               disabled={currentPage === paginatedData.totalPages}
@@ -1091,48 +1079,50 @@ export default function ProjectTimelines() {
             </div>
           </div>
 
-          {/* Enhanced Detail Modal */}
-          {showDetailModal && selectedTimelineDetail && (
-            <div className="modal fade show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-              <div className="modal-dialog modal-xl">
-                <div className="modal-content">
-                  <div className="modal-header bg-primary text-white">
-                    <h5 className="modal-title">
-                      <span className="me-2">📋</span>
-                      Timeline Details - {new Date(selectedTimelineDetail.date).toLocaleDateString()}
+        {/* Detailed Timeline Modal */}
+        {showDetailModal && selectedTimelineDetail && (
+          <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-xl modal-dialog-centered">
+              <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', background: '#fffbea' }}>
+
+                  {/* Header */}
+                  <div className="modal-header border-0" style={{ background: '#fff9e6', borderTopLeftRadius: '20px', borderTopRightRadius: '20px' }}>
+                    <h5 className="modal-title fw-bold" style={{ color: '#111827' }}>
+                      📋 Timeline Details – {new Date(selectedTimelineDetail.date).toLocaleDateString()}
                     </h5>
-                    <button 
-                      type="button" 
-                      className="btn-close btn-close-white" 
+                    <button
+                      type="button"
+                      className="btn-close"
                       onClick={() => setShowDetailModal(false)}
                     ></button>
                   </div>
-                  <div className="modal-body">
+
+                  {/* Body */}
+                  <div className="modal-body p-4">
                     <div className="row g-4">
+
                       {/* Project Information */}
                       <div className="col-md-6">
-                        <div className="card h-100">
-                          <div className="card-header bg-light">
-                            <h6 className="mb-0">🏢 Project Information</h6>
-                          </div>
+                        <div className="card border-0 shadow-sm h-100" style={{ borderRadius: '16px', background: '#ffffff' }}>
                           <div className="card-body">
+                            <h6 className="fw-bold mb-3" style={{ color: '#374151' }}>🏢 Project Information</h6>
                             <div className="row">
                               <div className="col-sm-6">
-                                <strong>Project Name:</strong>
-                                <p>{selectedTimelineDetail.projectDetails?.pname || 'N/A'}</p>
+                                <small className="text-muted">Project Name</small>
+                                <p className="fw-semibold">{selectedTimelineDetail.projectDetails?.pname || 'N/A'}</p>
                               </div>
                               <div className="col-sm-6">
-                                <strong>Project ID:</strong>
-                                <p>{selectedTimelineDetail.pId}</p>
+                                <small className="text-muted">Project ID</small>
+                                <p className="fw-semibold">{selectedTimelineDetail.pId}</p>
                               </div>
                               <div className="col-sm-6">
-                                <strong>Owner:</strong>
-                                <p>{selectedTimelineDetail.projectDetails?.powner || 'N/A'}</p>
+                                <small className="text-muted">Owner</small>
+                                <p className="fw-semibold">{selectedTimelineDetail.projectDetails?.powner || 'N/A'}</p>
                               </div>
                               <div className="col-sm-6">
-                                <strong>Status:</strong>
+                                <small className="text-muted">Status</small>
                                 <p>
-                                  <span className="badge bg-primary">
+                                  <span className="badge rounded-pill px-3 py-2" style={{ backgroundColor: '#facc15', color: '#111827' }}>
                                     {selectedTimelineDetail.projectDetails?.pstatus || 'N/A'}
                                   </span>
                                 </p>
@@ -1141,83 +1131,80 @@ export default function ProjectTimelines() {
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Summary Statistics */}
                       <div className="col-md-6">
-                        <div className="card h-100">
-                          <div className="card-header bg-light">
-                            <h6 className="mb-0">📊 Summary Statistics</h6>
-                          </div>
-                          <div className="card-body">
-                            <div className="row text-center">
-                              <div className="col-6">
-                                <div className="border-end">
-                                  <h4 className="text-primary">{selectedTimelineDetail.workerCount || 0}</h4>
-                                  <small>Workers</small>
-                                </div>
+                        <div className="card border-0 shadow-sm h-100" style={{ borderRadius: '16px', background: '#ffffff' }}>
+                          <div className="card-body text-center">
+                            <h6 className="fw-bold mb-3" style={{ color: '#374151' }}>📊 Summary Statistics</h6>
+                            <div className="row">
+                              <div className="col-6 mb-3">
+                                <h4 className="fw-bold text-yellow-600">{selectedTimelineDetail.workerCount || 0}</h4>
+                                <small className="text-muted">Workers</small>
+                              </div>
+                              <div className="col-6 mb-3">
+                                <h4 className="fw-bold text-green-600">{selectedTimelineDetail.tengineerCount || 0}</h4>
+                                <small className="text-muted">Engineers</small>
                               </div>
                               <div className="col-6">
-                                <h4 className="text-success">{selectedTimelineDetail.tengineerCount || 0}</h4>
-                                <small>Engineers</small>
+                                <h4 className="fw-bold text-blue-500">{selectedTimelineDetail.architectCount || 0}</h4>
+                                <small className="text-muted">Architects</small>
                               </div>
-                              <div className="col-6 mt-3">
-                                <div className="border-end">
-                                  <h4 className="text-info">{selectedTimelineDetail.architectCount || 0}</h4>
-                                  <small>Architects</small>
-                                </div>
-                              </div>
-                              <div className="col-6 mt-3">
-                                <h4 className="text-warning">{calculateTotalHours(selectedTimelineDetail)}h</h4>
-                                <small>Total Hours</small>
+                              <div className="col-6">
+                                <h4 className="fw-bold text-orange-500">{calculateTotalHours(selectedTimelineDetail)}h</h4>
+                                <small className="text-muted">Total Hours</small>
                               </div>
                             </div>
-                            <div className="text-center mt-3 pt-3 border-top">
-                              <h4 className="text-danger">${calculateTotalCost(selectedTimelineDetail).toLocaleString()}</h4>
-                              <small>Total Cost</small>
+                            <div className="mt-4 pt-3 border-top">
+                              <h4 className="fw-bold text-red-500">
+                                ${calculateTotalCost(selectedTimelineDetail).toLocaleString()}
+                              </h4>
+                              <small className="text-muted">Total Cost</small>
                             </div>
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Notes Section */}
                       {selectedTimelineDetail.tnotes && (
                         <div className="col-12">
-                          <div className="card">
-                            <div className="card-header bg-light">
-                              <h6 className="mb-0">📝 Notes</h6>
-                            </div>
+                          <div className="card border-0 shadow-sm" style={{ borderRadius: '16px', background: '#ffffff' }}>
                             <div className="card-body">
-                              <p>{selectedTimelineDetail.tnotes}</p>
+                              <h6 className="fw-bold mb-2" style={{ color: '#374151' }}>📝 Notes</h6>
+                              <p className="text-muted">{selectedTimelineDetail.tnotes}</p>
                             </div>
                           </div>
                         </div>
                       )}
                     </div>
                   </div>
-                  <div className="modal-footer">
-                    <button 
-                      type="button" 
-                      className="btn btn-outline-secondary" 
+
+                  {/* Footer */}
+                  <div className="modal-footer border-0">
+                    <button
+                      type="button"
+                      className="btn btn-light border rounded-pill px-4"
                       onClick={() => setShowDetailModal(false)}
                     >
                       Close
                     </button>
-                    <button 
-                      type="button" 
-                      className="btn btn-primary"
+                    <button
+                      type="button"
+                      className="btn btn-warning rounded-pill px-4 fw-bold"
                       onClick={() => {
                         setShowDetailModal(false);
                         navigate(`/update-project-timeline/${selectedTimelineDetail._id}`);
                       }}
                     >
-                      <span className="me-1">✏️</span> Edit Timeline
+                      ✏️ Edit Timeline
                     </button>
                   </div>
+
                 </div>
               </div>
             </div>
           )}
-          
+
           {/* Modern Footer */}
           <div className="mt-5 py-4 border-top bg-light">
             <div className="text-center">
@@ -1225,7 +1212,7 @@ export default function ProjectTimelines() {
                 <div className="col-md-6">
                   <p className="mb-0 text-muted">
                     <small>
-                      💡 <strong>Tips:</strong> Double-click rows for quick details • Use filters for precise searches • 
+                      💡 <strong>Tips:</strong> Double-click rows for quick details • Use filters for precise searches •
                       Export data for external analysis
                     </small>
                   </p>

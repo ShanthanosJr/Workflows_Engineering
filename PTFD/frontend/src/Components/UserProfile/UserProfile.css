@@ -1,7 +1,7 @@
 .user-profile-container {
   position: relative;
   display: inline-block;
-  z-index: 1200;
+  z-index: 1201;
 }
 
 .user-profile-button {
@@ -51,7 +51,7 @@
   border: 2px solid #f7df1e;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  z-index: 1202;
   margin-top: 10px;
   overflow: hidden;
 }

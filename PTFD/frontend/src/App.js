@@ -26,7 +26,7 @@ import ProtectedRoute from './Components/Auth/ProtectedRoute';
 
 export default function App() {
   return (
-    <div>
+    <div className="App">
 
 
       <Routes>

@@ -9,6 +9,7 @@
   overflow-x: hidden;
   position: relative;
   min-height: 100vh;
+  background-color: #000 !important; /* Ensure black background overrides global styles */
 }
 
 /* Video Background Container - CRITICAL FIXES */
@@ -289,7 +290,7 @@
   padding: 0.3rem 1rem;
   font-size: 1.1rem;
   letter-spacing: 0.12em;
-  z-index: 1200;
+  z-index: 1199;
 }
 
 .top-bar {
@@ -348,7 +349,7 @@
   position: fixed;
   top: 72px;
   right: 16px;
-  z-index: 1201;
+  z-index: 1203;
 }
 
 /* Navigation Bar */

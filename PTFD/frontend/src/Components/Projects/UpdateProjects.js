@@ -20,12 +20,12 @@ function UpdateProjects() {
         const res = await axios.get(`http://localhost:5050/projects/${id}`);
         // Handle both cases (wrapped or plain project)
         const projectData = res.data.project || res.data;
-        
+
         // Process issues array for display
         if (projectData.pissues && Array.isArray(projectData.pissues)) {
           projectData.pissues = projectData.pissues.join(", ");
         }
-        
+
         // Handle existing images
         if (projectData.pimg) {
           if (Array.isArray(projectData.pimg)) {
@@ -39,7 +39,7 @@ function UpdateProjects() {
           setExistingImages([]);
           projectData.pimg = [];
         }
-        
+
         setProject(projectData);
       } catch (err) {
         console.error("Error fetching project:", err);
@@ -54,7 +54,7 @@ function UpdateProjects() {
   const sendRequest = async () => {
     try {
       // Process issues back to array
-      const issuesArray = project.pissues 
+      const issuesArray = project.pissues
         ? project.pissues.split(",").map(issue => issue.trim()).filter(issue => issue.length > 0)
         : [];
 
@@ -71,6 +71,7 @@ function UpdateProjects() {
         pownerid: project.pownerid,
         pownername: project.pownername,
         potelnumber: project.potelnumber,
+        powmail: project.powmail,
         pdescription: project.pdescription,
         ppriority: project.ppriority,
         pbudget: Number(project.pbudget),
@@ -89,28 +90,28 @@ function UpdateProjects() {
   // Handle multiple image selection for new images
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     if (files.length + selectedImages.length + existingImages.length > 10) {
       alert('Maximum 10 images allowed in total');
       return;
     }
-    
+
     // Validate file types
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     const invalidFiles = files.filter(file => !validTypes.includes(file.type));
-    
+
     if (invalidFiles.length > 0) {
       alert('Please select only image files (JPEG, PNG, GIF, WebP)');
       return;
     }
-    
+
     // Check file sizes (max 2MB each to prevent timeout)
     const largeFiles = files.filter(file => file.size > 2 * 1024 * 1024);
     if (largeFiles.length > 0) {
       alert('Each image must be less than 2MB for better performance');
       return;
     }
-    
+
     // Convert images to base64 with compression
     files.forEach(file => {
       const reader = new FileReader();
@@ -120,11 +121,11 @@ function UpdateProjects() {
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          
+
           // Calculate new dimensions (max width/height: 800px)
           const maxSize = 800;
           let { width, height } = img;
-          
+
           if (width > height) {
             if (width > maxSize) {
               height = (height * maxSize) / width;
@@ -136,14 +137,14 @@ function UpdateProjects() {
               height = maxSize;
             }
           }
-          
+
           canvas.width = width;
           canvas.height = height;
-          
+
           // Draw and compress
           ctx.drawImage(img, 0, 0, width, height);
           const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
-          
+
           setSelectedImages(prev => [...prev, file]);
           setImagePreviewUrls(prev => [...prev, compressedBase64]);
         };
@@ -168,11 +169,11 @@ function UpdateProjects() {
     e.preventDefault();
     setSubmitting(true);
     setMessage("");
-    
+
     try {
       await sendRequest();
       setMessage("✅ Project updated successfully!");
-      
+
       // Navigate back after a short delay to show success message
       setTimeout(() => {
         navigate("/projects");
@@ -190,15 +191,15 @@ function UpdateProjects() {
 
   if (loading) {
     return (
-      <div>
+      <div style={{ backgroundColor: '#fdfcfb', minHeight: '100vh' }}>
         <Nav />
         <div className="container mt-5">
           <div className="row justify-content-center">
             <div className="col-md-6 text-center">
-              <div className="spinner-border text-primary mb-3" role="status">
+              <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}>
                 <span className="visually-hidden">Loading...</span>
               </div>
-              <h5 className="text-muted">Loading project data...</h5>
+              <h5 className="text-muted">Retrieving project blueprint...</h5>
             </div>
           </div>
         </div>
@@ -207,481 +208,794 @@ function UpdateProjects() {
   }
 
   return (
-    <div>
+    <div style={{ backgroundColor: '#fdfcfb', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <Nav />
-      <div className="container mt-4 mb-5">
-        <div className="row justify-content-center">
+
+      {/* Premium Header */}
+      <section className="container-fluid px-4 py-5" style={{
+        background: 'linear-gradient(135deg, #fdfcfb 0%, #f8f7f4 100%)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: 'radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 50%)',
+          pointerEvents: 'none'
+        }}></div>
+
+        <div className="row justify-content-center position-relative">
           <div className="col-lg-10">
-            {/* Header Section */}
-            <div className="card shadow-sm mb-4">
-              <div className="card-header bg-warning text-dark d-flex align-items-center justify-content-between">
-                <div>
-                  <h2 className="card-title mb-0">
-                    <i className="fas fa-edit me-2"></i>
-                    Update Project
-                  </h2>
-                  <small className="opacity-75">
-                    Editing: {project.pname || "Project"}
-                  </small>
+            <div className="text-center mb-5" style={{
+              borderRadius: '24px',
+              padding: '4rem 3rem',
+              background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 251, 0.8) 100%)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <div className="d-flex align-items-center justify-content-center mb-4">
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 8px 25px rgba(212, 175, 55, 0.3)',
+                  marginRight: '1rem'
+                }}>
+                  <i className="fas fa-edit text-white fs-1"></i>
                 </div>
-                <div className="d-flex gap-2">
-                  <button 
-                    type="button" 
-                    className="btn btn-outline-dark btn-sm"
-                    onClick={() => navigate("/projects")}
-                  >
-                    <i className="fas fa-arrow-left me-1"></i>
-                    Back to Projects
-                  </button>
+                <div>
+                  <h1 className="display-4 fw-bold mb-1" style={{
+                    color: '#1a1a1a',
+                    fontWeight: '700',
+                    letterSpacing: '-0.02em'
+                  }}>Refine Blueprint</h1>
+                  <p className="h5 text-muted mb-0" style={{ fontWeight: '300' }}>
+                    Updating: {project.pname || "Project"}
+                  </p>
                 </div>
               </div>
-              
-              <div className="card-body">
-                {/* Success/Error Message */}
-                {message && (
-                  <div className={`alert ${message.includes('✅') ? 'alert-success' : 'alert-danger'} alert-dismissible fade show`}>
-                    {message}
-                    <button 
-                      type="button" 
-                      className="btn-close" 
-                      onClick={() => setMessage("")}
-                      aria-label="Close"
-                    ></button>
+              <p className="lead mb-4" style={{
+                color: '#6b7280',
+                fontSize: '1.25rem',
+                lineHeight: '1.6',
+                maxWidth: '600px',
+                margin: '0 auto'
+              }}>
+                Elevate the precision of your project with targeted refinements. Preserve the foundation while enhancing every detail for optimal execution.
+              </p>
+              <div className="d-flex justify-content-center gap-3 flex-wrap">
+                <button
+                  className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold"
+                  style={{
+                    borderRadius: '50px',
+                    border: '2px solid #d4af37',
+                    color: '#d4af37',
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)'
+                  }}
+                  onClick={() => navigate("/projects")}
+                >
+                  <i className="fas fa-arrow-left me-2"></i>Project Portfolio
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="container mt-5 mb-5">
+        <div className="row justify-content-center">
+          <div className="col-lg-10">
+            {/* Enhanced Form Card */}
+            <div className="card border-0 shadow-xl" style={{
+              borderRadius: '24px',
+              overflow: 'hidden',
+              background: 'linear-gradient(145deg, #ffffff 0%, #fdfcfb 100%)',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 25px 80px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <div className="card-header bg-transparent border-0 py-5 px-5">
+                <div className="d-flex align-items-center">
+                  <div className="bg-gradient p-3 rounded-3 me-4" style={{
+                    background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                    width: '60px',
+                    height: '60px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 8px 25px rgba(212, 175, 55, 0.3)'
+                  }}>
+                    <i className="fas fa-pen-fancy text-green" style={{ fontSize: '1.5rem' }}></i>
                   </div>
-                )}
+                  <div className="w-100 text-center">
+                    <h2 className="h3 fw-bold mb-1" style={{ color: '#111827' }}>Blueprint Refinement</h2>
+                    <p className="text-muted mb-0" style={{ fontSize: '0.95rem' }}>
+                      Enhance the existing foundation with precision updates
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body p-0">
+                <div className="p-5">
+                  {/* Success/Error Message */}
+                  {message && (
+                    <div className={`alert ${message.includes('✅') ? 'alert-success border-0 shadow-sm bg-gradient' : 'alert-danger border-0 shadow-sm bg-gradient-danger'} fade show mb-5`} style={{
+                      borderRadius: '16px',
+                      background: message.includes('✅') ? 'linear-gradient(135deg, #10b981 0%, #34d399 100%)' : 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
+                      color: '#fff',
+                      boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)'
+                    }}>
+                      <div className="d-flex align-items-center">
+                        <i className={`fas ${message.includes('✅') ? 'fa-check-circle me-3 fs-4' : 'fa-exclamation-circle me-3 fs-4'}`}></i>
+                        <div className="flex-grow-1">{message}</div>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn-close btn-close-white ms-auto"
+                        onClick={() => setMessage("")}
+                        aria-label="Close"
+                      ></button>
+                    </div>
+                  )}
 
-                <form onSubmit={handleSubmit}>
-                  {/* Basic Information Section */}
-                  <div className="mb-4">
-                    <h5 className="text-warning border-bottom pb-2 mb-3">
-                      <i className="fas fa-info-circle me-2"></i>
-                      Basic Information
-                    </h5>
-                    <div className="row g-3">
-                      <div className="col-md-6">
-                        <label htmlFor="pname" className="form-label fw-semibold">
-                          Project Name <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="pname"
-                          name="pname"
-                          className="form-control form-control-lg"
-                          value={project.pname || ""}
-                          onChange={(e) => handleChange('pname', e.target.value)}
-                          placeholder="Enter project name"
-                          required
-                        />
-                      </div>
-                      <div className="col-md-6">
-                        <label htmlFor="pnumber" className="form-label fw-semibold">
-                          Project Number <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="pnumber"
-                          name="pnumber"
-                          className="form-control form-control-lg"
-                          value={project.pnumber || ""}
-                          onChange={(e) => handleChange('pnumber', e.target.value)}
-                          placeholder="Enter project number"
-                          required
-                        />
-                      </div>
-                      <div className="col-md-6">
-                        <label htmlFor="pcode" className="form-label fw-semibold">
-                          Project Code <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="pcode"
-                          name="pcode"
-                          className="form-control form-control-lg"
-                          value={project.pcode || ""}
-                          onChange={(e) => handleChange('pcode', e.target.value)}
-                          placeholder="Enter project code"
-                          required
-                        />
-                      </div>
-                      <div className="col-md-6">
-                        <label htmlFor="plocation" className="form-label fw-semibold">
-                          Project Location <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="plocation"
-                          name="plocation"
-                          className="form-control form-control-lg"
-                          value={project.plocation || ""}
-                          onChange={(e) => handleChange('plocation', e.target.value)}
-                          placeholder="Enter project location"
-                          required
-                        />
-                      </div>
-
-                      <div className="col-md-6">
-                        <label htmlFor="ptype" className="form-label fw-semibold">
-                          Project Type <span className="text-danger">*</span>
-                        </label>
-                        <select
-                          id="ptype"
-                          name="ptype"
-                          className="form-select form-select-lg"
-                          value={project.ptype || ""}
-                          onChange={(e) => handleChange('ptype', e.target.value)}
-                          required
-                        >
-                          <option value="">Choose project type...</option>
-                          <option value="Residential">🏠 Residential</option>
-                          <option value="Commercial">🏢 Commercial</option>
-                          <option value="Industrial">🏭 Industrial</option>
-                          <option value="Infrastructure">🛣️ Infrastructure</option>
-                          <option value="Institutional">🏫 Institutional</option>
-                          <option value="Renovation">🔨 Renovation</option>
-                          <option value="Landscaping">🌳 Landscaping</option>
-                          <option value="Mixed-Use">🏙️ Mixed-Use</option>
-                        </select>
-                      </div>
-                      
-                      <div className="col-12">
-                        <label htmlFor="pimg" className="form-label fw-semibold">
-                          Project Images
-                        </label>
-                        
-                        {/* Existing Images */}
-                        {existingImages.length > 0 && (
-                          <div className="mb-3">
-                            <h6 className="fw-semibold mb-2 text-info">📷 Current Images ({existingImages.length})</h6>
-                            <div className="row g-3">
-                              {existingImages.map((url, index) => (
-                                <div key={`existing-${index}`} className="col-lg-3 col-md-4 col-sm-6">
-                                  <div className="position-relative">
-                                    <img
-                                      src={url}
-                                      alt={`Current ${index + 1}`}
-                                      className="img-fluid rounded shadow-sm"
-                                      style={{
-                                        height: '120px',
-                                        width: '100%',
-                                        objectFit: 'cover',
-                                        border: '2px solid #0dcaf0'
-                                      }}
-                                    />
-                                    <button
-                                      type="button"
-                                      className="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
-                                      onClick={() => removeExistingImage(index)}
-                                      style={{
-                                        width: '30px',
-                                        height: '30px',
-                                        borderRadius: '50%',
-                                        padding: '0',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                      }}
-                                      title="Remove this image"
-                                    >
-                                      ❌
-                                    </button>
-                                    <div className="position-absolute bottom-0 start-0 end-0 bg-info bg-opacity-75 text-white text-center py-1 rounded-bottom">
-                                      <small>Current Image {index + 1}</small>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Add New Images */}
-                        <div className="mb-3">
-                          <h6 className="fw-semibold mb-2 text-success">➕ Add New Images</h6>
+                  <form onSubmit={handleSubmit}>
+                    {/* Basic Information Section */}
+                    <div className="mb-5">
+                      <h5 className="fw-bold mb-4" style={{
+                        color: '#d4af37',
+                        borderBottom: '3px solid #f8f7f4',
+                        paddingBottom: '1rem',
+                        fontSize: '1.25rem'
+                      }}>
+                        <i className="fas fa-info-circle me-3 text-muted fs-5"></i>Core Essentials
+                      </h5>
+                      <div className="row g-4">
+                        <div className="col-md-6">
+                          <label htmlFor="pname" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Project Name <span className="text-danger">*</span>
+                          </label>
                           <input
-                            type="file"
-                            id="pimg"
-                            name="pimg"
+                            type="text"
+                            id="pname"
+                            name="pname"
                             className="form-control form-control-lg"
-                            multiple
-                            accept="image/*"
-                            onChange={handleImageChange}
-                          />
-                          <div className="form-text">
-                            Add more images (max {10 - existingImages.length - selectedImages.length} more files, 2MB each). Images will be automatically compressed. Supported formats: JPEG, PNG, GIF, WebP
-                          </div>
-                        </div>
-                        
-                        {/* New Images Preview */}
-                        {imagePreviewUrls.length > 0 && (
-                          <div className="mb-3">
-                            <h6 className="fw-semibold mb-2 text-success">🆕 New Images Preview ({imagePreviewUrls.length})</h6>
-                            <div className="row g-3">
-                              {imagePreviewUrls.map((url, index) => (
-                                <div key={`new-${index}`} className="col-lg-3 col-md-4 col-sm-6">
-                                  <div className="position-relative">
-                                    <img
-                                      src={url}
-                                      alt={`New ${index + 1}`}
-                                      className="img-fluid rounded shadow-sm"
-                                      style={{
-                                        height: '120px',
-                                        width: '100%',
-                                        objectFit: 'cover',
-                                        border: '2px solid #198754'
-                                      }}
-                                    />
-                                    <button
-                                      type="button"
-                                      className="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
-                                      onClick={() => removeNewImage(index)}
-                                      style={{
-                                        width: '30px',
-                                        height: '30px',
-                                        borderRadius: '50%',
-                                        padding: '0',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                      }}
-                                      title="Remove this new image"
-                                    >
-                                      ❌
-                                    </button>
-                                    <div className="position-absolute bottom-0 start-0 end-0 bg-success bg-opacity-75 text-white text-center py-1 rounded-bottom">
-                                      <small>{selectedImages[index]?.name}</small>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Image Summary */}
-                        <div className="mt-2">
-                          <small className="text-muted">
-                            📊 Total: {existingImages.length + imagePreviewUrls.length} image{existingImages.length + imagePreviewUrls.length !== 1 ? 's' : ''}
-                            {existingImages.length + imagePreviewUrls.length < 10 && ' (you can add ' + (10 - existingImages.length - imagePreviewUrls.length) + ' more)'}
-                          </small>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Owner Information Section */}
-                  <div className="mb-4">
-                    <h5 className="text-warning border-bottom pb-2 mb-3">
-                      <i className="fas fa-user me-2"></i>
-                      Owner Information
-                    </h5>
-                    <div className="row g-3">
-                      <div className="col-md-4">
-                        <label htmlFor="pownerid" className="form-label fw-semibold">
-                          Owner ID <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="pownerid"
-                          name="pownerid"
-                          className="form-control form-control-lg"
-                          value={project.pownerid || ""}
-                          onChange={(e) => handleChange('pownerid', e.target.value)}
-                          placeholder="Enter owner ID"
-                          required
-                        />
-                      </div>
-                      <div className="col-md-4">
-                        <label htmlFor="pownername" className="form-label fw-semibold">
-                          Owner Name <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="pownername"
-                          name="pownername"
-                          className="form-control form-control-lg"
-                          value={project.pownername || ""}
-                          onChange={(e) => handleChange('pownername', e.target.value)}
-                          placeholder="Enter owner name"
-                          required
-                        />
-                      </div>
-                      <div className="col-md-4">
-                        <label htmlFor="potelnumber" className="form-label fw-semibold">
-                          Contact Number <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="tel"
-                          id="potelnumber"
-                          name="potelnumber"
-                          className="form-control form-control-lg"
-                          value={project.potelnumber || ""}
-                          onChange={(e) => handleChange('potelnumber', e.target.value)}
-                          placeholder="Enter contact number"
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Project Details Section */}
-                  <div className="mb-4">
-                    <h5 className="text-warning border-bottom pb-2 mb-3">
-                      <i className="fas fa-cog me-2"></i>
-                      Project Details
-                    </h5>
-                    <div className="row g-3">
-                      <div className="col-12">
-                        <label htmlFor="pdescription" className="form-label fw-semibold">
-                          Description <span className="text-danger">*</span>
-                        </label>
-                        <textarea
-                          id="pdescription"
-                          name="pdescription"
-                          className="form-control"
-                          rows="4"
-                          value={project.pdescription || ""}
-                          onChange={(e) => handleChange('pdescription', e.target.value)}
-                          placeholder="Enter project description..."
-                          required
-                        />
-                      </div>
-                      <div className="col-md-4">
-                        <label htmlFor="ppriority" className="form-label fw-semibold">
-                          Priority <span className="text-danger">*</span>
-                        </label>
-                        <select
-                          id="ppriority"
-                          name="ppriority"
-                          className="form-select form-select-lg"
-                          value={project.ppriority || "Medium"}
-                          onChange={(e) => handleChange('ppriority', e.target.value)}
-                          required
-                        >
-                          <option value="High">🔴 High</option>
-                          <option value="Medium">🟡 Medium</option>
-                          <option value="Low">🟢 Low</option>
-                        </select>
-                      </div>
-                      <div className="col-md-4">
-                        <label htmlFor="pbudget" className="form-label fw-semibold">
-                          Budget <span className="text-danger">*</span>
-                        </label>
-                        <div className="input-group input-group-lg">
-                          <span className="input-group-text">$</span>
-                          <input
-                            type="number"
-                            id="pbudget"
-                            name="pbudget"
-                            className="form-control"
-                            value={project.pbudget || ""}
-                            onChange={(e) => handleChange('pbudget', e.target.value)}
-                            placeholder="0.00"
-                            min="0"
-                            step="0.01"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={project.pname || ""}
+                            onChange={(e) => handleChange('pname', e.target.value)}
+                            placeholder="e.g., Downtown Office Complex"
                             required
                           />
                         </div>
-                      </div>
-                      <div className="col-md-4">
-                        <label htmlFor="pstatus" className="form-label fw-semibold">
-                          Status <span className="text-danger">*</span>
-                        </label>
-                        <select
-                          id="pstatus"
-                          name="pstatus"
-                          className="form-select form-select-lg"
-                          value={project.pstatus || ""}
-                          onChange={(e) => handleChange('pstatus', e.target.value)}
-                          required
-                        >
-                          <option value="">Choose status...</option>
-                          <option value="Planned">📋 Planned</option>
-                          <option value="In Progress">⚡ In Progress</option>
-                          <option value="Completed">✅ Completed</option>
-                        </select>
-                      </div>
-                      <div className="col-md-6">
-                        <label htmlFor="penddate" className="form-label fw-semibold">
-                          End Date <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          id="penddate"
-                          name="penddate"
-                          className="form-control form-control-lg"
-                          value={
-                            project.penddate
-                              ? new Date(project.penddate).toISOString().split("T")[0]
-                              : ""
-                          }
-                          onChange={(e) => handleChange('penddate', e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="col-md-6">
-                        <label htmlFor="pissues" className="form-label fw-semibold">
-                          Issues
-                        </label>
-                        <input
-                          type="text"
-                          id="pissues"
-                          name="pissues"
-                          className="form-control form-control-lg"
-                          value={project.pissues || ""}
-                          onChange={(e) => handleChange('pissues', e.target.value)}
-                          placeholder="Enter issues separated by commas"
-                        />
-                        <div className="form-text">
-                          Separate multiple issues with commas
+                        <div className="col-md-6">
+                          <label htmlFor="pnumber" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Project Number <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="pnumber"
+                            name="pnumber"
+                            className="form-control form-control-lg"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={project.pnumber || ""}
+                            onChange={(e) => handleChange('pnumber', e.target.value)}
+                            placeholder="e.g., PRJ-2025-001"
+                            required
+                          />
+                        </div>
+                        <div className="col-md-6">
+                          <label htmlFor="pcode" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Project Code <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="pcode"
+                            name="pcode"
+                            className="form-control form-control-lg"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={project.pcode || ""}
+                            onChange={(e) => handleChange('pcode', e.target.value)}
+                            placeholder="e.g., DTC-001"
+                            required
+                          />
+                        </div>
+                        <div className="col-md-6">
+                          <label htmlFor="plocation" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Location <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="plocation"
+                            name="plocation"
+                            className="form-control form-control-lg"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={project.plocation || ""}
+                            onChange={(e) => handleChange('plocation', e.target.value)}
+                            placeholder="e.g., 123 Main St, New York, NY"
+                            required
+                          />
+                        </div>
+
+                        <div className="col-md-6">
+                          <label htmlFor="ptype" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Type <span className="text-danger">*</span>
+                          </label>
+                          <select
+                            id="ptype"
+                            name="ptype"
+                            className="form-select form-select-lg"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={project.ptype || ""}
+                            onChange={(e) => handleChange('ptype', e.target.value)}
+                            required
+                          >
+                            <option value="">Select category...</option>
+                            <option value="Residential">🏠 Residential</option>
+                            <option value="Commercial">🏢 Commercial</option>
+                            <option value="Industrial">🏭 Industrial</option>
+                            <option value="Infrastructure">🛣️ Infrastructure</option>
+                            <option value="Institutional">🏫 Institutional</option>
+                            <option value="Renovation">🔨 Renovation</option>
+                            <option value="Landscaping">🌳 Landscaping</option>
+                            <option value="Mixed-Use">🏙️ Mixed-Use</option>
+                          </select>
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Visual Documentation
+                          </label>
+
+                          {/* Existing Images */}
+                          {existingImages.length > 0 && (
+                            <div className="mb-4">
+                              <h6 className="fw-semibold mb-3" style={{ color: '#3b82f6' }}>📷 Established Assets ({existingImages.length})</h6>
+                              <div className="row g-3">
+                                {existingImages.map((url, index) => (
+                                  <div key={`existing-${index}`} className="col-lg-3 col-md-4 col-sm-6">
+                                    <div className="position-relative rounded-3 overflow-hidden shadow-sm" style={{
+                                      height: '160px',
+                                      background: 'linear-gradient(135deg, #f8f7f4 0%, #fdfcfb 100%)'
+                                    }}>
+                                      <img
+                                        src={url}
+                                        alt={`Current ${index + 1}`}
+                                        className="img-fluid w-100 h-100 object-cover"
+                                        style={{ objectFit: 'cover' }}
+                                      />
+                                      <button
+                                        type="button"
+                                        className="btn position-absolute top-2 end-2"
+                                        onClick={() => removeExistingImage(index)}
+                                        style={{
+                                          width: '36px',
+                                          height: '36px',
+                                          borderRadius: '50%',
+                                          background: 'rgba(239, 68, 68, 0.9)',
+                                          color: 'white',
+                                          border: 'none',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                                        }}
+                                        title="Discard"
+                                      >
+                                        <i className="fas fa-times fs-6"></i>
+                                      </button>
+                                      <div className="position-absolute bottom-0 start-0 end-0 bg-primary bg-opacity-75 text-white text-center py-1" style={{ fontSize: '0.8rem' }}>
+                                        Established {index + 1}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Add New Images */}
+                          <div className="mb-4">
+                            <h6 className="fw-semibold mb-3" style={{ color: '#059669' }}>➕ Augment Gallery</h6>
+                            <input
+                              type="file"
+                              id="pimg"
+                              name="pimg"
+                              className="form-control form-control-lg"
+                              style={{
+                                borderRadius: '16px',
+                                backgroundColor: '#fdfcfb',
+                                padding: '1rem 1.25rem',
+                                border: '2px dashed #d1d5db',
+                                boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                                transition: 'all 0.2s ease',
+                                fontSize: '1rem'
+                              }}
+                              multiple
+                              accept="image/*"
+                              onChange={handleImageChange}
+                            />
+                            <div className="form-text mt-2" style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+                              Integrate up to {10 - existingImages.length - selectedImages.length} additional assets (max 2MB each). Auto-compression for seamless enhancement.
+                            </div>
+                          </div>
+
+                          {/* New Images Preview */}
+                          {imagePreviewUrls.length > 0 && (
+                            <div className="mb-4">
+                              <h6 className="fw-semibold mb-3" style={{ color: '#059669' }}>🆕 Augmented Preview ({imagePreviewUrls.length})</h6>
+                              <div className="row g-3">
+                                {imagePreviewUrls.map((url, index) => (
+                                  <div key={`new-${index}`} className="col-lg-3 col-md-4 col-sm-6">
+                                    <div className="position-relative rounded-3 overflow-hidden shadow-sm" style={{
+                                      height: '160px',
+                                      background: 'linear-gradient(135deg, #f8f7f4 0%, #fdfcfb 100%)'
+                                    }}>
+                                      <img
+                                        src={url}
+                                        alt={`New ${index + 1}`}
+                                        className="img-fluid w-100 h-100 object-cover"
+                                        style={{ objectFit: 'cover' }}
+                                      />
+                                      <button
+                                        type="button"
+                                        className="btn position-absolute top-2 end-2"
+                                        onClick={() => removeNewImage(index)}
+                                        style={{
+                                          width: '36px',
+                                          height: '36px',
+                                          borderRadius: '50%',
+                                          background: 'rgba(239, 68, 68, 0.9)',
+                                          color: 'white',
+                                          border: 'none',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                                        }}
+                                        title="Discard"
+                                      >
+                                        <i className="fas fa-times fs-6"></i>
+                                      </button>
+                                      <div className="position-absolute bottom-0 start-0 end-0 bg-success bg-opacity-75 text-white text-center py-1" style={{ fontSize: '0.8rem' }}>
+                                        {selectedImages[index]?.name || `Augmented ${index + 1}`}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Image Summary */}
+                          <div className="mt-3 text-center">
+                            <small className="text-muted fw-medium">
+                              🖼️ Total: {existingImages.length + imagePreviewUrls.length} asset{existingImages.length + imagePreviewUrls.length !== 1 ? 's' : ''}
+                              {existingImages.length + imagePreviewUrls.length < 10 && ` • Capacity for ${(10 - existingImages.length - imagePreviewUrls.length)} more`}
+                            </small>
+                          </div>
                         </div>
                       </div>
-                      <div className="col-12">
-                        <label htmlFor="pobservations" className="form-label fw-semibold">
-                          Observations
-                        </label>
-                        <textarea
-                          id="pobservations"
-                          name="pobservations"
-                          className="form-control"
-                          rows="3"
-                          value={project.pobservations || ""}
-                          onChange={(e) => handleChange('pobservations', e.target.value)}
-                          placeholder="Enter any observations or notes..."
-                        />
+                    </div>
+
+                    {/* Owner Information Section */}
+                    <div className="mb-5">
+                      <h5 className="fw-bold mb-4" style={{
+                        color: '#d4af37',
+                        borderBottom: '3px solid #f8f7f4',
+                        paddingBottom: '1rem',
+                        fontSize: '1.25rem'
+                      }}>
+                        <i className="fas fa-user-tie me-3 text-muted fs-5"></i>Stakeholder Profile
+                      </h5>
+                      <div className="row g-4">
+                        <div className="col-md-4">
+                          <label htmlFor="pownerid" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Identifier <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="pownerid"
+                            name="pownerid"
+                            className="form-control form-control-lg"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={project.pownerid || ""}
+                            onChange={(e) => handleChange('pownerid', e.target.value)}
+                            placeholder="e.g., OWN-2025-01"
+                            required
+                          />
+                        </div>
+                        <div className="col-md-4">
+                          <label htmlFor="pownername" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Full Name <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="pownername"
+                            name="pownername"
+                            className="form-control form-control-lg"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={project.pownername || ""}
+                            onChange={(e) => handleChange('pownername', e.target.value)}
+                            placeholder="e.g., John Doe"
+                            required
+                          />
+                        </div>
+                        <div className="col-md-4">
+                          <label htmlFor="potelnumber" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Contact <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="tel"
+                            id="potelnumber"
+                            name="potelnumber"
+                            className="form-control form-control-lg"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={project.potelnumber || ""}
+                            onChange={(e) => handleChange('potelnumber', e.target.value)}
+                            placeholder="e.g., +1 (555) 123-4567"
+                            required
+                          />
+                        </div>
+                        <div className="col-md-4">
+                          <label
+                            htmlFor="powmail"
+                            className="form-label fw-semibold mb-2"
+                            style={{ color: '#374151' }}
+                          >
+                            Email <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="email"
+                            id="powmail"
+                            name="powmail"
+                            className="form-control form-control-lg"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={project.powmail || ""}
+                            onChange={(e) => handleChange('powmail', e.target.value)}
+                            placeholder="e.g., owner@example.com"
+                            required
+                          />
+                        </div>
+
                       </div>
                     </div>
-                  </div>
 
-                  {/* Submit Buttons */}
-                  <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button 
-                      type="button"
-                      className="btn btn-outline-secondary btn-lg px-4 py-2 me-md-2"
-                      onClick={() => navigate("/projects")}
-                      disabled={submitting}
-                    >
-                      <i className="fas fa-times me-2"></i>
-                      Cancel
-                    </button>
-                    <button 
-                      type="submit" 
-                      className="btn btn-warning btn-lg px-4 py-2"
-                      disabled={submitting}
-                    >
-                      {submitting ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                          Updating Project...
-                        </>
-                      ) : (
-                        <>
-                          <i className="fas fa-save me-2"></i>
-                          Update Project
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
+                    {/* Project Details Section */}
+                    <div className="mb-5">
+                      <h5 className="fw-bold mb-4" style={{
+                        color: '#d4af37',
+                        borderBottom: '3px solid #f8f7f4',
+                        paddingBottom: '1rem',
+                        fontSize: '1.25rem'
+                      }}>
+                        <i className="fas fa-cogs me-3 text-muted fs-5"></i>Strategic Parameters
+                      </h5>
+                      <div className="row g-4">
+                        <div className="col-12">
+                          <label htmlFor="pdescription" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Narrative <span className="text-danger">*</span>
+                          </label>
+                          <textarea
+                            id="pdescription"
+                            name="pdescription"
+                            className="form-control"
+                            rows="4"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem',
+                              minHeight: '140px',
+                              resize: 'vertical'
+                            }}
+                            value={project.pdescription || ""}
+                            onChange={(e) => handleChange('pdescription', e.target.value)}
+                            placeholder="Detail the vision, scope, and key objectives..."
+                            required
+                          />
+                        </div>
+                        <div className="col-md-4">
+                          <label htmlFor="ppriority" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Urgency <span className="text-danger">*</span>
+                          </label>
+                          <select
+                            id="ppriority"
+                            name="ppriority"
+                            className="form-select form-select-lg"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={project.ppriority || "Medium"}
+                            onChange={(e) => handleChange('ppriority', e.target.value)}
+                            required
+                          >
+                            <option value="High">🔴 Critical</option>
+                            <option value="Medium">🟡 Elevated</option>
+                            <option value="Low">🟢 Standard</option>
+                          </select>
+                        </div>
+                        <div className="col-md-4">
+                          <label htmlFor="pbudget" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Allocation <span className="text-danger">*</span>
+                          </label>
+                          <div className="input-group">
+                            <span className="input-group-text bg-transparent border-end-0 text-muted fs-6" style={{
+                              backgroundColor: '#fdfcfb',
+                              borderColor: '#e5e7eb',
+                              borderRight: 'none !important'
+                            }}>$</span>
+                            <input
+                              type="number"
+                              id="pbudget"
+                              name="pbudget"
+                              className="form-control form-control-lg"
+                              style={{
+                                borderRadius: '16px',
+                                backgroundColor: '#fdfcfb',
+                                padding: '1rem 1.25rem',
+                                borderLeft: 'none',
+                                boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                                transition: 'all 0.2s ease',
+                                fontSize: '1rem'
+                              }}
+                              value={project.pbudget || ""}
+                              onChange={(e) => handleChange('pbudget', e.target.value)}
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div className="col-md-4">
+                          <label htmlFor="pstatus" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Phase <span className="text-danger">*</span>
+                          </label>
+                          <select
+                            id="pstatus"
+                            name="pstatus"
+                            className="form-select form-select-lg"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={project.pstatus || ""}
+                            onChange={(e) => handleChange('pstatus', e.target.value)}
+                            required
+                          >
+                            <option value="">Initiate phase...</option>
+                            <option value="Planned">📋 Conceptual</option>
+                            <option value="In Progress">⚡ Active</option>
+                            <option value="Completed">✅ Fulfilled</option>
+                          </select>
+                        </div>
+                        <div className="col-md-6">
+                          <label htmlFor="penddate" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Horizon <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="date"
+                            id="penddate"
+                            name="penddate"
+                            className="form-control form-control-lg"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={
+                              project.penddate
+                                ? new Date(project.penddate).toISOString().split("T")[0]
+                                : ""
+                            }
+                            onChange={(e) => handleChange('penddate', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="col-md-6">
+                          <label htmlFor="pissues" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Potential Hurdles
+                          </label>
+                          <input
+                            type="text"
+                            id="pissues"
+                            name="pissues"
+                            className="form-control form-control-lg"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem'
+                            }}
+                            value={project.pissues || ""}
+                            onChange={(e) => handleChange('pissues', e.target.value)}
+                            placeholder="e.g., permitting delays, supply chain risks"
+                          />
+                          <div className="form-text mt-1" style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+                            Delimit with commas for multiple entries
+                          </div>
+                        </div>
+                        <div className="col-12">
+                          <label htmlFor="pobservations" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
+                            Insights & Annotations
+                          </label>
+                          <textarea
+                            id="pobservations"
+                            name="pobservations"
+                            className="form-control"
+                            rows="3"
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1.25rem',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                              transition: 'all 0.2s ease',
+                              fontSize: '1rem',
+                              minHeight: '120px',
+                              resize: 'vertical'
+                            }}
+                            value={project.pobservations || ""}
+                            onChange={(e) => handleChange('pobservations', e.target.value)}
+                            placeholder="Capture preliminary notes, site observations, or strategic considerations..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Submit Buttons */}
+                    <div className="d-flex justify-content-end gap-3">
+                      <button
+                        type="button"
+                        className="btn px-6 py-3 fw-semibold"
+                        style={{
+                          borderRadius: '50px',
+                          border: '2px solid #6b7280',
+                          color: '#6b7280',
+                          background: 'transparent',
+                          fontSize: '1.1rem',
+                          boxShadow: '0 4px 15px rgba(107, 114, 128, 0.2)',
+                          transition: 'all 0.3s ease',
+                          minWidth: '160px'
+                        }}
+                        onClick={() => navigate("/projects-fd")}
+                        disabled={submitting}
+                      >
+                        <i className="fas fa-times me-2"></i>Abandon
+                      </button>
+                      <button
+                        type="submit"
+                        className="btn px-6 py-3 fw-semibold"
+                        style={{
+                          borderRadius: '50px',
+                          background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                          border: 'none',
+                          color: '#fff',
+                          fontSize: '1.1rem',
+                          boxShadow: '0 8px 25px rgba(212, 175, 55, 0.4)',
+                          transition: 'all 0.3s ease',
+                          minWidth: '200px'
+                        }}
+                        disabled={submitting}
+                      >
+                        {submitting ? (
+                          <>
+                            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style={{ width: '1rem', height: '1rem' }}></span>
+                            Refining Blueprint...
+                          </>
+                        ) : (
+                          <>
+                            <i className="fas fa-save me-2"></i>
+                            Preserve Updates
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
           </div>

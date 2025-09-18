@@ -1,4 +1,6 @@
 const Project = require("../Model/ProjectModel");
+const nodemailer = require('nodemailer');
+const twilio = require('twilio');
 
 const getAllProjects = async (req, res, next) => {
 
@@ -22,7 +24,7 @@ const getAllProjects = async (req, res, next) => {
 // Data insert
 
 const insertProject = async (req, res, next) => {
-    const { pname, pnumber, pcode, plocation, pimg, ptype, pownerid, pownername, potelnumber, pdescription, ppriority, pbudget, pstatus, penddate ,pissues, pobservations } = req.body;
+    const { pname, pnumber, pcode, plocation, pimg, ptype, pownerid, pownername, potelnumber, powmail, pdescription, ppriority, pbudget, pstatus, penddate ,pissues, pobservations } = req.body;
 
     let project;
     try {
@@ -37,7 +39,7 @@ const insertProject = async (req, res, next) => {
         }
 
         console.log('Creating project with data:', {
-            pname, pnumber, pcode, plocation, ptype, pownerid, pownername, potelnumber,
+            pname, pnumber, pcode, plocation, ptype, pownerid, pownername, potelnumber, powmail,
             pdescription, ppriority, pbudget, pstatus, penddate,
             pissues: pissues?.length || 0,
             pobservations: pobservations ? 'provided' : 'not provided',
@@ -54,6 +56,7 @@ const insertProject = async (req, res, next) => {
             pownerid,
             pownername,
             potelnumber,
+            powmail,
             pdescription,
             ppriority,
             pbudget,
@@ -138,6 +141,64 @@ const updateProject = async (req, res) => {
     }
     return res.status(200).json({ message: "Project deleted successfully" });
  }
+
+ // Nodemailer transport (use env vars)
+const mailTransport = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  port: process.env.EMAIL_PORT ? Number(process.env.EMAIL_PORT) : 587,
+  secure: process.env.EMAIL_SECURE === 'true', // true for 465
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Twilio client
+const twilioClient = (process.env.TWILIO_SID && process.env.TWILIO_AUTH)
+  ? twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH)
+  : null;
+
+  async function sendProjectEmail(to, project, action = 'created') {
+  if (!to || !mailTransport) return;
+  const subject = `Project ${action}: ${project.pname}`;
+  const html = `
+    <p>Hi ${project.pownername || 'Owner'},</p>
+    <p>Your project <strong>${project.pname}</strong> (ref: ${project.pnumber}) was ${action} successfully.</p>
+    <ul>
+      <li>Code: ${project.pcode}</li>
+      <li>Location: ${project.plocation}</li>
+    </ul>
+    <p>Regards,<br/>ConstructPro</p>
+  `;
+  try {
+    const info = await mailTransport.sendMail({
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      to,
+      subject,
+      html,
+    });
+    console.log('Email sent:', info.messageId || info);
+    return info;
+  } catch (err) {
+    console.error('Email send error:', err);
+  }
+}
+
+async function sendProjectSMS(to, project, action = 'created') {
+  if (!to || !twilioClient) return;
+  try {
+    const msg = await twilioClient.messages.create({
+      body: `✅ Project ${action}: ${project.pname} (${project.pnumber})`,
+      from: process.env.TWILIO_PHONE,
+      to,
+    });
+    console.log('SMS sent:', msg.sid);
+    return msg;
+  } catch (err) {
+    console.error('SMS send error:', err);
+  }
+}
+
 
 exports.getAllProjects = getAllProjects;
 exports.insertProject = insertProject;

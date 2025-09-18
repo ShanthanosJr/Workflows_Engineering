@@ -10,7 +10,12 @@ const UserProfile = ({ inSidebar = false }) => {
   const getUserData = () => {
     const userData = localStorage.getItem('user');
     if (userData) {
-      return JSON.parse(userData);
+      const parsedUserData = JSON.parse(userData);
+      // Ensure avatar has a fallback if empty or null
+      return {
+        ...parsedUserData,
+        avatar: parsedUserData.avatar || 'https://courseweb.sliit.lk/pluginfile.php/310596/user/icon/lambda/f1?rev=7824289'
+      };
     }
     return {
       name: 'Guest User',

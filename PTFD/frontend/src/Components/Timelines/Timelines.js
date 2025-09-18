@@ -150,14 +150,37 @@ export default function Timelines() {
                     <h2 className="mb-0">📋 Project Timeline Management</h2>
                     <p className="mb-0 opacity-75">Track daily project activities and resources</p>
                   </div>
-                  <div className="col-md-6 text-end">
-                    <button 
-                      className="btn btn-light btn-lg"
-                      onClick={() => navigate("/add-timeline")}
-                    >
-                      ➕ Add New Timeline
-                    </button>
-                  </div>
+            <div className="col-lg-4" style={{position: 'relative', zIndex: 1000}}>
+              {/* Primary Add Button */}
+              <button 
+                className="btn btn-light btn-lg shadow-sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('🔴 Add New Timeline Button Clicked!');
+
+                  try {
+                    navigate('/add-timeline');
+                    console.log('✅ Navigation successful');
+                  } catch (error) {
+                    console.error('❌ Navigation error:', error);
+                    // Fallback to window.location
+                    window.location.href = '/add-timeline';
+                  }
+                }}
+                style={{
+                  borderRadius: '50px', 
+                  padding: '12px 30px',
+                  cursor: 'pointer',
+                  pointerEvents: 'auto',
+                  position: 'relative',
+                  zIndex: 1001
+                }}
+                type="button"
+              >
+                <span className="me-2">➕</span> Add New Timeline
+              </button>
+            </div>
                 </div>
               </div>
             </div>

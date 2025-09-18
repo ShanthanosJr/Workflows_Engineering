@@ -70,7 +70,8 @@ const SignIn = () => {
       localStorage.setItem('user', JSON.stringify({
         name: userData.name,
         email: userData.email,
-        id: userData._id
+        id: userData._id,
+        avatar: userData.avatar
       }));
       localStorage.setItem('token', userData.token);
       

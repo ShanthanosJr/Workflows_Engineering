@@ -83,7 +83,8 @@ const SignUp = () => {
       localStorage.setItem('user', JSON.stringify({
         name: userDataResponse.name,
         email: userDataResponse.email,
-        id: userDataResponse._id
+        id: userDataResponse._id,
+        avatar: userDataResponse.avatar
       }));
       localStorage.setItem('token', userDataResponse.token);
       

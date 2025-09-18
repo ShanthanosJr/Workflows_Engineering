@@ -2,6 +2,7 @@
   text-align: center;
   min-height: 100vh;
   position: relative;
+  background-color: #f7f2de; /* Cream/off-white background for all pages */
 }
 
 /* Enhanced content visibility styles */
@@ -311,4 +312,10 @@ a.btn {
 
 .timeline-dashboard .table-responsive::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* Exclude ConstructionHome and ProjectHome from the cream background */
+.construction-home-advanced,
+.construction-home {
+  background-color: initial !important;
 }

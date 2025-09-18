@@ -329,7 +329,7 @@ const ConstructionHome = () => {
   return (
     <div className="construction-home-advanced">
       {/* Global Nav (hamburger) */}
-      <div style={{ position: 'relative', zIndex: 1200 }}>
+      <div style={{ position: 'relative', zIndex: 1202 }}>
         <style>{`.hamburger-btn{ top: 72px !important; left: 16px !important; }`}</style>
         <Nav />
       </div>
@@ -352,7 +352,7 @@ const ConstructionHome = () => {
         <VideoBackground videoId="hero" />
         <div className="hero-content container">
           <h1 className="hero-title">
-            Build Your Dreams
+            Welcome to the
             <br /><br />
             <span className="title-highlight">Projects Timeline &</span>
             <span className="title-highlight">Financial Dashboard</span>
@@ -787,7 +787,7 @@ const ConstructionHome = () => {
       {/* Bottom caution tape bar */}
       <div className="caution-tape-bar bottom-bar" aria-hidden="true">
         <div className="caution-stripes"></div>
-        <div className="caution-text">WWW.WORKFLOWSENGINEERING.COM</div><br></br>
+        <div className="caution-text">BUILD YOUR DREAMS</div><br></br>
       </div>
     </div>
   );

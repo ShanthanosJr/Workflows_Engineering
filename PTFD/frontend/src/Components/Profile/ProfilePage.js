@@ -197,7 +197,8 @@ const ProfilePage = () => {
       const userData = {
         name: response.data.name,
         email: response.data.email,
-        id: response.data._id
+        id: response.data._id,
+        avatar: response.data.avatar
       };
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('token', response.data.token);

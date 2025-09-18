@@ -21,7 +21,7 @@ const ProjectSchema = new Schema({
     },
     pimg: [{ type: String }], // Array of image URLs/base64 strings
 
-    ptype : {
+    ptype: {
         type: String,
         required: true,
     },
@@ -37,14 +37,19 @@ const ProjectSchema = new Schema({
         type: String,
         required: true,
     },
+    powmail: {
+        type: String,
+        required: true,
+    },
     pdescription: {
         type: String,
         required: true,
     },
-    ppriority: { 
-        type: String, 
-        enum: ["High", "Medium", "Low"], 
-        default: "Medium" },
+    ppriority: {
+        type: String,
+        enum: ["High", "Medium", "Low"],
+        default: "Medium"
+    },
 
     pcreatedat: {
         type: Date,
@@ -69,8 +74,8 @@ const ProjectSchema = new Schema({
     pissues: [{ type: String }], // array of text issues
     pobservations: { type: String },
 
-    });
+});
 
-    module.exports = mongoose.model(
-        "ProjectModel", // filename
-         ProjectSchema); // function name
+module.exports = mongoose.model(
+    "ProjectModel", // filename
+    ProjectSchema); // function name

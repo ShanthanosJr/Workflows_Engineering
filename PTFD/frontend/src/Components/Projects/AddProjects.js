@@ -8,7 +8,7 @@ export default function AddProjects() {
     pnumber: "",
     pcode: "",
     plocation: "",
-    pimg: [], // Changed to array for multiple images
+    pimg: [],
     ptype: "",
     pownerid: "",
     pownername: "",
@@ -23,25 +23,246 @@ export default function AddProjects() {
     pobservations: "",
   });
 
+  // State for validation errors
+  const [validationErrors, setValidationErrors] = useState({});
+  const [fieldTouched, setFieldTouched] = useState({});
+
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState([]);
-
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // handle input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  // Validation rules
+  const validationRules = {
+    pname: {
+      required: true,
+      minLength: 2,
+      maxLength: 100,
+      pattern: /^[a-zA-Z0-9\s\-.]+$/,
+      message: "Project name must be 2-100 characters, letters, numbers, spaces, hyphens, and periods only"
+    },
+    pnumber: {
+      required: true,
+      pattern: /^[A-Z]{2,4}-\d{4}-\d{3}$/,
+      message: "Format: ABC-2024-001 (2-4 letters, year, 3-digit number)"
+    },
+    pcode: {
+      required: true,
+      minLength: 3,
+      maxLength: 10,
+      pattern: /^[A-Z0-9-]+$/,
+      message: "3-10 characters, uppercase letters, numbers, and hyphens only"
+    },
+    plocation: {
+      required: true,
+      minLength: 5,
+      maxLength: 200,
+      message: "Location must be 5-200 characters"
+    },
+    pownerid: {
+      required: true,
+      pattern: /^OWN-\d{4}-\d{2}$/,
+      message: "Format: OWN-2024-01"
+    },
+    pownername: {
+      required: true,
+      minLength: 2,
+      maxLength: 50,
+      pattern: /^[a-zA-Z\s\-.]+$/,
+      message: "2-50 characters, letters, spaces, hyphens, and periods only"
+    },
+    potelnumber: {
+      required: true,
+      pattern: /^[+]?[1-9][\d\s\-()]{8,15}$/,
+      message: "Valid phone number format (8-15 digits with optional formatting)"
+    },
+    powmail: {
+      required: true,
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      message: "Valid email address required"
+    },
+    pdescription: {
+      required: true,
+      minLength: 10,
+      maxLength: 1000,
+      message: "Description must be 10-1000 characters"
+    },
+    pbudget: {
+      required: true,
+      min: 1000,
+      max: 100000000,
+      message: "Budget must be between $1,000 and $100,000,000"
+    },
+    penddate: {
+      required: true,
+      futureDate: true,
+      message: "End date must be in the future"
+    }
   };
 
-  // handle issues input (convert comma-separated string to array)
+  // Live validation function
+  const validateField = (name, value) => {
+    const rule = validationRules[name];
+    if (!rule) return null;
+
+    const errors = [];
+
+    // Required validation
+    if (rule.required && (!value || value.toString().trim() === "")) {
+      errors.push(`${getFieldLabel(name)} is required`);
+    }
+
+    // Skip other validations if field is empty and not required
+    if (!value || value.toString().trim() === "") {
+      return errors.length > 0 ? errors : null;
+    }
+
+    // String length validations
+    if (rule.minLength && value.length < rule.minLength) {
+      errors.push(`Minimum ${rule.minLength} characters required`);
+    }
+    if (rule.maxLength && value.length > rule.maxLength) {
+      errors.push(`Maximum ${rule.maxLength} characters allowed`);
+    }
+
+    // Numeric validations
+    if (rule.min && parseFloat(value) < rule.min) {
+      errors.push(`Minimum value: ${rule.min.toLocaleString()}`);
+    }
+    if (rule.max && parseFloat(value) > rule.max) {
+      errors.push(`Maximum value: ${rule.max.toLocaleString()}`);
+    }
+
+    // Pattern validation
+    if (rule.pattern && !rule.pattern.test(value)) {
+      errors.push(rule.message);
+    }
+
+    // Custom validations
+    if (name === 'penddate' && rule.futureDate) {
+      const today = new Date();
+      const selectedDate = new Date(value);
+      if (selectedDate <= today) {
+        errors.push("End date must be in the future");
+      }
+    }
+
+    // Email uniqueness check (you can add API call here)
+    if (name === 'powmail' && rule.pattern && rule.pattern.test(value)) {
+      // You could add an API call here to check email uniqueness
+      // For now, just basic validation
+    }
+
+    return errors.length > 0 ? errors : null;
+  };
+
+  // Get user-friendly field labels
+  const getFieldLabel = (name) => {
+    const labels = {
+      pname: "Project Name",
+      pnumber: "Project Number",
+      pcode: "Project Code",
+      plocation: "Location",
+      pownerid: "Owner ID",
+      pownername: "Owner Name",
+      potelnumber: "Phone Number",
+      powmail: "Email",
+      pdescription: "Description",
+      pbudget: "Budget",
+      penddate: "End Date"
+    };
+    return labels[name] || name;
+  };
+
+  // Handle input changes with live validation
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Update form data
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Mark field as touched
+    setFieldTouched((prev) => ({ ...prev, [name]: true }));
+    
+    // Perform live validation
+    const errors = validateField(name, value);
+    setValidationErrors((prev) => ({
+      ...prev,
+      [name]: errors
+    }));
+  };
+
+  // Handle field blur (when user leaves the field)
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setFieldTouched((prev) => ({ ...prev, [name]: true }));
+    
+    // Re-validate on blur for more comprehensive checking
+    const errors = validateField(name, value);
+    setValidationErrors((prev) => ({
+      ...prev,
+      [name]: errors
+    }));
+  };
+
+  // Check if field has errors and is touched
+  const hasFieldError = (fieldName) => {
+    return fieldTouched[fieldName] && validationErrors[fieldName] && validationErrors[fieldName].length > 0;
+  };
+
+  // Get field CSS classes based on validation state
+  const getFieldClasses = (fieldName, baseClasses = "form-control form-control-lg") => {
+    if (!fieldTouched[fieldName]) return baseClasses;
+    
+    if (hasFieldError(fieldName)) {
+      return `${baseClasses} is-invalid`;
+    } else if (validationErrors[fieldName] === null) {
+      return `${baseClasses} is-valid`;
+    }
+    
+    return baseClasses;
+  };
+
+  // Enhanced form validation before submit
+  const validateForm = () => {
+    const errors = {};
+    let isValid = true;
+
+    // Validate all fields
+    Object.keys(validationRules).forEach(fieldName => {
+      const fieldErrors = validateField(fieldName, formData[fieldName]);
+      if (fieldErrors) {
+        errors[fieldName] = fieldErrors;
+        isValid = false;
+      }
+    });
+
+    // Special validation for images
+    if (formData.pimg.length === 0) {
+      errors.pimg = ["At least one image is required"];
+      isValid = false;
+    }
+
+    // Mark all fields as touched to show errors
+    const touchedFields = {};
+    Object.keys(validationRules).forEach(field => {
+      touchedFields[field] = true;
+    });
+    touchedFields.pimg = true;
+
+    setFieldTouched(touchedFields);
+    setValidationErrors(errors);
+
+    return isValid;
+  };
+
+  // Handle issues input
   const handleIssuesChange = (e) => {
     const { value } = e.target;
     setFormData((prev) => ({ ...prev, pissues: value }));
   };
 
-  // Handle multiple image selection
+  // Image handling (unchanged)
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
 
@@ -50,7 +271,6 @@ export default function AddProjects() {
       return;
     }
 
-    // Validate file types
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     const invalidFiles = files.filter(file => !validTypes.includes(file.type));
 
@@ -59,24 +279,24 @@ export default function AddProjects() {
       return;
     }
 
-    // Check file sizes (max 2MB each to prevent CORS timeout)
     const largeFiles = files.filter(file => file.size > 2 * 1024 * 1024);
     if (largeFiles.length > 0) {
       alert('Each image must be less than 2MB for better performance');
       return;
     }
 
-    // Convert images to base64 with compression
+    // Clear image validation error when files are selected
+    setValidationErrors(prev => ({ ...prev, pimg: null }));
+    setFieldTouched(prev => ({ ...prev, pimg: true }));
+
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        // Create an image element to resize
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
 
-          // Calculate new dimensions (max width/height: 800px)
           const maxSize = 800;
           let { width, height } = img;
 
@@ -94,10 +314,8 @@ export default function AddProjects() {
 
           canvas.width = width;
           canvas.height = height;
-
-          // Draw and compress
           ctx.drawImage(img, 0, 0, width, height);
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
 
           setSelectedImages(prev => [...prev, file]);
           setImagePreviewUrls(prev => [...prev, compressedBase64]);
@@ -112,7 +330,6 @@ export default function AddProjects() {
     });
   };
 
-  // Remove image
   const removeImage = (index) => {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
     setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
@@ -120,23 +337,30 @@ export default function AddProjects() {
       ...prev,
       pimg: prev.pimg.filter((_, i) => i !== index)
     }));
+
+    // Re-validate images
+    const newImageCount = formData.pimg.length - 1;
+    if (newImageCount === 0) {
+      setValidationErrors(prev => ({ ...prev, pimg: ["At least one image is required"] }));
+    } else {
+      setValidationErrors(prev => ({ ...prev, pimg: null }));
+    }
   };
 
-  // submit form
+  // Enhanced submit with validation
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
-    try {
-      // Validate that at least one image is selected
-      if (formData.pimg.length === 0) {
-        setMessage("❌ Please select at least one image for the project.");
-        setLoading(false);
-        return;
-      }
+    // Validate form
+    if (!validateForm()) {
+      setMessage("❌ Please correct the errors below before submitting.");
+      setLoading(false);
+      return;
+    }
 
-      // Convert issues string to array before sending
+    try {
       const submitData = {
         ...formData,
         pissues: formData.pissues ? formData.pissues.split(",").map(issue => issue.trim()) : []
@@ -144,15 +368,16 @@ export default function AddProjects() {
 
       console.log('Submitting project data:', {
         ...submitData,
-        pimg: `[${submitData.pimg.length} images]` // Don't log full base64 data
+        pimg: `[${submitData.pimg.length} images]`
       });
 
       const res = await axios.post("http://localhost:5050/projects", submitData, {
         headers: {
           'Content-Type': 'application/json',
         },
-        timeout: 30000 // 30 second timeout for large images
+        timeout: 30000
       });
+
       setMessage("✅ Project added successfully!");
       console.log("Project created:", res.data);
 
@@ -178,30 +403,54 @@ export default function AddProjects() {
       });
       setSelectedImages([]);
       setImagePreviewUrls([]);
+      setValidationErrors({});
+      setFieldTouched({});
 
-      // Reset file input
       document.getElementById('pimg').value = '';
 
     } catch (err) {
       console.error('Error submitting project:', err);
-      console.error('Error response:', err.response?.data);
       setMessage(`❌ Failed to add project: ${err.response?.data?.message || err.message || 'Please try again.'}`);
     } finally {
       setLoading(false);
     }
   };
 
+  // Render validation feedback
+  const renderValidationFeedback = (fieldName) => {
+    if (hasFieldError(fieldName)) {
+      return (
+        <div className="invalid-feedback d-block">
+          {validationErrors[fieldName].map((error, index) => (
+            <div key={index} className="d-flex align-items-center mt-1">
+              <i className="fas fa-exclamation-circle me-1"></i>
+              {error}
+            </div>
+          ))}
+        </div>
+      );
+    } else if (fieldTouched[fieldName] && validationErrors[fieldName] === null) {
+      return (
+        <div className="valid-feedback d-block">
+          <i className="fas fa-check-circle me-1"></i>
+          Looks good!
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div style={{ backgroundColor: '#fdfcfb', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <Nav />
 
-      {/* Premium Dashboard-Style Header */}
+      {/* Header section remains the same */}
       <section className="container-fluid px-4 py-5" style={{
         background: 'linear-gradient(135deg, #fdfcfb 0%, #f8f7f4 100%)',
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Subtle background pattern or image if needed */}
+        {/* Header content unchanged */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -257,7 +506,7 @@ export default function AddProjects() {
                 Seamlessly integrate new initiatives into Workflows Engineering's premium ecosystem. Track every milestone with unparalleled clarity and ensure unwavering safety across all sites.
               </p>
               <div className="d-flex justify-content-center gap-3 flex-wrap">
-                <a href="/projects" className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
+                <a href="/projects-fd" className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
                   borderRadius: '50px',
                   border: '2px solid #d4af37',
                   color: '#d4af37',
@@ -288,7 +537,6 @@ export default function AddProjects() {
       <div className="container mt-5 mb-5">
         <div className="row justify-content-center">
           <div className="col-lg-10">
-            {/* Enhanced Form Card */}
             <div className="card border-0 shadow-xl" style={{
               borderRadius: '24px',
               overflow: 'hidden',
@@ -308,7 +556,7 @@ export default function AddProjects() {
                     justifyContent: 'center',
                     boxShadow: '0 8px 25px rgba(212, 175, 55, 0.3)'
                   }}>
-                    <i className="fas fa-plus text-green" style={{ fontSize: '1.5rem' }}></i>
+                    <i className="fas fa-plus text-black" style={{ fontSize: '1.5rem' }}></i>
                   </div>
                   <div className="w-100 text-center">
                     <h2 className="h3 fw-bold mb-1" style={{ color: "#111827" }}>
@@ -318,12 +566,10 @@ export default function AddProjects() {
                       Craft your project's foundation with meticulous detail
                     </p>
                   </div>
-
                 </div>
               </div>
               <div className="card-body p-0">
                 <div className="p-5">
-                  {/* Success/Error Message */}
                   {message && (
                     <div className={`alert ${message.includes('✅') ? 'alert-success border-0 shadow-sm bg-gradient' : 'alert-danger border-0 shadow-sm bg-gradient-danger'} fade show mb-5`} style={{
                       borderRadius: '16px',
@@ -345,7 +591,7 @@ export default function AddProjects() {
                   )}
 
                   <form onSubmit={handleSubmit}>
-                    {/* Basic Information Section */}
+                    {/* Basic Information Section with Live Validation */}
                     <div className="mb-5">
                       <h5 className="fw-bold mb-4" style={{
                         color: '#d4af37',
@@ -364,7 +610,7 @@ export default function AddProjects() {
                             type="text"
                             id="pname"
                             name="pname"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("pname")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -376,9 +622,10 @@ export default function AddProjects() {
                             }}
                             value={formData.pname}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="e.g., Downtown Office Complex"
-                            required
                           />
+                          {renderValidationFeedback("pname")}
                         </div>
                         <div className="col-md-6">
                           <label htmlFor="pnumber" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -388,7 +635,7 @@ export default function AddProjects() {
                             type="text"
                             id="pnumber"
                             name="pnumber"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("pnumber")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -400,9 +647,10 @@ export default function AddProjects() {
                             }}
                             value={formData.pnumber}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="e.g., PRJ-2025-001"
-                            required
                           />
+                          {renderValidationFeedback("pnumber")}
                         </div>
                         <div className="col-md-6">
                           <label htmlFor="pcode" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -412,7 +660,7 @@ export default function AddProjects() {
                             type="text"
                             id="pcode"
                             name="pcode"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("pcode")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -424,9 +672,10 @@ export default function AddProjects() {
                             }}
                             value={formData.pcode}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="e.g., DTC-001"
-                            required
                           />
+                          {renderValidationFeedback("pcode")}
                         </div>
                         <div className="col-md-6">
                           <label htmlFor="plocation" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -436,7 +685,7 @@ export default function AddProjects() {
                             type="text"
                             id="plocation"
                             name="plocation"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("plocation")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -448,9 +697,10 @@ export default function AddProjects() {
                             }}
                             value={formData.plocation}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="e.g., 123 Main St, New York, NY"
-                            required
                           />
+                          {renderValidationFeedback("plocation")}
                         </div>
 
                         <div className="col-md-6">
@@ -494,7 +744,7 @@ export default function AddProjects() {
                             type="file"
                             id="pimg"
                             name="pimg"
-                            className="form-control form-control-lg"
+                            className={`form-control form-control-lg ${hasFieldError('pimg') ? 'is-invalid' : fieldTouched.pimg && !hasFieldError('pimg') ? 'is-valid' : ''}`}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -508,6 +758,18 @@ export default function AddProjects() {
                             accept="image/*"
                             onChange={handleImageChange}
                           />
+                          {hasFieldError('pimg') && (
+                            <div className="invalid-feedback d-block">
+                              <i className="fas fa-exclamation-circle me-1"></i>
+                              {validationErrors.pimg[0]}
+                            </div>
+                          )}
+                          {fieldTouched.pimg && !hasFieldError('pimg') && formData.pimg.length > 0 && (
+                            <div className="valid-feedback d-block">
+                              <i className="fas fa-check-circle me-1"></i>
+                              {formData.pimg.length} image(s) uploaded successfully!
+                            </div>
+                          )}
                           <div className="form-text mt-2" style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
                             Upload up to 10 images (max 2MB each). Auto-compression applied for seamless integration.
                           </div>
@@ -587,7 +849,7 @@ export default function AddProjects() {
                             type="text"
                             id="pownerid"
                             name="pownerid"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("pownerid")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -599,9 +861,10 @@ export default function AddProjects() {
                             }}
                             value={formData.pownerid}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="e.g., OWN-2025-01"
-                            required
                           />
+                          {renderValidationFeedback("pownerid")}
                         </div>
                         <div className="col-md-4">
                           <label htmlFor="pownername" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -611,7 +874,7 @@ export default function AddProjects() {
                             type="text"
                             id="pownername"
                             name="pownername"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("pownername")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -623,9 +886,10 @@ export default function AddProjects() {
                             }}
                             value={formData.pownername}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="e.g., John Doe"
-                            required
                           />
+                          {renderValidationFeedback("pownername")}
                         </div>
                         <div className="col-md-4">
                           <label htmlFor="potelnumber" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -635,7 +899,7 @@ export default function AddProjects() {
                             type="tel"
                             id="potelnumber"
                             name="potelnumber"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("potelnumber")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -647,23 +911,20 @@ export default function AddProjects() {
                             }}
                             value={formData.potelnumber}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="e.g., +1 (555) 123-4567"
-                            required
                           />
+                          {renderValidationFeedback("potelnumber")}
                         </div>
                         <div className="col-md-4">
-                          <label
-                            htmlFor="powmail"
-                            className="form-label fw-semibold mb-2"
-                            style={{ color: '#374151' }}
-                          >
+                          <label htmlFor="powmail" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
                             Email <span className="text-danger">*</span>
                           </label>
                           <input
                             type="email"
                             id="powmail"
                             name="powmail"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("powmail")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -675,11 +936,11 @@ export default function AddProjects() {
                             }}
                             value={formData.powmail}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="e.g., owner@example.com"
-                            required
                           />
+                          {renderValidationFeedback("powmail")}
                         </div>
-
                       </div>
                     </div>
 
@@ -701,7 +962,7 @@ export default function AddProjects() {
                           <textarea
                             id="pdescription"
                             name="pdescription"
-                            className="form-control"
+                            className={getFieldClasses("pdescription", "form-control")}
                             rows="4"
                             style={{
                               borderRadius: '16px',
@@ -716,9 +977,10 @@ export default function AddProjects() {
                             }}
                             value={formData.pdescription}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="Detail the vision, scope, and key objectives..."
-                            required
                           />
+                          {renderValidationFeedback("pdescription")}
                         </div>
                         <div className="col-md-4">
                           <label htmlFor="ppriority" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -761,7 +1023,7 @@ export default function AddProjects() {
                               type="number"
                               id="pbudget"
                               name="pbudget"
-                              className="form-control form-control-lg"
+                              className={getFieldClasses("pbudget")}
                               style={{
                                 borderRadius: '16px',
                                 backgroundColor: '#fdfcfb',
@@ -773,12 +1035,13 @@ export default function AddProjects() {
                               }}
                               value={formData.pbudget}
                               onChange={handleChange}
+                              onBlur={handleBlur}
                               placeholder="0.00"
                               min="0"
                               step="0.01"
-                              required
                             />
                           </div>
+                          {renderValidationFeedback("pbudget")}
                         </div>
                         <div className="col-md-4">
                           <label htmlFor="pstatus" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -815,7 +1078,7 @@ export default function AddProjects() {
                             type="date"
                             id="penddate"
                             name="penddate"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("penddate")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -827,8 +1090,9 @@ export default function AddProjects() {
                             }}
                             value={formData.penddate}
                             onChange={handleChange}
-                            required
+                            onBlur={handleBlur}
                           />
+                          {renderValidationFeedback("penddate")}
                         </div>
                         <div className="col-md-6">
                           <label htmlFor="pissues" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -908,7 +1172,7 @@ export default function AddProjects() {
                           </>
                         ) : (
                           <>
-                            <i className="fas fa-rocket-launch me-2"></i>
+                            <i className="fas fa-rocket me-2"></i>
                             Launch Project
                           </>
                         )}

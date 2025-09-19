@@ -3,244 +3,707 @@ import autoTable from 'jspdf-autotable';
 
 // Company branding constants
 const COMPANY_NAME = "Workflows Engineering";
-const COMPANY_TAGLINE = "Smart Construction Workflow & Safety Management System";
-const CONFIDENTIAL_TEXT = "CONFIDENTIAL";
+const COMPANY_TAGLINE = "Build Your Dreams";
 
-// Create a professional header for all exports
-const createHeader = (doc, title, date = new Date()) => {
-  // Add company logo (using a construction-themed emoji for now)
-  doc.setFontSize(24);
-  doc.setTextColor(40, 53, 147); // Dark blue
-  doc.text("🏗️", 20, 25);
-  
-  // Company name
-  doc.setFontSize(20);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(40, 53, 147);
-  doc.text(COMPANY_NAME, 40, 25);
-  
-  // Company tagline
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 100, 100);
-  doc.text(COMPANY_TAGLINE, 40, 32);
-  
-  // Report title
-  doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0);
-  doc.text(title, doc.internal.pageSize.width / 2, 50, { align: 'center' });
-  
-  // Report date
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Generated on: ${date.toLocaleDateString()}`, doc.internal.pageSize.width - 20, 25, { align: 'right' });
-  
-  // Add a line separator
-  doc.setDrawColor(212, 175, 55); // Gold color
-  doc.setLineWidth(0.5);
-  doc.line(20, 60, doc.internal.pageSize.width - 20, 60);
-  
-  return 65; // Return next Y position
+// Color scheme - Yellow/White theme matching the template
+const COLORS = {
+  primary: [255, 193, 7], // Golden yellow
+  secondary: [255, 235, 59], // Light yellow
+  accent: [255, 152, 0], // Orange accent
+  dark: [33, 37, 41], // Dark gray
+  light: [248, 249, 250], // Light gray
+  white: [255, 255, 255],
+  text: [33, 37, 41],
+  background: [254, 254, 254]
 };
 
-// Create a professional footer for all exports
-const createFooter = (doc) => {
+// Add company logo as base64 (replace with your actual logo)
+// React logo base64 for testing purposes
+const COMPANY_LOGO_BASE64 = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xMS41IC0xMC4yMzE3NCAyMyAyMC40NjM0OCI+CiAgPHRpdGxlPlJlYWN0IExvZ288L3RpdGxlPgogIDxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIyLjA1IiBmaWxsPSIjNjFkYWZiIi8+CiAgPGcgc3Ryb2tlPSIjNjFkYWZiIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiPgogICAgPGVsbGlwc2Ugcng9IjExIiByeT0iNC4yIi8+CiAgICA8ZWxsaXBzZSByeD0iMTEiIHJ5PSI0LjIiIHRyYW5zZm9ybT0icm90YXRlKDYwKSIvPgogICAgPGVsbGlwc2Ugcng9IjExIiByeT0iNC4yIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+CiAgICA8ZWxsaXBzZSByeD0iMTEiIHJ5PSI0LjIiIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz4KICAgIDxlbGxpcHNlIHJ4PSIxMSIgcnk9IjQuMiIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIvPgogICAgPGVsbGlwc2Ugcng9IjExIiByeT0iNC4yIiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+CiAgICA8ZWxsaXBzZSByeD0iMTEiIHJ5PSI0LjIiIHRyYW5zZm9ybT0icm90YXRlKDM2MCkiLz4KICA8L2c+Cjwvc3ZnPg==";
+
+// Create cover page exactly like the PDF template
+const createCoverPage = (doc, title, reportType) => {
+  const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
   
-  // Add a line separator
-  doc.setDrawColor(212, 175, 55); // Gold color
-  doc.setLineWidth(0.5);
-  doc.line(20, pageHeight - 30, doc.internal.pageSize.width - 20, pageHeight - 30);
+  // Full page background with gradient effect
+  doc.setFillColor(...COLORS.background);
+  doc.rect(0, 0, pageWidth, pageHeight, 'F');
   
-  // Confidential watermark
-  doc.setFontSize(10);
+  // Top decorative band
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(0, 0, pageWidth, 60, 'F');
+  
+  // Add company logo prominently
+  try {
+    doc.addImage(COMPANY_LOGO_BASE64, 'PNG', pageWidth/2 - 40, 20, 80, 80);
+  } catch (error) {
+    // Fallback design
+    doc.setFillColor(...COLORS.accent);
+    doc.circle(pageWidth/2, 60, 40, 'F');
+    doc.setFontSize(36);
+    doc.setTextColor(...COLORS.white);
+    doc.text("🏗️", pageWidth/2, 70, { align: 'center' });
+  }
+  
+  // Company name - large and prominent
+  doc.setFontSize(28);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(200, 200, 200);
-  doc.text(CONFIDENTIAL_TEXT, doc.internal.pageSize.width / 2, pageHeight - 20, { align: 'center' });
+  doc.setTextColor(...COLORS.dark);
+  doc.text(COMPANY_NAME, pageWidth/2, 130, { align: 'center' });
   
-  // Page number
+  // Tagline
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  doc.text(COMPANY_TAGLINE, pageWidth/2, 145, { align: 'center' });
+  
+  // Decorative line
+  doc.setDrawColor(...COLORS.accent);
+  doc.setLineWidth(3);
+  doc.line(50, 160, pageWidth - 50, 160);
+  
+  // Report title - very prominent
+  doc.setFontSize(24);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.dark);
+  doc.text(title.toUpperCase(), pageWidth/2, 190, { align: 'center' });
+  
+  // Report type badge
+  doc.setFillColor(...COLORS.accent);
+  doc.roundedRect(pageWidth/2 - 40, 205, 80, 25, 5, 5, 'F');
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.white);
+  doc.text(reportType, pageWidth/2, 222, { align: 'center' });
+  
+  // Bottom decorative elements
+  doc.setFillColor(...COLORS.secondary);
+  doc.rect(0, pageHeight - 80, pageWidth, 80, 'F');
+  
+  // Date and generation info
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.dark);
+  doc.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth/2, pageHeight - 40, { align: 'center' });
+  doc.text(`Time: ${new Date().toLocaleTimeString()}`, pageWidth/2, pageHeight - 25, { align: 'center' });
+};
+
+// Create standard page header for content pages
+const createPageHeader = (doc, title, pageType) => {
+  const pageWidth = doc.internal.pageSize.width;
+  
+  // Header background
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(0, 0, pageWidth, 50, 'F');
+  
+  // Small logo
+  try {
+    doc.addImage(COMPANY_LOGO_BASE64, 'PNG', 15, 10, 30, 30);
+  } catch (error) {
+    doc.setFontSize(16);
+    doc.setTextColor(...COLORS.dark);
+    doc.text("🏗️", 15, 30);
+  }
+  
+  // Company name
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.dark);
+  doc.text(COMPANY_NAME, 50, 25);
+  
+  // Page title
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.dark);
+  doc.text(title, pageWidth - 20, 20, { align: 'right' });
+  
+  // Page type
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(150, 150, 150);
+  doc.setTextColor(...COLORS.dark);
+  doc.text(pageType, pageWidth - 20, 35, { align: 'right' });
+  
+  // Decorative line
+  doc.setDrawColor(...COLORS.accent);
+  doc.setLineWidth(2);
+  doc.line(15, 55, pageWidth - 15, 55);
+  
+  return 70; // Return starting Y position for content
+};
+
+// Create footer for all pages
+const createFooter = (doc) => {
+  const pageHeight = doc.internal.pageSize.height;
+  const pageWidth = doc.internal.pageSize.width;
+  
+  // Footer line
+  doc.setDrawColor(...COLORS.secondary);
+  doc.setLineWidth(1);
+  doc.line(20, pageHeight - 25, pageWidth - 20, pageHeight - 25);
+  
+  // Company info
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  doc.text(COMPANY_NAME + " - Smart Construction Workflow & Safety Management", 20, pageHeight - 15);
+};
+
+// Add page numbers
+const addPageNumbers = (doc) => {
   const pageCount = doc.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
+  const pageHeight = doc.internal.pageSize.height;
+  const pageWidth = doc.internal.pageSize.width;
+  
+  for (let i = 2; i <= pageCount; i++) { // Skip first page (cover)
     doc.setPage(i);
-    doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 20, pageHeight - 10, { align: 'right' });
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COLORS.text);
+    doc.text(`${i - 1}`, pageWidth - 20, pageHeight - 15, { align: 'right' });
   }
 };
 
-// Add a watermark to all pages
+// Add subtle watermark
 const addWatermark = (doc) => {
   const pageCount = doc.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  
+  for (let i = 2; i <= pageCount; i++) { // Skip cover page
     doc.setPage(i);
-    
-    // Add confidential watermark in the background
-    doc.setFontSize(40);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(240, 240, 240);
-    
-    // Rotate and add watermark text
     doc.saveGraphicsState();
-    doc.setTextColor(240, 240, 240);
-    doc.text(CONFIDENTIAL_TEXT, doc.internal.pageSize.width / 2, doc.internal.pageSize.height / 2, {
-      align: 'center',
-      angle: 45
-    });
+    doc.setGState(new doc.GState({ opacity: 0.05 }));
+    try {
+      doc.addImage(COMPANY_LOGO_BASE64, 'PNG', pageWidth/2 - 50, pageHeight/2 - 50, 100, 100);
+    } catch (error) {
+      // Fallback - no watermark if logo fails
+    }
     doc.restoreGraphicsState();
   }
 };
 
-// Export Project Data to PDF
-export const exportProjectToPDF = (project, filename) => {
-  const doc = new jsPDF();
+// Create About Company page
+const createAboutCompanyPage = (doc) => {
+  doc.addPage();
+  let yPosition = createPageHeader(doc, "About Our Company", "COMPANY PROFILE");
   
-  // Create header
-  let yPosition = createHeader(doc, `Project Report: ${project.pname}`);
+  // Main heading with background
+  doc.setFillColor(...COLORS.accent);
+  doc.rect(20, yPosition, 170, 25, 'F');
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.white);
+  doc.text("ABOUT WORKFLOWS ENGINEERING", 105, yPosition + 16, { align: 'center' });
+  yPosition += 40;
   
-  // Project Information Section
+  // Company description with proper formatting
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  
+  const aboutText = `Workflows Engineering stands at the forefront of construction technology innovation. Our comprehensive platform revolutionizes how construction projects are conceived, planned, executed, and delivered.
+
+We specialize in creating intelligent workflow management systems that seamlessly integrate safety protocols, project timelines, resource allocation, and quality assurance into one unified platform.
+
+Our mission extends beyond mere software development - we're building the future of construction management through cutting-edge technology and deep industry expertise.`;
+  
+  const splitText = doc.splitTextToSize(aboutText, 160);
+  doc.text(splitText, 25, yPosition);
+  yPosition += splitText.length * 6 + 30;
+  
+  // Key Features section
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(20, yPosition, 170, 20, 'F');
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0);
-  doc.text("Project Information", 20, yPosition);
-  yPosition += 10;
+  doc.setTextColor(...COLORS.dark);
+  doc.text("KEY FEATURES & CAPABILITIES", 25, yPosition + 13);
+  yPosition += 35;
   
-  // Project details table
-  const projectData = [
-    ["Project Name", project.pname],
-    ["Project Code", project.pcode],
-    ["Project Number", project.pnumber],
-    ["Project Type", project.ptype],
-    ["Location", project.plocation],
-    ["Status", project.pstatus],
-    ["Priority", project.ppriority],
-    ["Budget", `$${parseFloat(project.pbudget || 0).toLocaleString()}`],
-    ["Start Date", new Date(project.pcreatedat).toLocaleDateString()],
-    ["End Date", new Date(project.penddate).toLocaleDateString()],
-    ["Owner ID", project.pownerid],
-    ["Owner Name", project.pownername],
-    ["Phone", project.potelnumber],
-    ["Email", project.powmail]
+  const features = [
+    "• Real-time project monitoring and reporting",
+    "• Advanced safety compliance tracking",
+    "• Integrated resource and timeline management",
+    "• Automated workflow optimization",
+    "• Comprehensive data analytics and insights",
+    "• Mobile-first design for field operations"
+  ];
+  
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+  features.forEach(feature => {
+    doc.text(feature, 30, yPosition);
+    yPosition += 12;
+  });
+};
+
+// Create Vision & Mission page
+const createVisionMissionPage = (doc) => {
+  doc.addPage();
+  let yPosition = createPageHeader(doc, "Vision & Mission", "CORPORATE VISION");
+  
+  // Vision section
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(20, yPosition, 170, 25, 'F');
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.dark);
+  doc.text("OUR VISION", 105, yPosition + 16, { align: 'center' });
+  yPosition += 40;
+  
+  // Vision content box
+  doc.setDrawColor(...COLORS.secondary);
+  doc.setLineWidth(2);
+  doc.rect(25, yPosition, 160, 60);
+  doc.setFillColor(...COLORS.light);
+  doc.rect(25, yPosition, 160, 60, 'F');
+  
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  const visionText = "To revolutionize the global construction industry through intelligent automation, comprehensive safety management, and data-driven decision making, creating a world where every construction project is delivered safely, efficiently, and sustainably.";
+  const splitVision = doc.splitTextToSize(visionText, 140);
+  doc.text(splitVision, 35, yPosition + 15);
+  yPosition += 80;
+  
+  // Mission section
+  doc.setFillColor(...COLORS.accent);
+  doc.rect(20, yPosition, 170, 25, 'F');
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.white);
+  doc.text("OUR MISSION", 105, yPosition + 16, { align: 'center' });
+  yPosition += 40;
+  
+  // Mission content box
+  doc.setDrawColor(...COLORS.primary);
+  doc.setLineWidth(2);
+  doc.rect(25, yPosition, 160, 80);
+  doc.setFillColor(...COLORS.white);
+  doc.rect(25, yPosition, 160, 80, 'F');
+  
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  const missionText = "We are committed to delivering cutting-edge construction management solutions that enhance productivity, ensure compliance, and promote safety across all project phases. Through continuous innovation and client partnership, we strive to set new industry standards while building lasting relationships based on trust, expertise, and exceptional service delivery.";
+  const splitMission = doc.splitTextToSize(missionText, 140);
+  doc.text(splitMission, 35, yPosition + 15);
+};
+
+// Create Market Analysis page
+const createMarketAnalysisPage = (doc) => {
+  doc.addPage();
+  let yPosition = createPageHeader(doc, "Market Analysis", "MARKET INSIGHTS");
+  
+  // Market Size section
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(20, yPosition, 170, 25, 'F');
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.dark);
+  doc.text("MARKET SIZE & OPPORTUNITIES", 105, yPosition + 16, { align: 'center' });
+  yPosition += 40;
+  
+  // Market data in attractive format
+  const marketData = [
+    ["Global Construction Software Market", "$2.4 Billion", "2023"],
+    ["Projected Market Size", "$4.2 Billion", "2028"],
+    ["Annual Growth Rate (CAGR)", "12.8%", "2023-2028"],
+    ["North American Market Share", "35%", "Current"],
+    ["Target Segment Growth", "18%", "Annual"]
   ];
   
   autoTable(doc, {
     startY: yPosition,
-    head: [['Field', 'Value']],
-    body: projectData,
+    head: [['Market Metric', 'Value', 'Period']],
+    body: marketData,
     theme: 'grid',
     headStyles: {
-      fillColor: [40, 53, 147],
-      textColor: [255, 255, 255],
-      fontStyle: 'bold'
+      fillColor: COLORS.accent,
+      textColor: COLORS.white,
+      fontStyle: 'bold',
+      fontSize: 12
+    },
+    bodyStyles: {
+      fontSize: 11,
+      textColor: COLORS.text
+    },
+    alternateRowStyles: {
+      fillColor: COLORS.light
     },
     styles: {
-      cellPadding: 3,
-      fontSize: 10,
-      overflow: 'linebreak',
-      tableWidth: 'wrap'
+      cellPadding: 8,
+      lineColor: COLORS.secondary,
+      lineWidth: 1
     },
     columnStyles: {
-      0: { cellWidth: 40, fontStyle: 'bold' },
-      1: { cellWidth: 120 }
+      0: { cellWidth: 70, fontStyle: 'bold' },
+      1: { cellWidth: 50, align: 'center' },
+      2: { cellWidth: 50, align: 'center' }
     },
     margin: { left: 20, right: 20 }
   });
   
-  yPosition = doc.lastAutoTable.finalY + 15;
+  yPosition = doc.lastAutoTable.finalY + 25;
   
-  // Project Description Section
-  if (project.pdescription) {
+  // Opportunities section
+  doc.setFillColor(...COLORS.secondary);
+  doc.rect(20, yPosition, 80, 20, 'F');
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.dark);
+  doc.text("OPPORTUNITIES", 25, yPosition + 13);
+  
+  // Threats section
+  doc.setFillColor(...COLORS.accent);
+  doc.rect(110, yPosition, 80, 20, 'F');
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.white);
+  doc.text("THREATS", 115, yPosition + 13);
+  yPosition += 30;
+  
+  // Two-column layout for opportunities and threats
+  const opportunities = [
+    "Digital transformation drive",
+    "IoT & AI integration demand",
+    "Sustainability requirements",
+    "Remote work adaptation"
+  ];
+  
+  const threats = [
+    "Economic uncertainties",
+    "Cybersecurity concerns",
+    "Regulatory changes",
+    "Market competition"
+  ];
+  
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  
+  opportunities.forEach((opp, index) => {
+    doc.text(`• ${opp}`, 25, yPosition + (index * 12));
+  });
+  
+  threats.forEach((threat, index) => {
+    doc.text(`• ${threat}`, 115, yPosition + (index * 12));
+  });
+};
+
+// Create Team page
+const createTeamPage = (doc) => {
+  doc.addPage();
+  let yPosition = createPageHeader(doc, "Our Team", "TEAM MEMBERS");
+  
+  // Team heading
+  doc.setFillColor(...COLORS.accent);
+  doc.rect(20, yPosition, 170, 25, 'F');
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.white);
+  doc.text("LEADERSHIP TEAM", 105, yPosition + 16, { align: 'center' });
+  yPosition += 40;
+  
+  // Team members in a professional layout
+  const teamMembers = [
+    {
+      position: "Chief Executive Officer",
+      name: "John Smith",
+      experience: "15+ years construction industry leadership",
+      background: "Former VP at major construction firm"
+    },
+    {
+      position: "Chief Technology Officer", 
+      name: "Sarah Johnson",
+      experience: "12+ years software architecture",
+      background: "Ex-Google senior engineer"
+    },
+    {
+      position: "Head of Operations",
+      name: "Mike Davis", 
+      experience: "10+ years project management",
+      background: "PMP certified, MBA"
+    },
+    {
+      position: "Safety Director",
+      name: "Emily Chen",
+      experience: "8+ years safety compliance",
+      background: "OSHA certified specialist"
+    }
+  ];
+  
+  teamMembers.forEach((member, index) => {
+    // Member box
+    doc.setDrawColor(...COLORS.primary);
+    doc.setLineWidth(1);
+    doc.rect(20, yPosition, 170, 35);
+    doc.setFillColor(...COLORS.light);
+    doc.rect(20, yPosition, 170, 35, 'F');
+    
+    // Position title
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.accent);
+    doc.text(member.position, 25, yPosition + 10);
+    
+    // Name
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Project Description", 20, yPosition);
-    yPosition += 10;
+    doc.setTextColor(...COLORS.dark);
+    doc.text(member.name, 25, yPosition + 22);
     
-    doc.setFontSize(12);
+    // Experience and background
+    doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    const splitDescription = doc.splitTextToSize(project.pdescription, 170);
-    doc.text(splitDescription, 20, yPosition);
-    yPosition += splitDescription.length * 7 + 10;
-  }
+    doc.setTextColor(...COLORS.text);
+    doc.text(member.experience, 105, yPosition + 15);
+    doc.text(member.background, 105, yPosition + 27);
+    
+    yPosition += 45;
+  });
+};
+
+// Create project data page
+const createProjectDataPage = (doc, project, reportType) => {
+  doc.addPage();
+  let yPosition = createPageHeader(doc, `${reportType} Details`, reportType.toUpperCase());
   
-  // Issues Section
-  if (project.pissues && project.pissues.length > 0) {
-    doc.setFontSize(14);
+  // Data section heading
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(20, yPosition, 170, 25, 'F');
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.dark);
+  doc.text(`${reportType.toUpperCase()} INFORMATION`, 105, yPosition + 16, { align: 'center' });
+  yPosition += 40;
+  
+  if (reportType === "PROJECT") {
+    // Project details table
+    const projectData = [
+      ["Project Name", project.pname || 'N/A'],
+      ["Project Code", project.pcode || 'N/A'],
+      ["Project Type", project.ptype || 'N/A'],
+      ["Location", project.plocation || 'N/A'],
+      ["Status", project.pstatus || 'N/A'],
+      ["Priority", project.ppriority || 'N/A'],
+      ["Budget", project.pbudget ? `$${parseFloat(project.pbudget).toLocaleString()}` : 'N/A'],
+      ["Start Date", project.pcreatedat ? new Date(project.pcreatedat).toLocaleDateString() : 'N/A'],
+      ["End Date", project.penddate ? new Date(project.penddate).toLocaleDateString() : 'N/A'],
+      ["Owner", project.pownername || 'N/A'],
+      ["Contact", project.potelnumber || 'N/A'],
+      ["Email", project.powmail || 'N/A']
+    ];
+    
+    autoTable(doc, {
+      startY: yPosition,
+      head: [['Field', 'Details']],
+      body: projectData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: COLORS.accent,
+        textColor: COLORS.white,
+        fontStyle: 'bold',
+        fontSize: 12
+      },
+      bodyStyles: {
+        fontSize: 11,
+        textColor: COLORS.text
+      },
+      alternateRowStyles: {
+        fillColor: COLORS.light
+      },
+      styles: {
+        cellPadding: 6,
+        lineColor: COLORS.secondary,
+        lineWidth: 0.5
+      },
+      columnStyles: {
+        0: { cellWidth: 60, fontStyle: 'bold', fillColor: COLORS.secondary },
+        1: { cellWidth: 110 }
+      },
+      margin: { left: 20, right: 20 }
+    });
+    
+    yPosition = doc.lastAutoTable.finalY + 20;
+    
+    // Project description if available
+    if (project.pdescription) {
+      doc.setFillColor(...COLORS.secondary);
+      doc.rect(20, yPosition, 170, 15, 'F');
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...COLORS.dark);
+      doc.text("PROJECT DESCRIPTION", 25, yPosition + 10);
+      yPosition += 25;
+      
+      doc.setDrawColor(...COLORS.primary);
+      doc.setLineWidth(1);
+      doc.rect(25, yPosition, 160, 50);
+      doc.setFillColor(...COLORS.white);
+      doc.rect(25, yPosition, 160, 50, 'F');
+      
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...COLORS.text);
+      const splitDescription = doc.splitTextToSize(project.pdescription, 150);
+      doc.text(splitDescription, 30, yPosition + 10);
+    }
+  }
+};
+
+// Create signature page
+const createSignaturePage = (doc) => {
+  doc.addPage();
+  let yPosition = createPageHeader(doc, "Authorization", "SIGNATURES");
+  
+  // Signature section
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(20, yPosition, 170, 25, 'F');
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.dark);
+  doc.text("DOCUMENT AUTHORIZATION", 105, yPosition + 16, { align: 'center' });
+  yPosition += 50;
+  
+  // Signature boxes
+  const signatures = [
+    { title: "Prepared by", role: "Project Manager" },
+    { title: "Reviewed by", role: "Technical Lead" },
+    { title: "Approved by", role: "Department Head" }
+  ];
+  
+  signatures.forEach((sig, index) => {
+    // Signature box
+    doc.setDrawColor(...COLORS.secondary);
+    doc.setLineWidth(1);
+    doc.rect(30, yPosition, 150, 50);
+    
+    // Title
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Issues", 20, yPosition);
-    yPosition += 10;
+    doc.setTextColor(...COLORS.dark);
+    doc.text(`${sig.title}:`, 35, yPosition + 15);
     
-    doc.setFontSize(12);
+    // Role
+    doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    const issuesText = Array.isArray(project.pissues) ? project.pissues.join(', ') : project.pissues;
-    const splitIssues = doc.splitTextToSize(issuesText, 170);
-    doc.text(splitIssues, 20, yPosition);
-    yPosition += splitIssues.length * 7 + 10;
-  }
-  
-  // Observations Section
-  if (project.pobservations) {
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Observations", 20, yPosition);
-    yPosition += 10;
+    doc.setTextColor(...COLORS.text);
+    doc.text(`(${sig.role})`, 35, yPosition + 25);
     
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    const splitObservations = doc.splitTextToSize(project.pobservations, 170);
-    doc.text(splitObservations, 20, yPosition);
-    yPosition += splitObservations.length * 7 + 10;
-  }
+    // Signature line
+    doc.setDrawColor(...COLORS.primary);
+    doc.setLineWidth(1);
+    doc.line(35, yPosition + 35, 120, yPosition + 35);
+    doc.text("Signature", 35, yPosition + 42);
+    
+    // Date line
+    doc.line(130, yPosition + 35, 175, yPosition + 35);
+    doc.text("Date", 130, yPosition + 42);
+    
+    yPosition += 70;
+  });
+};
+
+// Create thank you page
+const createThankYouPage = (doc) => {
+  doc.addPage();
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
   
-  // Signatures Section
-  yPosition = Math.max(yPosition, doc.internal.pageSize.height - 100);
+  // Full page design
+  doc.setFillColor(...COLORS.background);
+  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+  
+  // Decorative top
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(0, 0, pageWidth, 100, 'F');
+  
+  // Thank you message
+  doc.setFontSize(32);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.dark);
+  doc.text("THANK YOU", pageWidth/2, 150, { align: 'center' });
+  
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "normal");
+  doc.text("For choosing Workflows Engineering", pageWidth/2, 180, { align: 'center' });
+  
+  // Contact information
+  doc.setFillColor(...COLORS.secondary);
+  doc.rect(40, 220, pageWidth - 80, 60, 'F');
   
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0);
-  doc.text("Signatures", 20, yPosition);
-  yPosition += 10;
+  doc.setTextColor(...COLORS.dark);
+  doc.text("CONTACT US", pageWidth/2, 240, { align: 'center' });
   
-  // Signature lines
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  doc.text("Prepared by: ________________________", 20, yPosition);
-  doc.text("Date: _________", 150, yPosition);
-  yPosition += 15;
+  doc.text("Email: info@workflowsengineering.com", pageWidth/2, 255, { align: 'center' });
+  doc.text("Phone: +1 (555) 123-4567", pageWidth/2, 270, { align: 'center' });
   
-  doc.text("Approved by: ________________________", 20, yPosition);
-  doc.text("Date: _________", 150, yPosition);
+  // Bottom decorative
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(0, pageHeight - 60, pageWidth, 60, 'F');
+};
+
+// Main export functions
+export const exportProjectToPDF = (project, filename) => {
+  const doc = new jsPDF();
   
-  // Add watermark and footer
+  // Create all pages in order
+  createCoverPage(doc, `Project Report: ${project.pname || 'Unnamed Project'}`, "PROJECT REPORT");
+  createAboutCompanyPage(doc);
+  createVisionMissionPage(doc);
+  createMarketAnalysisPage(doc);
+  createTeamPage(doc);
+  createProjectDataPage(doc, project, "PROJECT");
+  createSignaturePage(doc);
+  createThankYouPage(doc);
+  
+  // Apply finishing touches
   addWatermark(doc);
-  createFooter(doc);
+  addPageNumbers(doc);
+  
+  // Add footer to content pages
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 2; i <= pageCount - 1; i++) { // Skip cover and thank you pages
+    doc.setPage(i);
+    createFooter(doc);
+  }
   
   // Save the PDF
   doc.save(filename || `project-${project.pcode || 'report'}.pdf`);
 };
 
-// Export Project Timeline Data to PDF
 export const exportTimelineToPDF = (timeline, filename) => {
   const doc = new jsPDF();
   
-  // Create header
-  let yPosition = createHeader(doc, `Project Timeline Report: ${timeline.projectDetails?.pname || timeline.pcode}`);
+  // Create all pages in order
+  createCoverPage(doc, `Timeline Report: ${timeline.projectDetails?.pname || timeline.pcode || 'Timeline'}`, "TIMELINE REPORT");
+  createAboutCompanyPage(doc);
+  createVisionMissionPage(doc);
+  createMarketAnalysisPage(doc);
+  createTeamPage(doc);
   
-  // Timeline Information Section
-  doc.setFontSize(14);
+  // Timeline specific pages
+  doc.addPage();
+  let yPosition = createPageHeader(doc, "Timeline Details", "TIMELINE DATA");
+  
+  // Timeline information
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(20, yPosition, 170, 25, 'F');
+  doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0);
-  doc.text("Timeline Information", 20, yPosition);
-  yPosition += 10;
+  doc.setTextColor(...COLORS.dark);
+  doc.text("TIMELINE INFORMATION", 105, yPosition + 16, { align: 'center' });
+  yPosition += 40;
   
-  // Timeline details table
   const timelineData = [
-    ["Project Code", timeline.pcode],
+    ["Project Code", timeline.pcode || 'N/A'],
     ["Project Name", timeline.projectDetails?.pname || 'N/A'],
-    ["Date", new Date(timeline.date).toLocaleDateString()],
+    ["Date", timeline.date ? new Date(timeline.date).toLocaleDateString() : 'N/A'],
     ["Workers Count", timeline.workerCount || 0],
     ["Engineers Count", timeline.tengineerCount || 0],
     ["Architects Count", timeline.architectCount || 0]
@@ -248,36 +711,46 @@ export const exportTimelineToPDF = (timeline, filename) => {
   
   autoTable(doc, {
     startY: yPosition,
-    head: [['Field', 'Value']],
+    head: [['Field', 'Details']],
     body: timelineData,
-    theme: 'grid',
+    theme: 'striped',
     headStyles: {
-      fillColor: [40, 53, 147],
-      textColor: [255, 255, 255],
-      fontStyle: 'bold'
+      fillColor: COLORS.accent,
+      textColor: COLORS.white,
+      fontStyle: 'bold',
+      fontSize: 12
+    },
+    bodyStyles: {
+      fontSize: 11,
+      textColor: COLORS.text
+    },
+    alternateRowStyles: {
+      fillColor: COLORS.light
     },
     styles: {
-      cellPadding: 3,
-      fontSize: 10,
-      overflow: 'linebreak',
-      tableWidth: 'wrap'
+      cellPadding: 6,
+      lineColor: COLORS.secondary,
+      lineWidth: 0.5
     },
     columnStyles: {
-      0: { cellWidth: 50, fontStyle: 'bold' },
+      0: { cellWidth: 60, fontStyle: 'bold', fillColor: COLORS.secondary },
       1: { cellWidth: 110 }
     },
     margin: { left: 20, right: 20 }
   });
   
-  yPosition = doc.lastAutoTable.finalY + 15;
-  
-  // Workers Section
+  // Add resource tables on separate pages if data exists
   if (timeline.tworker && timeline.tworker.length > 0) {
+    doc.addPage();
+    yPosition = createPageHeader(doc, "Workers", "WORKFORCE");
+    
+    doc.setFillColor(...COLORS.primary);
+    doc.rect(20, yPosition, 170, 20, 'F');
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Workers", 20, yPosition);
-    yPosition += 10;
+    doc.setTextColor(...COLORS.dark);
+    doc.text("WORKERS ASSIGNED", 25, yPosition + 13);
+    yPosition += 30;
     
     const workerData = timeline.tworker.map(worker => [
       worker.name || 'N/A',
@@ -289,424 +762,116 @@ export const exportTimelineToPDF = (timeline, filename) => {
       startY: yPosition,
       head: [['Name', 'Role', 'Hours Worked']],
       body: workerData,
-      theme: 'grid',
+      theme: 'striped',
       headStyles: {
-        fillColor: [40, 53, 147],
-        textColor: [255, 255, 255],
+        fillColor: COLORS.accent,
+        textColor: COLORS.white,
         fontStyle: 'bold'
       },
+      alternateRowStyles: {
+        fillColor: COLORS.light
+      },
       styles: {
-        cellPadding: 3,
-        fontSize: 10
+        cellPadding: 5,
+        fontSize: 11
       },
       margin: { left: 20, right: 20 }
     });
-    
-    yPosition = doc.lastAutoTable.finalY + 15;
   }
   
-  // Engineers Section
-  if (timeline.tengineer && timeline.tengineer.length > 0) {
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Engineers", 20, yPosition);
-    yPosition += 10;
-    
-    const engineerData = timeline.tengineer.map(engineer => [
-      engineer.name || 'N/A',
-      engineer.specialty || 'N/A',
-      engineer.hoursWorked || 0
-    ]);
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Name', 'Specialty', 'Hours Worked']],
-      body: engineerData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [40, 53, 147],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      styles: {
-        cellPadding: 3,
-        fontSize: 10
-      },
-      margin: { left: 20, right: 20 }
-    });
-    
-    yPosition = doc.lastAutoTable.finalY + 15;
-  }
+  createSignaturePage(doc);
+  createThankYouPage(doc);
   
-  // Architects Section
-  if (timeline.tarchitect && timeline.tarchitect.length > 0) {
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Architects", 20, yPosition);
-    yPosition += 10;
-    
-    const architectData = timeline.tarchitect.map(architect => [
-      architect.name || 'N/A',
-      architect.specialty || 'N/A',
-      architect.hoursWorked || 0
-    ]);
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Name', 'Specialty', 'Hours Worked']],
-      body: architectData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [40, 53, 147],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      styles: {
-        cellPadding: 3,
-        fontSize: 10
-      },
-      margin: { left: 20, right: 20 }
-    });
-    
-    yPosition = doc.lastAutoTable.finalY + 15;
-  }
-  
-  // Materials Section
-  if (timeline.tmaterials && timeline.tmaterials.length > 0) {
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Materials", 20, yPosition);
-    yPosition += 10;
-    
-    const materialData = timeline.tmaterials.map(material => [
-      material.name || 'N/A',
-      material.quantity || 0,
-      material.unit || 'N/A',
-      material.cost ? `$${material.cost}` : 'N/A'
-    ]);
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Name', 'Quantity', 'Unit', 'Cost']],
-      body: materialData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [40, 53, 147],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      styles: {
-        cellPadding: 3,
-        fontSize: 10
-      },
-      margin: { left: 20, right: 20 }
-    });
-    
-    yPosition = doc.lastAutoTable.finalY + 15;
-  }
-  
-  // Tools Section
-  if (timeline.ttools && timeline.ttools.length > 0) {
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Tools", 20, yPosition);
-    yPosition += 10;
-    
-    const toolData = timeline.ttools.map(tool => [
-      tool.name || 'N/A',
-      tool.quantity || 0,
-      tool.status || 'N/A'
-    ]);
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Name', 'Quantity', 'Status']],
-      body: toolData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [40, 53, 147],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      styles: {
-        cellPadding: 3,
-        fontSize: 10
-      },
-      margin: { left: 20, right: 20 }
-    });
-    
-    yPosition = doc.lastAutoTable.finalY + 15;
-  }
-  
-  // Expenses Section
-  if (timeline.texpenses && timeline.texpenses.length > 0) {
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Expenses", 20, yPosition);
-    yPosition += 10;
-    
-    const expenseData = timeline.texpenses.map(expense => [
-      expense.description || 'N/A',
-      expense.date ? new Date(expense.date).toLocaleDateString() : 'N/A',
-      expense.amount ? `$${expense.amount}` : 'N/A'
-    ]);
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Description', 'Date', 'Amount']],
-      body: expenseData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [40, 53, 147],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      styles: {
-        cellPadding: 3,
-        fontSize: 10
-      },
-      margin: { left: 20, right: 20 }
-    });
-    
-    yPosition = doc.lastAutoTable.finalY + 15;
-  }
-  
-  // Notes Section
-  if (timeline.tnotes) {
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Notes", 20, yPosition);
-    yPosition += 10;
-    
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    const splitNotes = doc.splitTextToSize(timeline.tnotes, 170);
-    doc.text(splitNotes, 20, yPosition);
-    yPosition += splitNotes.length * 7 + 10;
-  }
-  
-  // Signatures Section
-  yPosition = Math.max(yPosition, doc.internal.pageSize.height - 100);
-  
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0);
-  doc.text("Signatures", 20, yPosition);
-  yPosition += 10;
-  
-  // Signature lines
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "normal");
-  doc.text("Prepared by: ________________________", 20, yPosition);
-  doc.text("Date: _________", 150, yPosition);
-  yPosition += 15;
-  
-  doc.text("Approved by: ________________________", 20, yPosition);
-  doc.text("Date: _________", 150, yPosition);
-  
-  // Add watermark and footer
+  // Apply finishing touches
   addWatermark(doc);
-  createFooter(doc);
+  addPageNumbers(doc);
+  
+  // Add footer to content pages
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 2; i <= pageCount - 1; i++) {
+    doc.setPage(i);
+    createFooter(doc);
+  }
   
   // Save the PDF
-  doc.save(filename || `timeline-${timeline.pcode || 'report'}-${new Date(timeline.date).toISOString().split('T')[0]}.pdf`);
+  doc.save(filename || `timeline-${timeline.pcode || 'report'}.pdf`);
 };
 
-// Export Financial Dashboard Data to PDF
-export const exportFinancialDashboardToPDF = (dashboard, filename) => {
+// Export Financial Dashboard to PDF
+export const exportFinancialToPDF = (financial, filename) => {
   const doc = new jsPDF();
   
-  // Create header
-  let yPosition = createHeader(doc, `Financial Dashboard Report: ${dashboard.dashboardName}`);
+  createCoverPage(doc, `Financial Dashboard: ${financial.projectName || 'Financial Report'}`, "FINANCIAL REPORT");
+  createAboutCompanyPage(doc);
+  createVisionMissionPage(doc);
+  createMarketAnalysisPage(doc);
+  createTeamPage(doc);
   
-  // Dashboard Information Section
-  doc.setFontSize(14);
+  // Financial data page
+  doc.addPage();
+  let yPosition = createPageHeader(doc, "Financial Dashboard", "FINANCIAL DATA");
+  
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(20, yPosition, 170, 25, 'F');
+  doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0);
-  doc.text("Dashboard Information", 20, yPosition);
-  yPosition += 10;
+  doc.setTextColor(...COLORS.dark);
+  doc.text("FINANCIAL OVERVIEW", 105, yPosition + 16, { align: 'center' });
+  yPosition += 40;
   
-  // Dashboard details table
-  const dashboardData = [
-    ["Dashboard Name", dashboard.dashboardName],
-    ["Dashboard ID", dashboard.dashboardId],
-    ["Calculation Date", new Date(dashboard.calculationDate).toLocaleDateString()],
-    ["Projects Analyzed", dashboard.financialSummary?.projectCount || 0],
-    ["Timeline Entries", dashboard.financialSummary?.timelineEntries || 0]
+  // Create financial summary table based on your financial data structure
+  const financialData = [
+    ["Total Budget", financial.totalBudget ? `$${financial.totalBudget.toLocaleString()}` : 'N/A'],
+    ["Spent to Date", financial.spentAmount ? `$${financial.spentAmount.toLocaleString()}` : 'N/A'],
+    ["Remaining Budget", financial.remainingBudget ? `$${financial.remainingBudget.toLocaleString()}` : 'N/A'],
+    ["Cost Variance", financial.costVariance || 'N/A'],
+    ["Budget Utilization", financial.utilizationPercent ? `${financial.utilizationPercent}%` : 'N/A']
   ];
-  
-  if (dashboard.selectedProjects && dashboard.selectedProjects.length > 0) {
-    dashboardData.push(["Selected Projects", dashboard.selectedProjects.join(', ')]);
-  }
-  
-  if (dashboard.dateFrom) {
-    dashboardData.push(["Date From", new Date(dashboard.dateFrom).toLocaleDateString()]);
-  }
-  
-  if (dashboard.dateTo) {
-    dashboardData.push(["Date To", new Date(dashboard.dateTo).toLocaleDateString()]);
-  }
   
   autoTable(doc, {
     startY: yPosition,
-    head: [['Field', 'Value']],
-    body: dashboardData,
-    theme: 'grid',
+    head: [['Financial Metric', 'Amount']],
+    body: financialData,
+    theme: 'striped',
     headStyles: {
-      fillColor: [40, 53, 147],
-      textColor: [255, 255, 255],
-      fontStyle: 'bold'
+      fillColor: COLORS.accent,
+      textColor: COLORS.white,
+      fontStyle: 'bold',
+      fontSize: 12
+    },
+    bodyStyles: {
+      fontSize: 11,
+      textColor: COLORS.text
+    },
+    alternateRowStyles: {
+      fillColor: COLORS.light
     },
     styles: {
-      cellPadding: 3,
-      fontSize: 10,
-      overflow: 'linebreak',
-      tableWidth: 'wrap'
+      cellPadding: 6,
+      lineColor: COLORS.secondary,
+      lineWidth: 0.5
     },
     columnStyles: {
-      0: { cellWidth: 50, fontStyle: 'bold' },
-      1: { cellWidth: 110 }
+      0: { cellWidth: 85, fontStyle: 'bold', fillColor: COLORS.secondary },
+      1: { cellWidth: 85, align: 'right' }
     },
     margin: { left: 20, right: 20 }
   });
   
-  yPosition = doc.lastAutoTable.finalY + 15;
+  createSignaturePage(doc);
+  createThankYouPage(doc);
   
-  // Financial Summary Section
-  if (dashboard.financialSummary) {
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Financial Summary", 20, yPosition);
-    yPosition += 10;
-    
-    const summaryData = [
-      ["Grand Total", `$${(dashboard.financialSummary.grandTotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-      ["Average Project Cost", `$${(dashboard.financialSummary.averageProjectCost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-      ["Profit Margin", `$${(dashboard.financialSummary.profitMargin || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-      ["ROI", `${(dashboard.financialSummary.roi || 0).toFixed(2)}%`]
-    ];
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Metric', 'Value']],
-      body: summaryData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [40, 53, 147],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      styles: {
-        cellPadding: 3,
-        fontSize: 10
-      },
-      margin: { left: 20, right: 20 }
-    });
-    
-    yPosition = doc.lastAutoTable.finalY + 15;
-  }
-  
-  // Cost Breakdown Section
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0);
-  doc.text("Cost Breakdown", 20, yPosition);
-  yPosition += 10;
-  
-  const costData = [
-    ["Labor Costs", `$${(dashboard.totalLaborCost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-    ["Material Costs", `$${(dashboard.totalMaterialCost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-    ["Tool Costs", `$${(dashboard.totalToolCost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-    ["Expenses", `$${(dashboard.totalExpenses || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-    ["Project Costs", `$${(dashboard.totalProjectCost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]
-  ];
-  
-  autoTable(doc, {
-    startY: yPosition,
-    head: [['Cost Type', 'Amount']],
-    body: costData,
-    theme: 'grid',
-    headStyles: {
-      fillColor: [40, 53, 147],
-      textColor: [255, 255, 255],
-      fontStyle: 'bold'
-    },
-    styles: {
-      cellPadding: 3,
-      fontSize: 10
-    },
-    margin: { left: 20, right: 20 }
-  });
-  
-  yPosition = doc.lastAutoTable.finalY + 15;
-  
-  // Project Breakdown Section
-  if (dashboard.projectBreakdown && dashboard.projectBreakdown.length > 0) {
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Project Breakdown", 20, yPosition);
-    yPosition += 10;
-    
-    const projectData = dashboard.projectBreakdown.map(project => [
-      project.projectName || project.projectCode,
-      project.projectType || 'N/A',
-      `$${(project.totalCost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      `$${(project.laborCost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      `$${(project.materialCost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      `$${(project.toolCost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    ]);
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Project', 'Type', 'Total Cost', 'Labor', 'Materials', 'Tools']],
-      body: projectData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [40, 53, 147],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      styles: {
-        cellPadding: 3,
-        fontSize: 8
-      },
-      margin: { left: 20, right: 20 }
-    });
-    
-    yPosition = doc.lastAutoTable.finalY + 15;
-  }
-  
-  // Signatures Section
-  yPosition = Math.max(yPosition, doc.internal.pageSize.height - 100);
-  
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0);
-  doc.text("Signatures", 20, yPosition);
-  yPosition += 10;
-  
-  // Signature lines
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "normal");
-  doc.text("Prepared by: ________________________", 20, yPosition);
-  doc.text("Date: _________", 150, yPosition);
-  yPosition += 15;
-  
-  doc.text("Approved by: ________________________", 20, yPosition);
-  doc.text("Date: _________", 150, yPosition);
-  
-  // Add watermark and footer
   addWatermark(doc);
-  createFooter(doc);
+  addPageNumbers(doc);
   
-  // Save the PDF
-  doc.save(filename || `financial-dashboard-${dashboard.dashboardId || 'report'}.pdf`);
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 2; i <= pageCount - 1; i++) {
+    doc.setPage(i);
+    createFooter(doc);
+  }
+  
+  doc.save(filename || `financial-${financial.projectCode || 'report'}.pdf`);
 };
+
+// Export alias for backward compatibility with existing imports
+export const exportFinancialDashboardToPDF = exportFinancialToPDF;

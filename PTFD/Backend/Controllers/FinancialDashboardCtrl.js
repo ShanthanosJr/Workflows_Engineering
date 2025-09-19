@@ -2,6 +2,11 @@ const { FinancialDashboard, SALARY_CONFIG } = require('../Model/FinancialDashboa
 const Project = require('../Model/ProjectModel');
 const ProjectTimeline = require('../Model/ProjectTimelineMdl');
 
+// Add PDFKit for PDF generation
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
+
 // Helper function to generate unique dashboard ID
 const generateDashboardId = () => {
   const timestamp = Date.now().toString(36);
@@ -14,71 +19,122 @@ const calculateLaborCosts = (workers, engineers, architects, projectManagers) =>
   let totalLaborCost = 0;
   const laborBreakdown = [];
 
+  console.log('👷 Processing workers:', workers);
+  
   // Calculate worker costs
   workers.forEach(worker => {
-    const roleConfig = SALARY_CONFIG.WORKER_ROLES[worker.role];
-    if (roleConfig && worker.hoursWorked) {
-      const cost = parseFloat(worker.hoursWorked) * roleConfig.hourlyRate;
-      totalLaborCost += cost;
-      laborBreakdown.push({
-        type: 'Worker',
-        name: worker.name,
-        role: worker.role,
-        hours: parseFloat(worker.hoursWorked),
-        rate: roleConfig.hourlyRate,
-        cost: cost
-      });
+    if (worker && worker.role && worker.hoursWorked) {
+      const roleConfig = SALARY_CONFIG.WORKER_ROLES[worker.role];
+      if (roleConfig) {
+        const cost = parseFloat(worker.hoursWorked) * roleConfig.hourlyRate;
+        totalLaborCost += cost;
+        laborBreakdown.push({
+          type: 'Worker',
+          name: worker.name || 'Unknown',
+          role: worker.role,
+          hours: parseFloat(worker.hoursWorked),
+          rate: roleConfig.hourlyRate,
+          cost: cost
+        });
+        console.log(`  Worker ${worker.name} (${worker.role}): ${worker.hoursWorked} hours * $${roleConfig.hourlyRate}/hr = $${cost}`);
+      } else {
+        // Use default rate if role not found
+        const defaultRate = 15; // Default worker rate
+        const cost = parseFloat(worker.hoursWorked) * defaultRate;
+        totalLaborCost += cost;
+        laborBreakdown.push({
+          type: 'Worker',
+          name: worker.name || 'Unknown',
+          role: worker.role,
+          hours: parseFloat(worker.hoursWorked),
+          rate: defaultRate,
+          cost: cost
+        });
+        console.log(`  Worker ${worker.name} (${worker.role}): ${worker.hoursWorked} hours * $${defaultRate}/hr = $${cost} (default rate)`);
+      }
     }
   });
 
   // Calculate engineer costs
   engineers.forEach(engineer => {
-    const roleConfig = SALARY_CONFIG.ENGINEER_SPECIALTIES[engineer.specialty];
-    if (roleConfig && engineer.hoursWorked) {
-      const cost = parseFloat(engineer.hoursWorked) * roleConfig.hourlyRate;
-      totalLaborCost += cost;
-      laborBreakdown.push({
-        type: 'Engineer',
-        name: engineer.name,
-        role: engineer.specialty,
-        hours: parseFloat(engineer.hoursWorked),
-        rate: roleConfig.hourlyRate,
-        cost: cost
-      });
+    if (engineer && engineer.specialty && engineer.hoursWorked) {
+      const roleConfig = SALARY_CONFIG.ENGINEER_SPECIALTIES[engineer.specialty];
+      if (roleConfig) {
+        const cost = parseFloat(engineer.hoursWorked) * roleConfig.hourlyRate;
+        totalLaborCost += cost;
+        laborBreakdown.push({
+          type: 'Engineer',
+          name: engineer.name || 'Unknown',
+          role: engineer.specialty,
+          hours: parseFloat(engineer.hoursWorked),
+          rate: roleConfig.hourlyRate,
+          cost: cost
+        });
+      } else {
+        // Use default rate if specialty not found
+        const defaultRate = 70; // Default engineer rate
+        const cost = parseFloat(engineer.hoursWorked) * defaultRate;
+        totalLaborCost += cost;
+        laborBreakdown.push({
+          type: 'Engineer',
+          name: engineer.name || 'Unknown',
+          role: engineer.specialty,
+          hours: parseFloat(engineer.hoursWorked),
+          rate: defaultRate,
+          cost: cost
+        });
+      }
     }
   });
 
   // Calculate architect costs
   architects.forEach(architect => {
-    const roleConfig = SALARY_CONFIG.ARCHITECT_SPECIALTIES[architect.specialty];
-    if (roleConfig && architect.hoursWorked) {
-      const cost = parseFloat(architect.hoursWorked) * roleConfig.hourlyRate;
-      totalLaborCost += cost;
-      laborBreakdown.push({
-        type: 'Architect',
-        name: architect.name,
-        role: architect.specialty,
-        hours: parseFloat(architect.hoursWorked),
-        rate: roleConfig.hourlyRate,
-        cost: cost
-      });
+    if (architect && architect.specialty && architect.hoursWorked) {
+      const roleConfig = SALARY_CONFIG.ARCHITECT_SPECIALTIES[architect.specialty];
+      if (roleConfig) {
+        const cost = parseFloat(architect.hoursWorked) * roleConfig.hourlyRate;
+        totalLaborCost += cost;
+        laborBreakdown.push({
+          type: 'Architect',
+          name: architect.name || 'Unknown',
+          role: architect.specialty,
+          hours: parseFloat(architect.hoursWorked),
+          rate: roleConfig.hourlyRate,
+          cost: cost
+        });
+      } else {
+        // Use default rate if specialty not found
+        const defaultRate = 75; // Default architect rate
+        const cost = parseFloat(architect.hoursWorked) * defaultRate;
+        totalLaborCost += cost;
+        laborBreakdown.push({
+          type: 'Architect',
+          name: architect.name || 'Unknown',
+          role: architect.specialty,
+          hours: parseFloat(architect.hoursWorked),
+          rate: defaultRate,
+          cost: cost
+        });
+      }
     }
   });
 
   // Calculate project manager costs (estimated 8 hours per day)
   projectManagers.forEach(pm => {
-    const avgPMRate = 85; // Average PM hourly rate
-    const estimatedHours = 8; // Standard working day
-    const cost = estimatedHours * avgPMRate;
-    totalLaborCost += cost;
-    laborBreakdown.push({
-      type: 'Project Manager',
-      name: pm.name,
-      role: 'Project Manager',
-      hours: estimatedHours,
-      rate: avgPMRate,
-      cost: cost
-    });
+    if (pm && pm.name) {
+      const avgPMRate = 85; // Average PM hourly rate
+      const estimatedHours = 8; // Standard working day
+      const cost = estimatedHours * avgPMRate;
+      totalLaborCost += cost;
+      laborBreakdown.push({
+        type: 'Project Manager',
+        name: pm.name,
+        role: 'Project Manager',
+        hours: estimatedHours,
+        rate: avgPMRate,
+        cost: cost
+      });
+    }
   });
 
   return { totalLaborCost, laborBreakdown };
@@ -89,34 +145,55 @@ const calculateMaterialCosts = (materials) => {
   let totalMaterialCost = 0;
   const materialBreakdown = [];
 
+  console.log('🧱 Processing materials:', materials);
+  
   materials.forEach(material => {
-    const materialConfig = SALARY_CONFIG.MATERIAL_COSTS[material.name];
-    if (materialConfig && material.quantity) {
-      const cost = parseFloat(material.quantity) * materialConfig.costPerUnit;
-      totalMaterialCost += cost;
-      materialBreakdown.push({
-        name: material.name,
-        quantity: parseFloat(material.quantity),
-        unit: material.unit || materialConfig.unit,
-        unitCost: materialConfig.costPerUnit,
-        totalCost: cost,
-        category: materialConfig.category
-      });
-    } else if (material.cost) {
-      // Use provided cost if no predefined cost available
-      const cost = parseFloat(material.cost);
-      totalMaterialCost += cost;
-      materialBreakdown.push({
-        name: material.name,
-        quantity: parseFloat(material.quantity || 1),
-        unit: material.unit || 'unit',
-        unitCost: cost / (parseFloat(material.quantity) || 1),
-        totalCost: cost,
-        category: 'Custom'
-      });
+    if (material && material.name && material.quantity) {
+      const materialConfig = SALARY_CONFIG.MATERIAL_COSTS[material.name];
+      if (materialConfig) {
+        const cost = parseFloat(material.quantity) * materialConfig.costPerUnit;
+        totalMaterialCost += cost;
+        materialBreakdown.push({
+          name: material.name,
+          quantity: parseFloat(material.quantity),
+          unit: material.unit || materialConfig.unit,
+          unitCost: materialConfig.costPerUnit,
+          totalCost: cost,
+          category: materialConfig.category
+        });
+        console.log(`  Material ${material.name}: ${material.quantity} ${material.unit || materialConfig.unit} * $${materialConfig.costPerUnit}/${material.unit || materialConfig.unit} = $${cost}`);
+      } else if (material.cost) {
+        // Use provided cost if no predefined cost available
+        const cost = parseFloat(material.cost);
+        totalMaterialCost += cost;
+        materialBreakdown.push({
+          name: material.name,
+          quantity: parseFloat(material.quantity || 1),
+          unit: material.unit || 'unit',
+          unitCost: cost / (parseFloat(material.quantity) || 1),
+          totalCost: cost,
+          category: 'Custom'
+        });
+        console.log(`  Material ${material.name}: $${cost} (provided cost)`);
+      } else {
+        // Use default cost if no configuration and no cost provided
+        const defaultCostPerUnit = 10; // Default material cost
+        const cost = parseFloat(material.quantity) * defaultCostPerUnit;
+        totalMaterialCost += cost;
+        materialBreakdown.push({
+          name: material.name,
+          quantity: parseFloat(material.quantity),
+          unit: material.unit || 'unit',
+          unitCost: defaultCostPerUnit,
+          totalCost: cost,
+          category: 'Default'
+        });
+        console.log(`  Material ${material.name}: ${material.quantity} units * $${defaultCostPerUnit}/unit = $${cost} (default rate)`);
+      }
     }
   });
 
+  console.log(`  Total material cost: $${totalMaterialCost}`);
   return { totalMaterialCost, materialBreakdown };
 };
 
@@ -126,19 +203,34 @@ const calculateToolCosts = (tools) => {
   const toolBreakdown = [];
 
   tools.forEach(tool => {
-    const toolConfig = SALARY_CONFIG.TOOL_COSTS[tool.name];
-    if (toolConfig && tool.quantity) {
-      // Assume rental for 1 day per quantity
-      const cost = parseFloat(tool.quantity) * toolConfig.rentalPerDay;
-      totalToolCost += cost;
-      toolBreakdown.push({
-        name: tool.name,
-        quantity: parseFloat(tool.quantity),
-        dailyRate: toolConfig.rentalPerDay,
-        totalCost: cost,
-        category: toolConfig.category,
-        status: tool.status
-      });
+    if (tool && tool.name && tool.quantity) {
+      const toolConfig = SALARY_CONFIG.TOOL_COSTS[tool.name];
+      if (toolConfig) {
+        // Assume rental for 1 day per quantity
+        const cost = parseFloat(tool.quantity) * toolConfig.rentalPerDay;
+        totalToolCost += cost;
+        toolBreakdown.push({
+          name: tool.name,
+          quantity: parseFloat(tool.quantity),
+          dailyRate: toolConfig.rentalPerDay,
+          totalCost: cost,
+          category: toolConfig.category,
+          status: tool.status
+        });
+      } else {
+        // Use default rental rate if tool not found
+        const defaultRentalRate = 20; // Default tool rental rate per day
+        const cost = parseFloat(tool.quantity) * defaultRentalRate;
+        totalToolCost += cost;
+        toolBreakdown.push({
+          name: tool.name,
+          quantity: parseFloat(tool.quantity),
+          dailyRate: defaultRentalRate,
+          totalCost: cost,
+          category: 'Default',
+          status: tool.status
+        });
+      }
     }
   });
 
@@ -218,11 +310,12 @@ const getDashboardById = async (req, res) => {
 // Calculate comprehensive financial dashboard
 const calculateFinancialDashboard = async (req, res) => {
   try {
-    const { dashboardName, selectedProjects, dateFrom, dateTo } = req.body;
+    const { dashboardName, selectedProjects, dateFrom, dateTo, calculationType } = req.body;
 
     console.log('🔢 Starting financial calculations...');
     console.log('📊 Selected projects:', selectedProjects);
     console.log('📅 Date range:', { dateFrom, dateTo });
+    console.log('🧮 Calculation type:', calculationType);
 
     // Get all projects if none specified
     let projectQuery = {};
@@ -236,7 +329,7 @@ const calculateFinancialDashboard = async (req, res) => {
     // Get timeline data
     let timelineQuery = {};
     if (selectedProjects && selectedProjects.length > 0) {
-      timelineQuery.projectCode = { $in: selectedProjects };
+      timelineQuery.pcode = { $in: selectedProjects };
     }
     if (dateFrom || dateTo) {
       timelineQuery.date = {};
@@ -273,7 +366,7 @@ const calculateFinancialDashboard = async (req, res) => {
       const { projectCost, projectMultiplier } = calculateProjectCosts(project);
 
       // Get timelines for this project
-      const projectTimelines = timelines.filter(t => t.projectCode === project.pcode);
+      const projectTimelines = timelines.filter(t => t.pcode === project.pcode);
       console.log(`📊 Found ${projectTimelines.length} timelines for project ${project.pcode}`);
 
       let projectLaborCost = 0;
@@ -288,6 +381,16 @@ const calculateFinancialDashboard = async (req, res) => {
 
       // Process each timeline entry for this project
       for (const timeline of projectTimelines) {
+        console.log(`📅 Processing timeline for ${timeline.date}`);
+        
+        // Log the data we're working with
+        console.log('👷 Workers:', timeline.tworker);
+        console.log('👨‍🔧 Engineers:', timeline.tengineer);
+        console.log('👨‍🎨 Architects:', timeline.tarchitect);
+        console.log('🧱 Materials:', timeline.tmaterials);
+        console.log('🛠️ Tools:', timeline.ttools);
+        console.log('💰 Expenses:', timeline.texpenses);
+
         // Calculate costs for this timeline entry
         const { totalLaborCost: timelineLaborCost, laborBreakdown } = calculateLaborCosts(
           timeline.tworker || [],
@@ -304,10 +407,24 @@ const calculateFinancialDashboard = async (req, res) => {
           timeline.ttools || []
         );
 
+        // Debug logging for cost calculations
+        console.log(`🔍 Cost breakdown for timeline ${timeline._id} - Labor: $${timelineLaborCost}, Materials: $${timelineMaterialCost}, Tools: $${timelineToolCost}`);
+        if (laborBreakdown.length > 0) {
+          console.log(`👷 Labor details:`, laborBreakdown);
+        }
+        if (materialBreakdown.length > 0) {
+          console.log(`🧱 Material details:`, materialBreakdown);
+        }
+        if (toolBreakdown.length > 0) {
+          console.log(`🛠️ Tool details:`, toolBreakdown);
+        }
+
         // Calculate expenses
         const timelineExpenses = (timeline.texpenses || []).reduce((sum, exp) => {
           return sum + (parseFloat(exp.amount) || 0);
         }, 0);
+
+        console.log(`💰 Timeline costs - Labor: $${timelineLaborCost}, Materials: $${timelineMaterialCost}, Tools: $${timelineToolCost}, Expenses: $${timelineExpenses}`);
 
         // Apply project multiplier to all costs
         const adjustedLaborCost = timelineLaborCost * projectMultiplier;
@@ -346,7 +463,7 @@ const calculateFinancialDashboard = async (req, res) => {
 
         // Count labor hours
         laborBreakdown.forEach(labor => {
-          laborAnalytics.totalLaborHours += labor.hours;
+          laborAnalytics.totalLaborHours += labor.hours || 0;
         });
 
         materialAnalytics.totalMaterials += (timeline.tmaterials || []).length;
@@ -355,6 +472,8 @@ const calculateFinancialDashboard = async (req, res) => {
 
       // Calculate total project cost
       const totalProjectCostForThisProject = projectCost + projectLaborCost + projectMaterialCost + projectToolCost + projectExpenses;
+
+      console.log(`📊 Project ${project.pcode} total cost: $${totalProjectCostForThisProject} (Base: $${projectCost}, Labor: $${projectLaborCost}, Materials: $${projectMaterialCost}, Tools: $${projectToolCost}, Expenses: $${projectExpenses})`);
 
       // Add to project breakdown
       projectBreakdown.push({
@@ -387,6 +506,8 @@ const calculateFinancialDashboard = async (req, res) => {
     const averageProjectCost = projects.length > 0 ? grandTotal / projects.length : 0;
     const profitMargin = grandTotal * 0.15; // Assume 15% profit margin
     const roi = grandTotal > 0 ? (profitMargin / grandTotal) * 100 : 0;
+
+    console.log(`💰 Final totals - Grand Total: $${grandTotal}, Labor: $${totalLaborCost}, Materials: $${totalMaterialCost}, Tools: $${totalToolCost}, Expenses: $${totalExpenses}`);
 
     // Create financial dashboard
     const dashboardData = {
@@ -536,6 +657,113 @@ const getAvailableProjects = async (req, res) => {
   }
 };
 
+// Export financial dashboard to PDF
+const exportDashboard = async (req, res) => {
+  try {
+    const dashboard = await FinancialDashboard.findById(req.params.id);
+    
+    if (!dashboard) {
+      return res.status(404).json({
+        success: false,
+        message: 'Financial dashboard not found'
+      });
+    }
+
+    // Create a new PDF document
+    const doc = new PDFDocument({
+      size: 'A4',
+      margin: 50
+    });
+
+    // Set response headers for PDF download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=financial-dashboard-${dashboard.dashboardId}.pdf`);
+
+    // Pipe the PDF to the response
+    doc.pipe(res);
+
+    // Add company header
+    doc.fontSize(20).fillColor('#283593').text('Workflows Engineering', 50, 50);
+    doc.fontSize(12).fillColor('#666').text('Smart Construction Workflow & Safety Management System', 50, 80);
+    doc.moveDown();
+
+    // Add a line separator
+    doc.moveTo(50, 100).lineTo(550, 100).strokeColor('#D4AF37').stroke();
+
+    // Dashboard title
+    doc.fontSize(18).fillColor('#000').text(`Financial Dashboard Report: ${dashboard.dashboardName}`, { align: 'center' });
+    doc.moveDown();
+
+    // Dashboard information
+    doc.fontSize(14).fillColor('#000').text('Dashboard Information');
+    doc.moveDown();
+
+    // Dashboard details
+    doc.fontSize(12);
+    doc.text(`Dashboard ID: ${dashboard.dashboardId}`);
+    doc.text(`Calculation Date: ${new Date(dashboard.calculationDate).toLocaleDateString()}`);
+    doc.text(`Projects Analyzed: ${dashboard.financialSummary?.projectCount || 0}`);
+    doc.moveDown();
+
+    // Financial Summary
+    doc.fontSize(14).fillColor('#000').text('Financial Summary');
+    doc.moveDown();
+
+    doc.fontSize(12);
+    doc.text(`Grand Total: $${(dashboard.financialSummary?.grandTotal || 0).toFixed(2)}`);
+    doc.text(`Average Project Cost: $${(dashboard.financialSummary?.averageProjectCost || 0).toFixed(2)}`);
+    doc.text(`Profit Margin: $${(dashboard.financialSummary?.profitMargin || 0).toFixed(2)}`);
+    doc.text(`ROI: ${(dashboard.financialSummary?.roi || 0).toFixed(2)}%`);
+    doc.moveDown();
+
+    // Cost Breakdown
+    doc.fontSize(14).fillColor('#000').text('Cost Breakdown');
+    doc.moveDown();
+
+    doc.fontSize(12);
+    doc.text(`Labor Costs: $${(dashboard.totalLaborCost || 0).toFixed(2)}`);
+    doc.text(`Material Costs: $${(dashboard.totalMaterialCost || 0).toFixed(2)}`);
+    doc.text(`Tool Costs: $${(dashboard.totalToolCost || 0).toFixed(2)}`);
+    doc.text(`Expenses: $${(dashboard.totalExpenses || 0).toFixed(2)}`);
+    doc.text(`Project Costs: $${(dashboard.totalProjectCost || 0).toFixed(2)}`);
+    doc.moveDown();
+
+    // Project Breakdown (if available)
+    if (dashboard.projectBreakdown && dashboard.projectBreakdown.length > 0) {
+      doc.fontSize(14).fillColor('#000').text('Project Breakdown');
+      doc.moveDown();
+
+      dashboard.projectBreakdown.forEach((project, index) => {
+        doc.fontSize(12);
+        doc.text(`${index + 1}. ${project.projectName || project.projectCode}`);
+        doc.fontSize(10);
+        doc.text(`   Type: ${project.projectType || 'N/A'}`);
+        doc.text(`   Total Cost: $${(project.totalCost || 0).toFixed(2)}`);
+        doc.text(`   Labor: $${(project.laborCost || 0).toFixed(2)}`);
+        doc.text(`   Materials: $${(project.materialCost || 0).toFixed(2)}`);
+        doc.text(`   Tools: $${(project.toolCost || 0).toFixed(2)}`);
+        doc.moveDown();
+      });
+    }
+
+    // Add footer
+    const footerText = 'CONFIDENTIAL - Workflows Engineering Financial Dashboard';
+    doc.fontSize(10).fillColor('#999');
+    doc.text(footerText, 50, 750);
+
+    // Finalize the PDF
+    doc.end();
+
+  } catch (error) {
+    console.error('Error exporting financial dashboard:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error exporting financial dashboard',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getAllDashboards,
   getDashboardById,
@@ -543,5 +771,6 @@ module.exports = {
   updateDashboard,
   deleteDashboard,
   getSalaryConfig,
-  getAvailableProjects
+  getAvailableProjects,
+  exportDashboard  // Add export function to exports
 };

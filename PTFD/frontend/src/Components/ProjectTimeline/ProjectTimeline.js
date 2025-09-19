@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Nav from "../Nav/Nav";
+import { exportTimelineToPDF } from '../ExportUtils';
 
 export default function ProjectTimelines() {
   const navigate = useNavigate();
@@ -972,6 +973,16 @@ export default function ProjectTimelines() {
                                   title="View Details"
                                 >
                                   👁️
+                                </button>
+                                <button
+                                  className="btn btn-outline-success btn-sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    exportTimelineToPDF(timeline, `timeline-${timeline.pcode}-${new Date(timeline.date).toISOString().split('T')[0]}.pdf`);
+                                  }}
+                                  title="Export Timeline"
+                                >
+                                  📄
                                 </button>
                                 <button
                                   className="btn btn-outline-warning btn-sm"

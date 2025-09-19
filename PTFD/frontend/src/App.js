@@ -60,7 +60,7 @@ export default function App() {
         <Route path="/update-project-timeline/:id" element={<UpdateProjectTimeline />} />
         {/* Financial Dashboard routes */}
         <Route path="/financial-dashboard" element={<FinancialDashboard />} />
-        <Route path="/financial-dashboard/view/:id" element={<FinancialDashboardView />} />
+        <Route path="/financial-dashboard/:id" element={<FinancialDashboardView />} />
         {/* ChatBot routes */}
         <Route path="/chatbot" element={<ChatBot />} />
       </Routes>

@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
+// Add this import at the top with other imports
+import { exportProjectToPDF } from '../ExportUtils';
+
 export default function ProjectsView() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -199,6 +202,13 @@ export default function ProjectsView() {
   const projectProgress = getProjectProgress();
   const projectImages = getProjectImages(project);
   const hasMultipleImages = projectImages.length > 1;
+
+  // Add this function after other helper functions
+  const handleExportProject = () => {
+    if (project) {
+      exportProjectToPDF(project, `project-${project.pcode}-detailed.pdf`);
+    }
+  };
 
   return (
     <div style={{ backgroundColor: '#fdfcfb', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
@@ -911,6 +921,21 @@ export default function ProjectsView() {
                     <i className="fas fa-th-list me-2"></i>Project Portfolio
                   </button>
                   <button
+                    className="btn btn-outline-success btn-lg px-6 py-4 fw-semibold"
+                    style={{
+                      borderRadius: '50px',
+                      border: '2px solid #198754',
+                      color: '#198754',
+                      fontSize: '1.1rem',
+                      boxShadow: '0 4px 15px rgba(25, 135, 84, 0.2)',
+                      minWidth: '150px',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onClick={handleExportProject}
+                  >
+                    <i className="fas fa-file-export me-2"></i>Export PDF
+                  </button>
+                  <button
                     className="btn btn-outline-secondary btn-lg px-6 py-4 fw-semibold"
                     style={{
                       borderRadius: '50px',
@@ -923,7 +948,7 @@ export default function ProjectsView() {
                     }}
                     onClick={() => window.print()}
                   >
-                    <i className="fas fa-print me-2"></i>Export View
+                    <i className="fas fa-print me-2"></i>Print View
                   </button>
                 </div>
               </div>

@@ -13,4 +13,7 @@ router.post('/calculate', financialController.calculateFinancialDashboard);
 router.put('/:id', financialController.updateDashboard);
 router.delete('/:id', financialController.deleteDashboard);
 
+// Add export route
+router.get('/:id/export', financialController.exportDashboard);
+
 module.exports = router;

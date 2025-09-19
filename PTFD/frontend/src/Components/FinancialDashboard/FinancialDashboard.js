@@ -2,10 +2,52 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Nav from "../Nav/Nav";
+import {
+  BsBuilding,
+  BsCurrencyDollar,
+  BsGraphUp,
+  BsPeople,
+  BsFileEarmarkBarGraph,
+  BsCalculator,
+  BsSearch,
+  BsSortAlphaDown,
+  BsSortAlphaUp,
+  BsChevronLeft,
+  BsChevronRight,
+  BsDownload,
+  BsShare,
+  BsPieChart,
+  BsBarChart,
+  BsCheckCircle,
+  BsEye,
+  BsTrash
+} from "react-icons/bs";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from "recharts";
+
+// Add this import at the top with other imports
+import { exportFinancialDashboardToPDF } from '../ExportUtils';
 
 export default function FinancialDashboard() {
   const navigate = useNavigate();
   
+  // Debug logging
+  useEffect(() => {
+    console.log('📍 FinancialDashboard component mounted successfully!');
+    console.log('🔍 Current URL:', window.location.href);
+  }, []);
+
   // Ensure FontAwesome is loaded with multiple fallback strategies
   useEffect(() => {
     // Strategy 1: Check if FontAwesome is already loaded
@@ -72,6 +114,7 @@ export default function FinancialDashboard() {
   const [dateTo, setDateTo] = useState("");
   const [dateRangePreset, setDateRangePreset] = useState("last30days");
   const [autoDateRange, setAutoDateRange] = useState(true);
+  const [calculationType, setCalculationType] = useState("standard"); // New: standard, advanced, predictive
 
   // Statistics
   const [statistics, setStatistics] = useState({
@@ -80,6 +123,26 @@ export default function FinancialDashboard() {
     avgProjectCost: 0,
     activeDashboards: 0
   });
+
+  // Chart data (mocked for demo, fetch real in production)
+  const [chartData, setChartData] = useState({
+    pieData: [
+      { name: 'Active', value: 65, color: '#10b981' },
+      { name: 'Inactive', value: 35, color: '#ef4444' }
+    ],
+    barData: [
+      { month: 'Jan', value: 4000 },
+      { month: 'Feb', value: 3000 },
+      { month: 'Mar', value: 5000 },
+      { month: 'Apr', value: 4500 },
+      { month: 'May', value: 6000 },
+      { month: 'Jun', value: 5500 }
+    ]
+  });
+
+  // New: Export and share states
+  const [exporting, setExporting] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   const fetchDashboards = useCallback(async () => {
     try {
@@ -91,6 +154,7 @@ export default function FinancialDashboard() {
       
       setDashboards(dashboardData);
       calculateStatistics(dashboardData);
+      updateChartData(dashboardData); // New: Update charts
       
       console.log(`✅ Loaded ${dashboardData.length} financial dashboards`);
     } catch (error) {
@@ -103,12 +167,38 @@ export default function FinancialDashboard() {
 
   const fetchAvailableProjects = useCallback(async () => {
     try {
+      console.log('🔄 Fetching available projects...');
       const response = await axios.get('http://localhost:5050/financial-dashboard/config/projects');
-      setAvailableProjects(response.data.data || []);
+      const projects = response.data.data || [];
+      // Map the project fields to match what the UI expects
+      const mappedProjects = projects.map(project => ({
+        id: project.pcode,
+        name: project.pname,
+        code: project.pcode,
+        type: project.ptype,
+        priority: project.ppriority,
+        status: project.pstatus
+      }));
+      setAvailableProjects(mappedProjects);
+      console.log(`✅ Loaded ${mappedProjects.length} projects`);
     } catch (error) {
       console.error('❌ Error fetching projects:', error);
+      alert(`Error loading projects: ${error.response?.data?.message || error.message}. Using empty list.`);
+      setAvailableProjects([]); // Fallback to empty
     }
   }, []);
+
+  // New: Update chart data based on dashboards
+  const updateChartData = (data) => {
+    const activeCount = data.filter(d => d.status === 'Active').length;
+    const total = data.length;
+    const pieData = [
+      { name: 'Active', value: activeCount, color: '#10b981' },
+      { name: 'Inactive', value: total - activeCount, color: '#ef4444' }
+    ];
+    // Mock bar data for revenue - in real, aggregate from data
+    setChartData(prev => ({ ...prev, pieData }));
+  };
 
   useEffect(() => {
     fetchDashboards();
@@ -177,14 +267,14 @@ export default function FinancialDashboard() {
     if (autoDateRange && dateRangePreset) {
       applyDateRangePreset(dateRangePreset);
     }
-  }, [dateRangePreset, autoDateRange]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dateRangePreset, autoDateRange]);
 
   // Initialize with default date range when modal opens
   useEffect(() => {
     if (showCalculationModal && autoDateRange) {
       applyDateRangePreset(dateRangePreset);
     }
-  }, [showCalculationModal]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showCalculationModal, dateRangePreset, autoDateRange]);
 
   const getDateRangeLabel = (preset) => {
     const labels = {
@@ -214,10 +304,12 @@ export default function FinancialDashboard() {
         dashboardName,
         selectedProjects: selectedProjects.length > 0 ? selectedProjects : undefined,
         dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined
+        dateTo: dateTo || undefined,
+        calculationType // New: Include type
       };
 
-      await axios.post('http://localhost:5050/financial-dashboard/calculate', calculationData);
+      const response = await axios.post('http://localhost:5050/financial-dashboard/calculate', calculationData);
+      console.log('✅ Response:', response.data);
       
       console.log('✅ Financial calculation completed');
       alert('✅ Financial dashboard calculated successfully!');
@@ -227,6 +319,7 @@ export default function FinancialDashboard() {
       setSelectedProjects([]);
       setDateFrom('');
       setDateTo('');
+      setCalculationType('standard');
       setShowCalculationModal(false);
       
       // Refresh dashboards
@@ -240,9 +333,81 @@ export default function FinancialDashboard() {
     }
   };
 
+  // New: Handle export - fallback to client-side CSV if backend fails
+  const handleExport = async (dashboardId, dashboardName) => {
+    setExporting(true);
+    try {
+      console.log('🔄 Exporting dashboard:', dashboardId);
+      // First try to get detailed dashboard data for PDF export
+      const response = await axios.get(`http://localhost:5050/financial-dashboard/${dashboardId}`);
+      const dashboardData = response.data.data;
+      
+      if (dashboardData) {
+        // Use our professional PDF export function
+        exportFinancialDashboardToPDF(dashboardData, `${dashboardName}.pdf`);
+        console.log('✅ PDF export successful');
+      } else {
+        // Fallback to backend export if PDF generation fails
+        const exportResponse = await axios.get(`http://localhost:5050/financial-dashboard/${dashboardId}/export`, { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([exportResponse.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `financial-dashboard-${dashboardId}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        console.log('✅ Export successful');
+      }
+    } catch (error) {
+      console.error('❌ Export failed:', error);
+      // Fallback: Generate simple CSV from current dashboard data (if available)
+      const dashboard = dashboards.find(d => d._id === dashboardId);
+      if (dashboard) {
+        const csvContent = `Dashboard Name,Grand Total,Status,Created At\n${dashboard.dashboardName},${dashboard.financialSummary?.grandTotal || 0},${dashboard.status},${dashboard.createdAt}`;
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${dashboardName}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        alert('✅ CSV export completed (PDF unavailable)');
+      } else {
+        alert('❌ Export failed: Dashboard not found');
+      }
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // New: Handle share - generate share URL
+  const handleShare = async (dashboardId) => {
+    setSharing(true);
+    try {
+      console.log('🔄 Sharing dashboard:', dashboardId);
+      // Assume backend generates share URL
+      const response = await axios.post(`http://localhost:5050/financial-dashboard/${dashboardId}/share`);
+      const shareUrl = response.data.shareUrl || `http://localhost:3000/financial-dashboard/${dashboardId}`;
+      await navigator.clipboard.writeText(shareUrl);
+      alert(`✅ Share URL copied: ${shareUrl}`);
+    } catch (error) {
+      console.error('❌ Share failed, using direct URL:', error);
+      // Fallback: Use direct view URL
+      const shareUrl = `http://localhost:3000/financial-dashboard/${dashboardId}`;
+      await navigator.clipboard.writeText(shareUrl);
+      alert(`✅ Direct URL copied: ${shareUrl} (backend share unavailable)`);
+    } finally {
+      setSharing(false);
+    }
+  };
+
   const handleDeleteDashboard = async (id, dashboardName) => {
     if (window.confirm(`Are you sure you want to delete the dashboard "${dashboardName}"?`)) {
       try {
+        console.log('🗑️ Deleting dashboard:', id);
         await axios.delete(`http://localhost:5050/financial-dashboard/${id}`);
         alert('✅ Financial dashboard deleted successfully!');
         fetchDashboards();
@@ -310,7 +475,7 @@ export default function FinancialDashboard() {
         <div className="container mt-5">
           <div className="row justify-content-center">
             <div className="col-md-6 text-center">
-              <div className="card shadow-lg border-0">
+              <div className="card shadow-lg border-0" style={{ borderRadius: '24px' }}>
                 <div className="card-body p-5">
                   <div className="spinner-border text-primary mb-3" role="status" style={{width: '3rem', height: '3rem'}}>
                     <span className="visually-hidden">Loading...</span>
@@ -327,610 +492,616 @@ export default function FinancialDashboard() {
   }
 
   return (
-    <>
+    <div style={{ backgroundColor: '#fdfcfb', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <Nav />
-      
-      {/* Modern Header Section */}
-      <div className="bg-gradient financial-dashboard" style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: 'white',
-        padding: '2rem 0',
-        marginBottom: '2rem',
-        position: 'relative'
+
+      {/* Premium Dashboard-Style Header */}
+      <section className="container-fluid px-4 py-5" style={{
+        background: 'linear-gradient(135deg, #fdfcfb 0%, #f8f7f4 100%)',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div className="container">
-          <div className="row align-items-center">
-            <div className="col-lg-8">
-              <h1 className="display-5 fw-bold mb-2">
-                <span className="me-3">💰</span>
-                Financial Dashboard
-              </h1>
-              <p className="lead mb-0 opacity-90">
-                Comprehensive financial analysis and cost calculations for all projects and timelines
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: 'radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 50%)',
+          pointerEvents: 'none'
+        }}></div>
+
+        <div className="row justify-content-center position-relative">
+          <div className="col-lg-10">
+            <div className="text-center mb-5" style={{
+              borderRadius: '24px',
+              padding: '4rem 3rem',
+              background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 251, 0.8) 100%)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <div className="d-flex align-items-center justify-content-center mb-4">
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 8px 25px rgba(212, 175, 55, 0.3)',
+                  marginRight: '1rem'
+                }}>
+                  <BsFileEarmarkBarGraph className="text-white fs-1" />
+                </div>
+                <div>
+                  <h1 className="display-3 fw-bold mb-1" style={{
+                    color: '#1a1a1a',
+                    fontWeight: '700',
+                    letterSpacing: '-0.02em'
+                  }}>Financial Nexus</h1>
+                  <p className="h5 text-muted mb-0" style={{ fontWeight: '300' }}>
+                    Orchestrate fiscal intelligence with unparalleled acuity
+                  </p>
+                </div>
+              </div>
+              <p className="lead mb-4" style={{
+                color: '#6b7280',
+                fontSize: '1.25rem',
+                lineHeight: '1.6',
+                maxWidth: '600px',
+                margin: '0 auto'
+              }}>
+                Synthesize comprehensive financial matrices, prognosticate trajectories, and calibrate resource vectors across your enterprise constellation.
               </p>
-            </div>
-            <div className="col-lg-4 text-end">
-              <button 
-                className="btn btn-light btn-lg shadow-sm"
-                onClick={() => setShowCalculationModal(true)}
-                style={{borderRadius: '50px', padding: '12px 30px'}}
-              >
-                <span className="me-2">🔢</span> Calculate New Dashboard
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="container mb-4">
-        <div className="row g-4">
-          <div className="col-lg-3 col-md-6">
-            <div className="card border-0 shadow-sm h-100" style={{
-              borderRadius: '20px',
-              background: 'linear-gradient(135deg, rgba(0,123,255,0.1) 0%, rgba(0,123,255,0.05) 100%)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-5px)';
-              e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,123,255,0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-            }}>
-              <div className="card-body text-center p-4">
-                <div className="position-relative mb-3">
-                  <div 
-                    className="rounded-circle mx-auto d-flex align-items-center justify-content-center position-relative"
-                    style={{
-                      width: '80px', 
-                      height: '80px',
-                      background: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
-                      boxShadow: '0 8px 25px rgba(0,123,255,0.3)'
-                    }}
-                  >
-                    <i className="fas fa-chart-line text-white" style={{fontSize: '1.8rem', fontFamily: 'FontAwesome'}}></i>
-                    {/* Fallback if FontAwesome doesn't load */}
-                    <span style={{fontSize: '1.8rem', display: 'none'}} className="fallback-icon">📊</span>
-                  </div>
-                  <div 
-                    className="position-absolute rounded-circle"
-                    style={{
-                      top: '-5px',
-                      right: '-5px',
-                      width: '30px',
-                      height: '30px',
-                      background: 'linear-gradient(45deg, #28a745, #20c997)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 4px 15px rgba(40,167,69,0.3)'
-                    }}
-                  >
-                    <i className="fas fa-check text-white" style={{fontSize: '0.8rem'}}></i>
-                  </div>
-                </div>
-                <h3 className="fw-bold text-primary mb-1" style={{fontSize: '1.8rem'}}>{statistics.totalDashboards}</h3>
-                <p className="text-muted mb-0 fw-semibold">Total Dashboards</p>
-                <div className="progress mt-2" style={{height: '4px'}}>
-                  <div className="progress-bar bg-primary" style={{width: '100%'}}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="col-lg-3 col-md-6">
-            <div className="card border-0 shadow-sm h-100" style={{
-              borderRadius: '20px',
-              background: 'linear-gradient(135deg, rgba(40,167,69,0.1) 0%, rgba(40,167,69,0.05) 100%)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-5px)';
-              e.currentTarget.style.boxShadow = '0 15px 35px rgba(40,167,69,0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-            }}>
-              <div className="card-body text-center p-4">
-                <div className="position-relative mb-3">
-                  <div 
-                    className="rounded-circle mx-auto d-flex align-items-center justify-content-center position-relative"
-                    style={{
-                      width: '80px', 
-                      height: '80px',
-                      background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
-                      boxShadow: '0 8px 25px rgba(40,167,69,0.3)'
-                    }}
-                  >
-                    <i className="fas fa-dollar-sign text-white" style={{fontSize: '1.8rem', fontFamily: 'FontAwesome'}}></i>
-                    {/* Fallback if FontAwesome doesn't load */}
-                    <span style={{fontSize: '1.8rem', display: 'none'}} className="fallback-icon">💰</span>
-                  </div>
-                  <div 
-                    className="position-absolute rounded-circle"
-                    style={{
-                      top: '-5px',
-                      right: '-5px',
-                      width: '30px',
-                      height: '30px',
-                      background: 'linear-gradient(45deg, #ffc107, #e0a800)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 4px 15px rgba(255,193,7,0.3)'
-                    }}
-                  >
-                    <i className="fas fa-arrow-up text-white" style={{fontSize: '0.8rem'}}></i>
-                  </div>
-                </div>
-                <h3 className="fw-bold text-success mb-1" style={{fontSize: '1.5rem'}}>{formatCurrency(statistics.totalValue)}</h3>
-                <p className="text-muted mb-0 fw-semibold">Total Value</p>
-                <div className="progress mt-2" style={{height: '4px'}}>
-                  <div className="progress-bar bg-success" style={{width: '85%'}}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="col-lg-3 col-md-6">
-            <div className="card border-0 shadow-sm h-100" style={{
-              borderRadius: '20px',
-              background: 'linear-gradient(135deg, rgba(23,162,184,0.1) 0%, rgba(23,162,184,0.05) 100%)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-5px)';
-              e.currentTarget.style.boxShadow = '0 15px 35px rgba(23,162,184,0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-            }}>
-              <div className="card-body text-center p-4">
-                <div className="position-relative mb-3">
-                  <div 
-                    className="rounded-circle mx-auto d-flex align-items-center justify-content-center position-relative"
-                    style={{
-                      width: '80px', 
-                      height: '80px',
-                      background: 'linear-gradient(135deg, #17a2b8 0%, #138496 100%)',
-                      boxShadow: '0 8px 25px rgba(23,162,184,0.3)'
-                    }}
-                  >
-                    <i className="fas fa-calculator text-white" style={{fontSize: '1.8rem', fontFamily: 'FontAwesome'}}></i>
-                    {/* Fallback if FontAwesome doesn't load */}
-                    <span style={{fontSize: '1.8rem', display: 'none'}} className="fallback-icon">🧮</span>
-                  </div>
-                  <div 
-                    className="position-absolute rounded-circle"
-                    style={{
-                      top: '-5px',
-                      right: '-5px',
-                      width: '30px',
-                      height: '30px',
-                      background: 'linear-gradient(45deg, #6f42c1, #5a32a3)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 4px 15px rgba(111,66,193,0.3)'
-                    }}
-                  >
-                    <i className="fas fa-star text-white" style={{fontSize: '0.8rem'}}></i>
-                  </div>
-                </div>
-                <h3 className="fw-bold text-info mb-1" style={{fontSize: '1.5rem'}}>{formatCurrency(statistics.avgProjectCost)}</h3>
-                <p className="text-muted mb-0 fw-semibold">Average Cost</p>
-                <div className="progress mt-2" style={{height: '4px'}}>
-                  <div className="progress-bar bg-info" style={{width: '70%'}}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="col-lg-3 col-md-6">
-            <div className="card border-0 shadow-sm h-100" style={{
-              borderRadius: '20px',
-              background: 'linear-gradient(135deg, rgba(255,193,7,0.1) 0%, rgba(255,193,7,0.05) 100%)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-5px)';
-              e.currentTarget.style.boxShadow = '0 15px 35px rgba(255,193,7,0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-            }}>
-              <div className="card-body text-center p-4">
-                <div className="position-relative mb-3">
-                  <div 
-                    className="rounded-circle mx-auto d-flex align-items-center justify-content-center position-relative"
-                    style={{
-                      width: '80px', 
-                      height: '80px',
-                      background: 'linear-gradient(135deg, #ffc107 0%, #e0a800 100%)',
-                      boxShadow: '0 8px 25px rgba(255,193,7,0.3)'
-                    }}
-                  >
-                    <i className="fas fa-check-circle text-white" style={{fontSize: '1.8rem', fontFamily: 'FontAwesome'}}></i>
-                    {/* Fallback if FontAwesome doesn't load */}
-                    <span style={{fontSize: '1.8rem', display: 'none'}} className="fallback-icon">✅</span>
-                  </div>
-                  <div 
-                    className="position-absolute rounded-circle"
-                    style={{
-                      top: '-5px',
-                      right: '-5px',
-                      width: '30px',
-                      height: '30px',
-                      background: 'linear-gradient(45deg, #28a745, #20c997)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 4px 15px rgba(40,167,69,0.3)'
-                    }}
-                  >
-                    <i className="fas fa-thumbs-up text-white" style={{fontSize: '0.8rem'}}></i>
-                  </div>
-                </div>
-                <h3 className="fw-bold text-warning mb-1" style={{fontSize: '1.8rem'}}>{statistics.activeDashboards}</h3>
-                <p className="text-muted mb-0 fw-semibold">Active Dashboards</p>
-                <div className="progress mt-2" style={{height: '4px'}}>
-                  <div className="progress-bar bg-warning" style={{width: '60%'}}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Search and Filter Section */}
-      <div className="container mb-4">
-        <div className="card shadow-sm border-0" style={{borderRadius: '16px'}}>
-          <div className="card-body p-4">
-            <div className="row g-3 align-items-center">
-              <div className="col-lg-4">
-                <div className="input-group">
-                  <span className="input-group-text border-0 bg-light">
-                    <i className="fas fa-search text-muted"></i>
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control border-0 bg-light"
-                    placeholder="Search dashboards..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{borderRadius: '0 12px 12px 0'}}
-                  />
-                </div>
-              </div>
-              
-              <div className="col-lg-2">
-                <select
-                  className="form-select border-0 bg-light"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  style={{borderRadius: '12px'}}
-                >
-                  <option value="All">All Status</option>
-                  <option value="Active">Active</option>
-                  <option value="Archived">Archived</option>
-                  <option value="Draft">Draft</option>
-                </select>
-              </div>
-              
-              <div className="col-lg-3">
-                <div className="input-group">
-                  <select
-                    className="form-select border-0 bg-light"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    style={{borderRadius: '12px 0 0 12px'}}
-                  >
-                    <option value="createdAt">Date Created</option>
-                    <option value="dashboardName">Name</option>
-                    <option value="grandTotal">Total Value</option>
-                    <option value="status">Status</option>
-                  </select>
-                  <button
-                    className="btn btn-outline-secondary border-0 bg-light"
-                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                    style={{borderRadius: '0 12px 12px 0'}}
-                  >
-                    <i className={`fas fa-sort-amount-${sortOrder === 'asc' ? 'up' : 'down'}`}></i>
-                  </button>
-                </div>
-              </div>
-              
-              <div className="col-lg-3 text-end">
-                <span className="text-muted small">
-                  Showing {paginatedDashboards.length} of {filteredDashboards.length} dashboards
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Financial Dashboards Table */}
-      <div className="container">
-        <div className="card shadow-lg border-0" style={{borderRadius: '20px'}}>
-          <div className="card-header border-0" style={{
-            background: 'linear-gradient(45deg, #28a745, #20c997)',
-            borderRadius: '20px 20px 0 0',
-            padding: '1.5rem'
-          }}>
-            <div className="d-flex align-items-center text-white">
-              <div className="bg-white bg-opacity-20 rounded-circle p-3 me-3">
-                <span style={{fontSize: '1.5rem'}}>📊</span>
-              </div>
-              <div>
-                <h3 className="mb-1 fw-bold">Financial Dashboards</h3>
-                <p className="mb-0 opacity-90">Comprehensive financial analysis and calculations</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="card-body p-0">
-            {filteredDashboards.length === 0 ? (
-              <div className="text-center py-5">
-                <div className="mb-4">
-                  <i className="fas fa-chart-line text-muted" style={{fontSize: '4rem'}}></i>
-                </div>
-                <h4 className="text-muted mb-3">No Financial Dashboards Found</h4>
-                <p className="text-secondary mb-4">Create your first financial dashboard to start tracking project costs and analytics.</p>
-                <button 
-                  className="btn btn-primary btn-lg shadow-sm"
-                  onClick={() => setShowCalculationModal(true)}
-                  style={{borderRadius: '50px', padding: '12px 30px'}}
-                >
-                  <span className="me-2">🔢</span> Calculate New Dashboard
+              <div className="d-flex justify-content-center gap-3 flex-wrap">
+                <button onClick={() => navigate("/projects-fd")} className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
+                  borderRadius: '50px',
+                  border: '2px solid #d4af37',
+                  color: '#d4af37',
+                  fontWeight: '600',
+                  textDecoration: 'none',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)'
+                }}>
+                  <BsBuilding className="me-2" />View Projects
+                </button>
+                <button onClick={() => setShowCalculationModal(true)} className="btn btn-primary btn-lg px-5 py-3 fw-semibold" style={{
+                  borderRadius: '50px',
+                  background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                  border: 'none',
+                  color: '#fff',
+                  fontWeight: '600',
+                  boxShadow: '0 4px 20px rgba(212, 175, 55, 0.4)',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <BsCalculator className="me-2" />Forge Analytics
                 </button>
               </div>
-            ) : (
-              <div className="table-responsive">
-                <table className="table table-hover mb-0">
-                  <thead className="table-light">
-                    <tr>
-                      <th className="border-0 fw-bold text-dark px-4 py-3">Dashboard Info</th>
-                      <th className="border-0 fw-bold text-dark px-4 py-3">Financial Summary</th>
-                      <th className="border-0 fw-bold text-dark px-4 py-3">Project Details</th>
-                      <th className="border-0 fw-bold text-dark px-4 py-3">Status</th>
-                      <th className="border-0 fw-bold text-dark px-4 py-3">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedDashboards.map((dashboard) => (
-                      <tr key={dashboard._id} className="border-bottom">
-                        <td className="px-4 py-3">
-                          <div>
-                            <h6 className="mb-1 fw-bold text-dark">{dashboard.dashboardName}</h6>
-                            <small className="text-muted">ID: {dashboard.dashboardId}</small><br />
-                            <small className="text-muted">Created: {formatDate(dashboard.createdAt)}</small>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div>
-                            <div className="fw-bold text-success fs-5">{formatCurrency(dashboard.financialSummary?.grandTotal)}</div>
-                            <small className="text-muted">
-                              Labor: {formatCurrency(dashboard.totalLaborCost)}<br />
-                              Materials: {formatCurrency(dashboard.totalMaterialCost)}<br />
-                              Tools: {formatCurrency(dashboard.totalToolCost)}
-                            </small>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div>
-                            <span className="badge bg-primary me-1">{dashboard.financialSummary?.projectCount || 0} Projects</span><br />
-                            <span className="badge bg-info me-1">{dashboard.financialSummary?.timelineEntries || 0} Timelines</span><br />
-                            <small className="text-muted">Avg: {formatCurrency(dashboard.financialSummary?.averageProjectCost)}</small>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`badge fs-6 ${
-                            dashboard.status === 'Active' ? 'bg-success' :
-                            dashboard.status === 'Archived' ? 'bg-secondary' : 'bg-warning text-dark'
-                          }`}>
-                            {dashboard.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="btn-group" role="group">
-                            <button
-                              className="btn btn-sm"
-                              onClick={() => navigate(`/financial-dashboard/view/${dashboard._id}`)}
-                              title="View Details"
-                              style={{
-                                background: 'linear-gradient(45deg, #007bff, #0056b3)',
-                                border: 'none',
-                                color: 'white',
-                                borderRadius: '8px 0 0 8px',
-                                padding: '8px 12px',
-                                transition: 'all 0.3s ease'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.transform = 'translateY(-2px)';
-                                e.target.style.boxShadow = '0 4px 12px rgba(0,123,255,0.3)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.transform = 'translateY(0)';
-                                e.target.style.boxShadow = 'none';
-                              }}
-                            >
-                              <i className="fas fa-eye"></i>
-                            </button>
-                            <button
-                              className="btn btn-sm"
-                              onClick={() => navigate(`/financial-dashboard/update/${dashboard._id}`)}
-                              title="Edit Dashboard"
-                              style={{
-                                background: 'linear-gradient(45deg, #28a745, #20c997)',
-                                border: 'none',
-                                color: 'white',
-                                borderRadius: '0',
-                                padding: '8px 12px',
-                                transition: 'all 0.3s ease'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.transform = 'translateY(-2px)';
-                                e.target.style.boxShadow = '0 4px 12px rgba(40,167,69,0.3)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.transform = 'translateY(0)';
-                                e.target.style.boxShadow = 'none';
-                              }}
-                            >
-                              <i className="fas fa-edit"></i>
-                            </button>
-                            <button
-                              className="btn btn-sm"
-                              onClick={() => handleDeleteDashboard(dashboard._id, dashboard.dashboardName)}
-                              title="Delete Dashboard"
-                              style={{
-                                background: 'linear-gradient(45deg, #dc3545, #c82333)',
-                                border: 'none',
-                                color: 'white',
-                                borderRadius: '0 8px 8px 0',
-                                padding: '8px 12px',
-                                transition: 'all 0.3s ease'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.transform = 'translateY(-2px)';
-                                e.target.style.boxShadow = '0 4px 12px rgba(220,53,69,0.3)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.transform = 'translateY(0)';
-                                e.target.style.boxShadow = 'none';
-                              }}
-                            >
-                              <i className="fas fa-trash"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="d-flex justify-content-center mt-4">
-            <nav>
-              <ul className="pagination">
-                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                  <button 
-                    className="page-link"
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </button>
-                </li>
-                
-                {[...Array(totalPages)].map((_, index) => (
-                  <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                    <button
-                      className="page-link"
-                      onClick={() => setCurrentPage(index + 1)}
+      <div className="container mb-5">
+        <div className="row justify-content-center">
+          <div className="col-lg-10">
+            {/* Statistics Cards - Enhanced */}
+            <div className="row g-4 mb-5">
+              <div className="col-lg-3 col-md-6">
+                <div className="card border-0 shadow-sm h-100" style={{
+                  borderRadius: '20px',
+                  background: 'linear-gradient(135deg, rgba(0,123,255,0.1) 0%, rgba(0,123,255,0.05) 100%)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-5px)';
+                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,123,255,0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+                }}>
+                  <div className="card-body text-center p-4">
+                    <div className="position-relative mb-3">
+                      <div 
+                        className="rounded-circle mx-auto d-flex align-items-center justify-content-center position-relative"
+                        style={{
+                          width: '80px', 
+                          height: '80px',
+                          background: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
+                          boxShadow: '0 8px 25px rgba(0,123,255,0.3)'
+                        }}
+                      >
+                        <BsFileEarmarkBarGraph className="text-white" style={{fontSize: '1.8rem'}} />
+                      </div>
+                      <div 
+                        className="position-absolute rounded-circle"
+                        style={{
+                          top: '-5px',
+                          right: '-5px',
+                          width: '30px',
+                          height: '30px',
+                          background: 'linear-gradient(45deg, #28a745, #20c997)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 4px 15px rgba(40,167,69,0.3)'
+                        }}
+                      >
+                        <BsCheckCircle className="text-white" style={{fontSize: '0.8rem'}} />
+                      </div>
+                    </div>
+                    <h3 className="fw-bold text-primary mb-1" style={{fontSize: '1.8rem'}}>{statistics.totalDashboards}</h3>
+                    <p className="text-muted mb-0 fw-semibold">Total Dashboards</p>
+                    <div className="progress mt-2" style={{height: '4px'}}>
+                      <div className="progress-bar bg-primary" style={{width: '100%'}}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="col-lg-3 col-md-6">
+                <div className="card border-0 shadow-sm h-100" style={{
+                  borderRadius: '20px',
+                  background: 'linear-gradient(135deg, rgba(40,167,69,0.1) 0%, rgba(40,167,69,0.05) 100%)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-5px)';
+                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(40,167,69,0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+                }}>
+                  <div className="card-body text-center p-4">
+                    <div className="position-relative mb-3">
+                      <div 
+                        className="rounded-circle mx-auto d-flex align-items-center justify-content-center position-relative"
+                        style={{
+                          width: '80px', 
+                          height: '80px',
+                          background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+                          boxShadow: '0 8px 25px rgba(40,167,69,0.3)'
+                        }}
+                      >
+                        <BsCurrencyDollar className="text-white" style={{fontSize: '1.8rem'}} />
+                      </div>
+                      <div 
+                        className="position-absolute rounded-circle"
+                        style={{
+                          top: '-5px',
+                          right: '-5px',
+                          width: '30px',
+                          height: '30px',
+                          background: 'linear-gradient(45deg, #ffc107, #e0a800)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 4px 15px rgba(255,193,7,0.3)'
+                        }}
+                      >
+                        <BsGraphUp className="text-white" style={{fontSize: '0.8rem'}} />
+                      </div>
+                    </div>
+                    <h3 className="fw-bold text-success mb-1" style={{fontSize: '1.5rem'}}>{formatCurrency(statistics.totalValue)}</h3>
+                    <p className="text-muted mb-0 fw-semibold">Total Value</p>
+                    <div className="progress mt-2" style={{height: '4px'}}>
+                      <div className="progress-bar bg-success" style={{width: '85%'}}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="col-lg-3 col-md-6">
+                <div className="card border-0 shadow-sm h-100" style={{
+                  borderRadius: '20px',
+                  background: 'linear-gradient(135deg, rgba(23,162,184,0.1) 0%, rgba(23,162,184,0.05) 100%)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-5px)';
+                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(23,162,184,0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+                }}>
+                  <div className="card-body text-center p-4">
+                    <div className="position-relative mb-3">
+                      <div 
+                        className="rounded-circle mx-auto d-flex align-items-center justify-content-center position-relative"
+                        style={{
+                          width: '80px', 
+                          height: '80px',
+                          background: 'linear-gradient(135deg, #17a2b8 0%, #138496 100%)',
+                          boxShadow: '0 8px 25px rgba(23,162,184,0.3)'
+                        }}
+                      >
+                        <BsGraphUp className="text-white" style={{fontSize: '1.8rem'}} />
+                      </div>
+                      <div 
+                        className="position-absolute rounded-circle"
+                        style={{
+                          top: '-5px',
+                          right: '-5px',
+                          width: '30px',
+                          height: '30px',
+                          background: 'linear-gradient(45deg, #6f42c1, #5a2d91)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 4px 15px rgba(111,66,193,0.3)'
+                        }}
+                      >
+                        <BsCalculator className="text-white" style={{fontSize: '0.8rem'}} />
+                      </div>
+                    </div>
+                    <h3 className="fw-bold text-info mb-1" style={{fontSize: '1.5rem'}}>{formatCurrency(statistics.avgProjectCost)}</h3>
+                    <p className="text-muted mb-0 fw-semibold">Avg Project Cost</p>
+                    <div className="progress mt-2" style={{height: '4px'}}>
+                      <div className="progress-bar bg-info" style={{width: '70%'}}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="col-lg-3 col-md-6">
+                <div className="card border-0 shadow-sm h-100" style={{
+                  borderRadius: '20px',
+                  background: 'linear-gradient(135deg, rgba(220,53,69,0.1) 0%, rgba(220,53,69,0.05) 100%)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-5px)';
+                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(220,53,69,0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+                }}>
+                  <div className="card-body text-center p-4">
+                    <div className="position-relative mb-3">
+                      <div 
+                        className="rounded-circle mx-auto d-flex align-items-center justify-content-center position-relative"
+                        style={{
+                          width: '80px', 
+                          height: '80px',
+                          background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                          boxShadow: '0 8px 25px rgba(220,53,69,0.3)'
+                        }}
+                      >
+                        <BsPeople className="text-white" style={{fontSize: '1.8rem'}} />
+                      </div>
+                      <div 
+                        className="position-absolute rounded-circle"
+                        style={{
+                          top: '-5px',
+                          right: '-5px',
+                          width: '30px',
+                          height: '30px',
+                          background: 'linear-gradient(45deg, #fd7e14, #e86209)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 4px 15px rgba(253,126,20,0.3)'
+                        }}
+                      >
+                        <BsEye className="text-white" style={{fontSize: '0.8rem'}} />
+                      </div>
+                    </div>
+                    <h3 className="fw-bold text-danger mb-1" style={{fontSize: '1.5rem'}}>{statistics.activeDashboards}</h3>
+                    <p className="text-muted mb-0 fw-semibold">Active Dashboards</p>
+                    <div className="progress mt-2" style={{height: '4px'}}>
+                      <div className="progress-bar bg-danger" style={{width: '60%'}}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Charts Section - New */}
+            <div className="row g-4 mb-5">
+              <div className="col-lg-6">
+                <div className="card border-0 shadow-sm" style={{ borderRadius: '20px' }}>
+                  <div className="card-header bg-transparent border-0 py-3">
+                    <h5 className="mb-0 fw-bold" style={{ color: '#d4af37' }}>
+                      <BsPieChart className="me-2" /> Dashboard Distribution
+                    </h5>
+                  </div>
+                  <div className="card-body p-4">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={chartData.pieData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {chartData.pieData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+              <div className="col-lg-6">
+                <div className="card border-0 shadow-sm" style={{ borderRadius: '20px' }}>
+                  <div className="card-header bg-transparent border-0 py-3">
+                    <h5 className="mb-0 fw-bold" style={{ color: '#d4af37' }}>
+                      <BsBarChart className="me-2" /> Revenue Trajectory
+                    </h5>
+                  </div>
+                  <div className="card-body p-4">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={chartData.barData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="value" fill="#d4af37" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Search and Filters - Enhanced */}
+            <div className="card border-0 shadow-sm mb-5" style={{ borderRadius: '20px' }}>
+              <div className="card-body p-4">
+                <div className="row g-3 align-items-end">
+                  <div className="col-md-4">
+                    <label className="form-label fw-semibold">Search Dashboards</label>
+                    <div className="input-group">
+                      <span className="input-group-text" style={{ backgroundColor: '#fdfcfb', borderColor: '#e5e7eb' }}>
+                        <BsSearch />
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Search by name or ID..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{ borderRadius: '12px', borderLeft: 'none' }}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <label className="form-label fw-semibold">Status Filter</label>
+                    <select
+                      className="form-select"
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      style={{ borderRadius: '12px' }}
                     >
-                      {index + 1}
+                      <option value="All">All Statuses</option>
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                      <option value="Archived">Archived</option>
+                    </select>
+                  </div>
+                  <div className="col-md-3">
+                    <label className="form-label fw-semibold">Sort By</label>
+                    <select
+                      className="form-select"
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      style={{ borderRadius: '12px' }}
+                    >
+                      <option value="createdAt">Created Date</option>
+                      <option value="dashboardName">Name</option>
+                      <option value="grandTotal">Total Value</option>
+                      <option value="status">Status</option>
+                    </select>
+                  </div>
+                  <div className="col-md-2">
+                    <button
+                      className="btn btn-outline-secondary w-100"
+                      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                      style={{ borderRadius: '12px' }}
+                    >
+                      {sortOrder === 'asc' ? <BsSortAlphaUp /> : <BsSortAlphaDown />}
                     </button>
-                  </li>
-                ))}
-                
-                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                  <button 
-                    className="page-link"
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </button>
-                </li>
-              </ul>
-            </nav>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Dashboards Table - Enhanced with actions */}
+            <div className="card border-0 shadow-sm" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+              <div className="card-header bg-transparent border-0 py-3">
+                <h5 className="mb-0 fw-bold" style={{ color: '#d4af37' }}>
+                  Financial Matrices
+                </h5>
+              </div>
+              <div className="card-body p-0">
+                <div className="table-responsive">
+                  <table className="table table-hover mb-0">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Name</th>
+                        <th>ID</th>
+                        <th>Status</th>
+                        <th>Total Value</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedDashboards.length > 0 ? paginatedDashboards.map((dashboard) => (
+                        <tr key={dashboard.dashboardId}>
+                          <td>{dashboard.dashboardName}</td>
+                          <td>{dashboard.dashboardId}</td>
+                          <td>
+                            <span className={`badge ${dashboard.status === 'Active' ? 'bg-success' : 'bg-secondary'}`}>
+                              {dashboard.status}
+                            </span>
+                          </td>
+                          <td>{formatCurrency(dashboard.financialSummary?.grandTotal)}</td>
+                          <td>{formatDate(dashboard.createdAt)}</td>
+                          <td>
+                            <div className="btn-group" role="group">
+                              <button className="btn btn-sm btn-outline-primary" onClick={() => navigate(`/financial-dashboard/${dashboard._id}`)} title="View">
+                                <BsEye />
+                              </button>
+                              <button className="btn btn-sm btn-outline-success" onClick={() => handleExport(dashboard._id, dashboard.dashboardName)} disabled={exporting} title="Export">
+                                {exporting ? <span className="spinner-border spinner-border-sm" style={{width: '1rem', height: '1rem'}}></span> : <BsDownload />}
+                              </button>
+                              <button className="btn btn-sm btn-outline-info" onClick={() => handleShare(dashboard._id)} disabled={sharing} title="Share">
+                                {sharing ? <span className="spinner-border spinner-border-sm" style={{width: '1rem', height: '1rem'}}></span> : <BsShare />}
+                              </button>
+                              <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteDashboard(dashboard._id, dashboard.dashboardName)} title="Delete">
+                                <BsTrash />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )) : (
+                        <tr>
+                          <td colSpan="6" className="text-center text-muted py-4">No dashboards found</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="d-flex justify-content-between align-items-center p-3 border-top">
+                    <div className="text-muted small">
+                      Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredDashboards.length)} of {filteredDashboards.length} entries
+                    </div>
+                    <nav>
+                      <ul className="pagination pagination-sm mb-0">
+                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                          <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>
+                            <BsChevronLeft />
+                          </button>
+                        </li>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                          <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
+                            <button className="page-link" onClick={() => setCurrentPage(page)}>{page}</button>
+                          </li>
+                        ))}
+                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                          <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>
+                            <BsChevronRight />
+                          </button>
+                        </li>
+                      </ul>
+                    </nav>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Enhanced Calculate New Dashboard Modal */}
+      {/* Enhanced Calculation Modal */}
       {showCalculationModal && (
-        <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.6)'}}>
+        <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content border-0 shadow-lg" style={{borderRadius: '25px', overflow: 'hidden'}}>
-              {/* Premium Modal Header */}
-              <div className="modal-header border-0 position-relative" style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-                padding: '2rem'
-              }}>
-                {/* Background Pattern */}
-                <div className="position-absolute top-0 start-0 w-100 h-100" style={{
-                  background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="7" cy="7" r="1"/%3E%3Ccircle cx="7" cy="27" r="1"/%3E%3Ccircle cx="7" cy="47" r="1"/%3E%3Ccircle cx="27" cy="7" r="1"/%3E%3Ccircle cx="27" cy="27" r="1"/%3E%3Ccircle cx="27" cy="47" r="1"/%3E%3Ccircle cx="47" cy="7" r="1"/%3E%3Ccircle cx="47" cy="27" r="1"/%3E%3Ccircle cx="47" cy="47" r="1"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-                  opacity: 0.3
-                }}></div>
-                
-                {/* Header Content */}
-                <div className="d-flex align-items-center w-100 position-relative" style={{zIndex: 1}}>
-                  <div className="bg-white bg-opacity-20 rounded-circle p-3 me-3" style={{
-                    width: '70px',
-                    height: '70px',
+            <div className="modal-content border-0 shadow-xl" style={{
+              borderRadius: '24px',
+              overflow: 'hidden',
+              background: 'linear-gradient(145deg, #ffffff 0%, #fdfcfb 100%)',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 25px 80px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <div className="modal-header border-0 bg-transparent py-4 px-5">
+                <div className="d-flex align-items-center">
+                  <div className="bg-gradient p-3 rounded-3 me-4" style={{
+                    background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                    width: '60px',
+                    height: '60px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backdropFilter: 'blur(10px)'
+                    boxShadow: '0 8px 25px rgba(212, 175, 55, 0.3)'
                   }}>
-                    <span style={{fontSize: '2rem'}}>🔢</span>
+                    <BsCalculator className="text-black fs-5" />
                   </div>
-                  <div className="flex-grow-1">
-                    <h4 className="modal-title text-white fw-bold mb-1" style={{fontSize: '1.5rem'}}>
-                      Financial Analysis Calculator
-                    </h4>
-                    <p className="text-white-50 mb-0">Generate comprehensive financial reports with smart analytics</p>
+                  <div className="w-100 text-center">
+                    <h2 className="h3 fw-bold mb-1" style={{ color: "#111827" }}>
+                      Fiscal Forge
+                    </h2>
+                    <p className="text-muted mb-0" style={{ fontSize: "0.95rem" }}>
+                      Architect your financial matrix with granular precision
+                    </p>
                   </div>
-                  <button 
-                    type="button" 
-                    className="btn-close btn-close-white position-relative" 
-                    onClick={() => {
-                      setShowCalculationModal(false);
-                      // Reset form
-                      setDashboardName('');
-                      setSelectedProjects([]);
-                      setAutoDateRange(true);
-                      setDateRangePreset('last30days');
-                    }}
-                    style={{
-                      fontSize: '1.2rem',
-                      opacity: 0.8,
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => e.target.style.opacity = '1'}
-                    onMouseLeave={(e) => e.target.style.opacity = '0.8'}
-                  ></button>
                 </div>
+                <button type="button" className="btn-close" onClick={() => setShowCalculationModal(false)}></button>
               </div>
-              
-              <div className="modal-body p-4">
-                <form onSubmit={(e) => { e.preventDefault(); handleCalculateNewDashboard(); }}>
+              <form onSubmit={(e) => { e.preventDefault(); handleCalculateNewDashboard(); }}>
+                <div className="modal-body p-5">
+                  {/* Calculation Type - New */}
+                  <div className="mb-4">
+                    <label className="form-label fw-bold">
+                      <span className="me-2">⚙️</span>
+                      Analysis Paradigm
+                    </label>
+                    <div className="d-flex flex-wrap gap-2">
+                      {[
+                        { value: 'standard', label: 'Standard', icon: '📊', desc: 'Core metrics and summaries' },
+                        { value: 'advanced', label: 'Advanced', icon: '🔬', desc: 'Deep analytics and correlations' },
+                        { value: 'predictive', label: 'Predictive', icon: '🔮', desc: 'Forecasting and trends Visuals' }
+                      ].map(type => (
+                        <button
+                          key={type.value}
+                          type="button"
+                          className={`btn btn-sm p-3 ${
+                            calculationType === type.value 
+                              ? 'btn-primary shadow-sm' 
+                              : 'btn-outline-primary'
+                          }`}
+                          onClick={() => setCalculationType(type.value)}
+                          style={{
+                            borderRadius: '16px',
+                            fontSize: '0.85rem',
+                            transition: 'all 0.2s ease',
+                            minWidth: '140px'
+                          }}
+                        >
+                          <span className="me-1 d-block mb-1 fs-5">{type.icon}</span>
+                          <strong>{type.label}</strong>
+                          <small className="d-block">{type.desc}</small>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Dashboard Name */}
                   <div className="mb-4">
                     <label className="form-label fw-bold">
-                      <span className="me-2">📊</span>
-                      Dashboard Name *
+                      <span className="me-2">📝</span>
+                      Matrix Designation
                     </label>
                     <input
                       type="text"
-                      className="form-control border-0 shadow-sm"
-                      placeholder="Enter dashboard name..."
+                      className="form-control"
+                      placeholder="e.g., Q3 Revenue Synthesis"
                       value={dashboardName}
                       onChange={(e) => setDashboardName(e.target.value)}
-                      style={{borderRadius: '12px', padding: '12px'}}
+                      style={{
+                        borderRadius: '16px',
+                        backgroundColor: '#fdfcfb',
+                        padding: '1rem 1.25rem',
+                        border: '1px solid #e5e7eb',
+                        boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                        transition: 'all 0.2s ease',
+                        fontSize: '1rem'
+                      }}
                       required
                     />
                   </div>
@@ -939,40 +1110,29 @@ export default function FinancialDashboard() {
                   <div className="mb-4">
                     <label className="form-label fw-bold">
                       <span className="me-2">🏢</span>
-                      Select Projects (Optional)
+                      Project Constellation ({availableProjects.length} available)
                     </label>
-                    <div className="card border-0 shadow-sm" style={{borderRadius: '12px', maxHeight: '200px', overflowY: 'auto'}}>
-                      <div className="card-body p-3">
-                        {availableProjects.map(project => (
-                          <div key={project._id} className="form-check mb-2">
-                            <input
-                              type="checkbox"
-                              className="form-check-input"
-                              id={`project-${project._id}`}
-                              value={project.pcode}
-                              checked={selectedProjects.includes(project.pcode)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedProjects([...selectedProjects, project.pcode]);
-                                } else {
-                                  setSelectedProjects(selectedProjects.filter(p => p !== project.pcode));
-                                }
-                              }}
-                            />
-                            <label className="form-check-label" htmlFor={`project-${project._id}`}>
-                              <strong>{project.pcode}</strong> - {project.pname}
-                              <br />
-                              <small className="text-muted">{project.ptype} | {project.ppriority}</small>
-                            </label>
-                          </div>
-                        ))}
-                        {availableProjects.length === 0 && (
-                          <p className="text-muted text-center mb-0">No projects available</p>
-                        )}
-                      </div>
-                    </div>
-                    <small className="form-text text-muted">
-                      Leave empty to include all projects in calculation
+                    <select
+                      multiple
+                      className="form-control"
+                      value={selectedProjects}
+                      onChange={(e) => setSelectedProjects(Array.from(e.target.selectedOptions, option => option.value))}
+                      style={{
+                        borderRadius: '16px',
+                        backgroundColor: '#fdfcfb',
+                        padding: '1rem',
+                        border: '1px solid #e5e7eb',
+                        height: '120px'
+                      }}
+                    >
+                      {availableProjects.length > 0 ? availableProjects.map(project => (
+                        <option key={project.code || project.id} value={project.code || project.id}>{project.name}</option>
+                      )) : (
+                        <option disabled>No projects loaded</option>
+                      )}
+                    </select>
+                    <small className="form-text text-muted mt-1">
+                      Hold Ctrl/Cmd to select multiple. Leave empty for all projects.
                     </small>
                   </div>
 
@@ -980,7 +1140,7 @@ export default function FinancialDashboard() {
                   <div className="mb-4">
                     <label className="form-label fw-bold">
                       <span className="me-2">📅</span>
-                      Date Range Analysis
+                      Temporal Vector
                     </label>
                     
                     {/* Auto Date Range Toggle */}
@@ -1002,11 +1162,11 @@ export default function FinancialDashboard() {
                           />
                           <label className="form-check-label fw-semibold" htmlFor="autoDateRange">
                             <span className="me-2">🤖</span>
-                            Smart Date Range Selection
+                            Quantum Temporal Calibration
                           </label>
                         </div>
                         <small className="text-muted">
-                          Automatically calculate optimal date ranges for comprehensive analysis
+                          Auto-calibrate optimal vectors for multidimensional synthesis
                         </small>
                       </div>
                     </div>
@@ -1014,15 +1174,15 @@ export default function FinancialDashboard() {
                     {/* Date Range Presets */}
                     {autoDateRange && (
                       <div className="mb-3">
-                        <label className="form-label fw-semibold">Quick Date Ranges</label>
+                        <label className="form-label fw-semibold">Temporal Presets</label>
                         <div className="d-flex flex-wrap gap-2">
                           {[
-                            { value: 'last7days', label: 'Last 7 Days', icon: '📅' },
-                            { value: 'last30days', label: 'Last 30 Days', icon: '📊' },
-                            { value: 'last3months', label: 'Last 3 Months', icon: '📈' },
-                            { value: 'last6months', label: 'Last 6 Months', icon: '📉' },
-                            { value: 'thismonth', label: 'This Month', icon: '🗓️' },
-                            { value: 'thisyear', label: 'This Year', icon: '📆' }
+                            { value: 'last7days', label: '7 Cycles', icon: '📅' },
+                            { value: 'last30days', label: '30 Cycles', icon: '📊' },
+                            { value: 'last3months', label: 'Quarter', icon: '📈' },
+                            { value: 'last6months', label: 'Semi-Annual', icon: '📉' },
+                            { value: 'thismonth', label: 'Current Cycle', icon: '🗓️' },
+                            { value: 'thisyear', label: 'Fiscal Year', icon: '📆' }
                           ].map(preset => (
                             <button
                               key={preset.value}
@@ -1056,7 +1216,7 @@ export default function FinancialDashboard() {
                       <div className="card-body p-3">
                         <div className="row g-3">
                           <div className="col-md-6">
-                            <label className="form-label fw-semibold small">From Date</label>
+                            <label className="form-label fw-semibold small">Vector Origin</label>
                             <input
                               type="date"
                               className="form-control border-0 shadow-sm"
@@ -1071,7 +1231,7 @@ export default function FinancialDashboard() {
                             />
                           </div>
                           <div className="col-md-6">
-                            <label className="form-label fw-semibold small">To Date</label>
+                            <label className="form-label fw-semibold small">Vector Terminus</label>
                             <input
                               type="date"
                               className="form-control border-0 shadow-sm"
@@ -1092,11 +1252,11 @@ export default function FinancialDashboard() {
                           <div className="mt-3 p-2 rounded" style={{backgroundColor: 'rgba(40,167,69,0.1)'}}>
                             <small className="text-success fw-semibold">
                               <span className="me-2">📊</span>
-                              Analysis Period: {getDateRangeLabel(dateRangePreset)}
+                              Synthesis Span: {getDateRangeLabel(dateRangePreset)}
                               <br />
                               <span className="text-muted">
                                 From {new Date(dateFrom).toLocaleDateString()} to {new Date(dateTo).toLocaleDateString()}
-                                ({Math.ceil((new Date(dateTo) - new Date(dateFrom)) / (1000 * 60 * 60 * 24))} days)
+                                ({Math.ceil((new Date(dateTo) - new Date(dateFrom)) / (1000 * 60 * 60 * 24))} cycles)
                               </span>
                             </small>
                           </div>
@@ -1106,150 +1266,148 @@ export default function FinancialDashboard() {
                     
                     <small className="form-text text-muted mt-2">
                       <span className="me-1">💡</span>
-                      Smart date ranges provide optimal analysis periods based on your project data
+                      Quantum calibration yields optimal multidimensional vectors
                     </small>
                   </div>
-                </form>
-              </div>
-              
-              
-              {/* Enhanced Modal Footer */}
-              <div className="modal-footer border-0" style={{
-                background: 'linear-gradient(135deg, rgba(248,249,250,0.9) 0%, rgba(255,255,255,0.9) 100%)',
-                padding: '2rem'
-              }}>
-                {/* Validation Summary */}
-                <div className="flex-grow-1 me-3">
-                  <div className="d-flex align-items-center mb-2">
-                    {dashboardName.trim() ? (
-                      <span className="badge bg-success me-2">
-                        <span className="me-1">✓</span> Dashboard Name
-                      </span>
-                    ) : (
-                      <span className="badge bg-secondary me-2">
-                        <span className="me-1">•</span> Dashboard Name Required
-                      </span>
-                    )}
-                    
-                    {dateFrom && dateTo ? (
-                      <span className="badge bg-success me-2">
-                        <span className="me-1">✓</span> Date Range Set
-                      </span>
-                    ) : (
-                      <span className="badge bg-info me-2">
-                        <span className="me-1">📅</span> Auto Date Range
-                      </span>
-                    )}
-                    
-                    {selectedProjects.length > 0 ? (
-                      <span className="badge bg-primary">
-                        <span className="me-1">🏢</span> {selectedProjects.length} Project{selectedProjects.length !== 1 ? 's' : ''}
-                      </span>
-                    ) : (
-                      <span className="badge bg-warning">
-                        <span className="me-1">🏢</span> All Projects
-                      </span>
-                    )}
-                  </div>
-                  
-                  <small className="text-muted">
-                    <span className="me-2">💡</span>
-                    {autoDateRange 
-                      ? `Smart analysis for ${getDateRangeLabel(dateRangePreset).toLowerCase()}`
-                      : 'Custom date range analysis'
-                    }
-                  </small>
                 </div>
                 
-                {/* Action Buttons */}
-                <div className="d-flex gap-3">
-                  <button 
-                    type="button" 
-                    className="btn btn-outline-secondary btn-lg"
-                    onClick={() => {
-                      setShowCalculationModal(false);
-                      // Reset form
-                      setDashboardName('');
-                      setSelectedProjects([]);
-                      setAutoDateRange(true);
-                      setDateRangePreset('last30days');
-                    }}
-                    style={{
-                      borderRadius: '50px', 
-                      padding: '12px 25px',
-                      transition: 'all 0.3s ease',
-                      border: '2px solid #6c757d'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 8px 25px rgba(108,117,125,0.2)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = 'none';
-                    }}
-                  >
-                    <span className="me-2">✕</span> Cancel
-                  </button>
-                  
-                  <button 
-                    type="button" 
-                    className="btn btn-lg shadow-lg"
-                    onClick={handleCalculateNewDashboard}
-                    disabled={calculatingNew || !dashboardName.trim()}
-                    style={{
-                      borderRadius: '50px', 
-                      padding: '12px 30px',
-                      background: calculatingNew || !dashboardName.trim() 
-                        ? 'linear-gradient(45deg, #6c757d, #5a6268)'
-                        : 'linear-gradient(45deg, #28a745, #20c997)',
-                      border: 'none',
-                      color: 'white',
-                      transition: 'all 0.3s ease',
-                      position: 'relative',
-                      overflow: 'hidden'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!calculatingNew && dashboardName.trim()) {
-                        e.target.style.transform = 'translateY(-3px)';
-                        e.target.style.boxShadow = '0 15px 40px rgba(40,167,69,0.4)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-                    }}
-                  >
-                    {/* Button shimmer effect */}
-                    {!calculatingNew && dashboardName.trim() && (
-                      <div className="position-absolute top-0 start-0 w-100 h-100" style={{
-                        background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
-                        animation: 'shimmer 2s infinite',
-                        pointerEvents: 'none'
-                      }}></div>
-                    )}
-                    
-                    <span className="position-relative">
-                      {calculatingNew ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                          Calculating Analytics...
-                        </>
+                {/* Enhanced Modal Footer */}
+                <div className="modal-footer border-0" style={{
+                  background: 'linear-gradient(135deg, rgba(248,249,250,0.9) 0%, rgba(255,255,255,0.9) 100%)',
+                  padding: '2rem'
+                }}>
+                  {/* Validation Summary */}
+                  <div className="flex-grow-1 me-3">
+                    <div className="d-flex align-items-center mb-2">
+                      {dashboardName.trim() ? (
+                        <span className="badge bg-success me-2">
+                          <span className="me-1">✓</span> Matrix Name
+                        </span>
                       ) : (
-                        <>
-                          <span className="me-2">🔢</span> 
-                          Generate Financial Report
-                        </>
+                        <span className="badge bg-secondary me-2">
+                          <span className="me-1">•</span> Designation Required
+                        </span>
                       )}
-                    </span>
-                  </button>
+                      
+                      {dateFrom && dateTo ? (
+                        <span className="badge bg-success me-2">
+                          <span className="me-1">✓</span> Temporal Span
+                        </span>
+                      ) : (
+                        <span className="badge bg-info me-2">
+                          <span className="me-1">📅</span> Quantum Calibration
+                        </span>
+                      )}
+                      
+                      {selectedProjects.length > 0 ? (
+                        <span className="badge bg-primary">
+                          <span className="me-1">🏢</span> {selectedProjects.length} Vectors
+                        </span>
+                      ) : (
+                        <span className="badge bg-warning">
+                          <span className="me-1">🌌</span> Omniverse Scope
+                        </span>
+                      )}
+                    </div>
+                    
+                    <small className="text-muted">
+                      <span className="me-2">💡</span>
+                      {autoDateRange 
+                        ? `Quantum synthesis for ${getDateRangeLabel(dateRangePreset).toLowerCase()}`
+                        : 'Custom vector calibration'
+                      }
+                    </small>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="d-flex gap-3">
+                    <button 
+                      type="button" 
+                      className="btn btn-outline-secondary btn-lg"
+                      onClick={() => {
+                        setShowCalculationModal(false);
+                        // Reset form
+                        setDashboardName('');
+                        setSelectedProjects([]);
+                        setAutoDateRange(true);
+                        setDateRangePreset('last30days');
+                      }}
+                      style={{
+                        borderRadius: '50px', 
+                        padding: '12px 25px',
+                        transition: 'all 0.3s ease',
+                        border: '2px solid #6c757d'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 8px 25px rgba(108,117,125,0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                    >
+                      <span className="me-2">✕</span> Abort
+                    </button>
+                    
+                    <button 
+                      type="submit" 
+                      className="btn btn-lg shadow-lg"
+                      disabled={calculatingNew || !dashboardName.trim()}
+                      style={{
+                        borderRadius: '50px', 
+                        padding: '12px 30px',
+                        background: calculatingNew || !dashboardName.trim() 
+                          ? 'linear-gradient(45deg, #6c757d, #5a6268)'
+                          : 'linear-gradient(45deg, #28a745, #20c997)',
+                        border: 'none',
+                        color: 'white',
+                        transition: 'all 0.3s ease',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!calculatingNew && dashboardName.trim()) {
+                          e.target.style.transform = 'translateY(-3px)';
+                          e.target.style.boxShadow = '0 15px 40px rgba(40,167,69,0.4)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+                      }}
+                    >
+                      {/* Button shimmer effect */}
+                      {!calculatingNew && dashboardName.trim() && (
+                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{
+                          background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
+                          animation: 'shimmer 2s infinite',
+                          pointerEvents: 'none'
+                        }}></div>
+                      )}
+                      
+                      <span className="position-relative">
+                        {calculatingNew ? (
+                          <>
+                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                            Synthesizing Matrix...
+                          </>
+                        ) : (
+                          <>
+                            <span className="me-2">🔮</span> 
+                            Crystallize Synthesis
+                          </>
+                        )}
+                      </span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>
       )}
-      
+
       {/* Enhanced FontAwesome Fallback CSS & Premium Animations */}
       <style>{`
         /* Ensure FontAwesome icons have proper font family and fallback */
@@ -1324,20 +1482,20 @@ export default function FinancialDashboard() {
         }
         
         /* Specific icon mappings with fallbacks */
-        .fas.fa-chart-line:before { content: "\f201"; }
-        .fas.fa-dollar-sign:before { content: "\f155"; }
-        .fas.fa-calculator:before { content: "\f1ec"; }
-        .fas.fa-check-circle:before { content: "\f058"; }
-        .fas.fa-check:before { content: "\f00c"; }
-        .fas.fa-arrow-up:before { content: "\f062"; }
-        .fas.fa-star:before { content: "\f005"; }
-        .fas.fa-thumbs-up:before { content: "\f164"; }
-        .fas.fa-eye:before { content: "\f06e"; }
-        .fas.fa-edit:before { content: "\f044"; }
-        .fas.fa-trash:before { content: "\f1f8"; }
-        .fas.fa-search:before { content: "\f002"; }
-        .fas.fa-sort-amount-up:before { content: "\f160"; }
-        .fas.fa-sort-amount-down:before { content: "\f161"; }
+        .fas.fa-chart-line:before { content: "\\f201"; }
+        .fas.fa-dollar-sign:before { content: "\\f155"; }
+        .fas.fa-calculator:before { content: "\\f1ec"; }
+        .fas.fa-check-circle:before { content: "\\f058"; }
+        .fas.fa-check:before { content: "\\f00c"; }
+        .fas.fa-arrow-up:before { content: "\\f062"; }
+        .fas.fa-star:before { content: "\\f005"; }
+        .fas.fa-thumbs-up:before { content: "\\f164"; }
+        .fas.fa-eye:before { content: "\\f06e"; }
+        .fas.fa-edit:before { content: "\\f044"; }
+        .fas.fa-trash:before { content: "\\f1f8"; }
+        .fas.fa-search:before { content: "\\f002"; }
+        .fas.fa-sort-amount-up:before { content: "\\f160"; }
+        .fas.fa-sort-amount-down:before { content: "\\f161"; }
         
         /* Emoji fallbacks when FontAwesome fails */
         body.fontawesome-fallback .fas.fa-chart-line:before,
@@ -1404,7 +1562,9 @@ export default function FinancialDashboard() {
         ::-webkit-scrollbar-thumb:hover {
           background: linear-gradient(45deg, #764ba2, #667eea);
         }
+
+        .bg-purple { background-color: #6f42c1 !important; }
       `}</style>
-    </>
+    </div>
   );
 }

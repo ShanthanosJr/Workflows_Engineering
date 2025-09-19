@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Nav from '../Nav/Nav';
 import { useNavigate } from "react-router-dom";
+import { exportProjectToPDF } from '../ExportUtils';
 import Projects from './Projects';
 
 const URL = 'http://localhost:5050/projects';
@@ -149,6 +150,20 @@ export default function ProjectsFD() {
 
   const sortedProjects = getSortedAndFilteredProjects();
 
+  const handleExportAll = () => {
+    // For now, we'll create a summary report of all projects
+    const summaryData = {
+      projects: projects,
+      totalProjects: projects.length,
+      totalBudget: projects.reduce((sum, p) => sum + (parseFloat(p.pbudget) || 0), 0),
+      activeProjects: projects.filter(p => p.pstatus === "In Progress").length,
+      generatedAt: new Date()
+    };
+
+    // Create a summary PDF using the export utility
+    exportProjectToPDF(summaryData, `projects-summary-${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
   return (
     <div>
       <Nav />
@@ -167,35 +182,54 @@ export default function ProjectsFD() {
               </p>
             </div>
             <div className="col-lg-4" style={{position: 'relative', zIndex: 1000}}>
-              {/* Primary Add Button */}
-              <button 
-                className="btn btn-light btn-lg shadow-sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('🔴 Add New Project Button Clicked!');
-                  
-                  try {
-                    navigate('/add-project');
-                    console.log('✅ Navigation successful');
-                  } catch (error) {
-                    console.error('❌ Navigation error:', error);
-                    // Fallback to window.location
-                    window.location.href = '/add-project';
-                  }
-                }}
-                style={{
-                  borderRadius: '50px', 
-                  padding: '12px 30px',
-                  cursor: 'pointer',
-                  pointerEvents: 'auto',
-                  position: 'relative',
-                  zIndex: 1001
-                }}
-                type="button"
-              >
-                <span className="me-2">➕</span> Add New Project
-              </button>
+              <div className="d-flex gap-2">
+                {/* Primary Add Button */}
+                <button 
+                  className="btn btn-light btn-lg shadow-sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔴 Add New Project Button Clicked!');
+                    
+                    try {
+                      navigate('/add-project');
+                      console.log('✅ Navigation successful');
+                    } catch (error) {
+                      console.error('❌ Navigation error:', error);
+                      // Fallback to window.location
+                      window.location.href = '/add-project';
+                    }
+                  }}
+                  style={{
+                    borderRadius: '50px', 
+                    padding: '12px 30px',
+                    cursor: 'pointer',
+                    pointerEvents: 'auto',
+                    position: 'relative',
+                    zIndex: 1001
+                  }}
+                  type="button"
+                >
+                  <span className="me-2">➕</span> Add New Project
+                </button>
+                
+                {/* Export Button */}
+                <button 
+                  className="btn btn-success btn-lg shadow-sm"
+                  onClick={handleExportAll}
+                  style={{
+                    borderRadius: '50px', 
+                    padding: '12px 30px',
+                    cursor: 'pointer',
+                    pointerEvents: 'auto',
+                    position: 'relative',
+                    zIndex: 1001
+                  }}
+                  type="button"
+                >
+                  <span className="me-2">📄</span> Export All
+                </button>
+              </div>
             </div>
           </div>
         </div>

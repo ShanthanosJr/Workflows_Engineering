@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { exportProjectToPDF } from '../ExportUtils';
 
 export default function Projects({ project, onDelete }) {
   const navigate = useNavigate();
@@ -293,6 +294,13 @@ export default function Projects({ project, onDelete }) {
               title="Edit Project"
             >
               ✏️ Edit
+            </button>
+            <button 
+              className="btn btn-outline-success btn-sm flex-fill"
+              onClick={() => exportProjectToPDF(project, `project-${project.pcode}.pdf`)}
+              title="Export Project"
+            >
+              📄 Export
             </button>
             <button 
               onClick={() => onDelete(project._id)} 

@@ -79,10 +79,10 @@ const ProjectHome = () => {
       ],
     },
     {
-      labelBox: "Green Construction",
+      labelBox: "Institutional Construction",
       icon: "🌱",
-      title: "Green Construction",
-      description: "Sustainable building practices for eco-friendly structures.",
+      title: "Institutional Construction",
+      description: "Sustainable building practices for Institutional structures.",
       type: "GREEN",
       photoUrls: [
         "https://images.unsplash.com/photo-1593062097818-0ff44e1c4f49?auto=format&fit=crop&w=600&q=80",
@@ -358,7 +358,7 @@ const ProjectHome = () => {
             Smart Construction Workflow & Safety Management System powered by AI innovation.
           </p>
           <div className="hero-buttons d-flex justify-content-center gap-4 flex-wrap">
-            <button className="btn btn-primary btn-lg shadow-btn" onClick={() => navigate("/projects")} aria-label="Get Started">
+            <button className="btn btn-primary btn-lg shadow-btn" onClick={() => navigate("/projects-fd")} aria-label="Get Started">
               Get Started <span className="arrow">→</span>
             </button>
             <button className="btn btn-outline-warning btn-lg shadow-btn-outline" onClick={() => navigate("/chatbot")} aria-label="Learn More">
@@ -616,7 +616,7 @@ const ProjectHome = () => {
         ref={addRef("growth")}
         tabIndex={-1}
       >
-        <VideoBackground videoId="growth" />
+        <VideoBackground videoId="growth" /><br></br>
         <div className="container text-center">
           <div className="caution-tape-section-bar" aria-hidden="true"></div>
           <h2 className="section-title mb-4">
@@ -758,7 +758,7 @@ const ProjectHome = () => {
                   <li><button className="footer-link-button">Commercial Projects</button></li>
                   <li><button className="footer-link-button">Industrial Development</button></li>
                   <li><button className="footer-link-button">Infrastructure</button></li>
-                  <li><button className="footer-link-button">Green Building</button></li>
+                  <li><button className="footer-link-button">Institutional Building</button></li>
                 </ul>
               </div>
             </div>
@@ -770,11 +770,11 @@ const ProjectHome = () => {
                 <div className="contact-info">
                   <div className="contact-item">
                     <span className="contact-icon">📍</span>
-                    <span>123 Construction Ave, Building City, BC 12345</span>
+                    <span>123 Kottawa Rd, Pannipitiya, Sri Lanka, BC 12345</span>
                   </div>
                   <div className="contact-item">
                     <span className="contact-icon">📞</span>
-                    <span>+1 (555) 123-4567</span>
+                    <span>+94 714-298544</span>
                   </div>
                   <div className="contact-item">
                     <span className="contact-icon">✉️</span>

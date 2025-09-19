@@ -92,6 +92,8 @@ Each module has its own setup instructions. Please refer to the individual modul
    npm start
    ```
 
+**Note**: There should be no node_modules directory at the root level. Each subsystem manages its own dependencies independently.
+
 ## Contributing
 
 1. Fork the repository

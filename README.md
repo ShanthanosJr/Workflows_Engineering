@@ -1,6 +1,6 @@
-# SCWMS - Smart Construction Workforce Management System
+# SCWMS - Smart Construction Workflow and Safety Management System
 
-Smart Construction Workforce Management System (SCWMS) is a comprehensive platform designed to streamline construction project management through specialized modules for different aspects of the construction process.
+Smart Construction Workflow & Safety Management System (SCWMS) is a comprehensive platform designed to streamline construction project management through specialized modules for different aspects of the construction process.
 
 ## Project Structure
 

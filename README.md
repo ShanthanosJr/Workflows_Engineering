@@ -1,31 +1,31 @@
-# SCWMS - Smart Construction Workforce Management System
+# SCWMS - Smart Construction Workflow and Safety Management System
 
-Smart Construction Workforce Management System (SCWMS) is a comprehensive platform designed to streamline construction project management through specialized modules for different aspects of the construction process.
+Smart Construction Workflow & Safety Management System (SCWMS) is a comprehensive platform designed to streamline construction project management through specialized modules for different aspects of the construction process.
 
 ## Project Structure
 
 ```
 SCWMS/
-├── WSPM/     - Workforce and Staff Planning Module
+├── WSPM/     - Worker Safety & Payroll Management
 ├── ETM/      - Equipment and Tools Management
-├── MISTM/    - Materials and Inventory Supply Tracking Module
-├── CIM/      - Construction Inspection and Monitoring
-├── PTFD/     - Project Timeline and Financial Dashboard (Your Module)
+├── MISTM/    - Materials , Inventory & Supplier Tracking Management
+├── CIM/      - Compliance, Inspection and AI Monitoring
+├── PTFD/     - Project Timeline and Financial Dashboard 
 └── README.md - This file
 ```
 
 ## Module Descriptions
 
-### 1. WSPM - Workforce and Staff Planning Module
+### 1. WSPM - Worker Safety & Payroll Management
 Handles workforce management, staff scheduling, and personnel planning.
 
 ### 2. ETM - Equipment and Tools Management
 Manages equipment tracking, tool inventory, and maintenance scheduling.
 
-### 3. MISTM - Materials and Inventory Supply Tracking Module
+### 3. MISTM - Materials , Inventory & Supplier Tracking Management
 Handles materials procurement, inventory tracking, and supply chain management.
 
-### 4. CIM - Construction Inspection and Monitoring
+### 4. CIM - Compliance , Inspection and AI Monitoring
 Handles quality control, safety inspections, and project monitoring.
 
 ### 5. PTFD - Project Timeline and Financial Dashboard
@@ -34,11 +34,11 @@ Manages project timelines, financial tracking, and dashboard visualization.
 ## Team Organization
 
 Each module is developed by a dedicated team:
-- **WSPM Team**: [Team Member Names]
-- **ETM Team**: [Team Member Names]
-- **MISTM Team**: [Team Member Names]
-- **CIM Team**: [Team Member Names]
-- **PTFD Team**: [Your Team Name]
+- **WSPM Team**: [Chamudi]
+- **ETM Team**: [Dulmi]
+- **MISTM Team**: [Kumuditha]
+- **CIM Team**: [Dhanujaya]
+- **PTFD Team**: [Kavishka]
 
 ## Technology Stack
 
@@ -46,7 +46,7 @@ Each module is developed by a dedicated team:
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB
 - **Authentication**: JWT
-- **Deployment**: [Your Deployment Platform]
+- **Deployment**: [ Deployment Platformp]
 
 ## Getting Started
 

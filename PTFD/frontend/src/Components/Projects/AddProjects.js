@@ -475,7 +475,7 @@ export default function AddProjects() {
                 <div style={{
                   width: '80px',
                   height: '80px',
-                  background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                  background: 'linear-gradient(135deg, #1e8449 0%, #27ae60 100%)',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -490,7 +490,7 @@ export default function AddProjects() {
                     color: '#1a1a1a',
                     fontWeight: '700',
                     letterSpacing: '-0.02em'
-                  }}>Add New Project</h1>
+                  }}>Refine New Project</h1>
                   <p className="h5 text-muted mb-0" style={{ fontWeight: '300' }}>
                     Elevate your construction workflow with precision and elegance
                   </p>
@@ -506,10 +506,10 @@ export default function AddProjects() {
                 Seamlessly integrate new initiatives into Workflows Engineering's premium ecosystem. Track every milestone with unparalleled clarity and ensure unwavering safety across all sites.
               </p>
               <div className="d-flex justify-content-center gap-3 flex-wrap">
-                <a href="/projects-fd" className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
+                <a href="/projects" className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
                   borderRadius: '50px',
-                  border: '2px solid #d4af37',
-                  color: '#d4af37',
+                  border: '2px solid #1e8449',
+                  color: '#1e8449',
                   fontWeight: '600',
                   textDecoration: 'none',
                   transition: 'all 0.3s ease',
@@ -519,14 +519,14 @@ export default function AddProjects() {
                 </a>
                 <a href="/project-timelines" className="btn btn-primary btn-lg px-5 py-3 fw-semibold" style={{
                   borderRadius: '50px',
-                  background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                  background: 'linear-gradient(135deg, #1e8449 0%, #27ae60 100%)',
                   border: 'none',
                   color: '#fff',
                   fontWeight: '600',
                   boxShadow: '0 4px 20px rgba(212, 175, 55, 0.4)',
                   transition: 'all 0.3s ease'
                 }}>
-                  <i className="fas fa-calendar-alt me-2"></i>Timeline
+                  <i className="fas fa-calendar-alt me-2"></i>Timelines
                 </a>
               </div>
             </div>
@@ -548,7 +548,7 @@ export default function AddProjects() {
               <div className="card-header bg-transparent border-0 py-5 px-5">
                 <div className="d-flex align-items-center">
                   <div className="bg-gradient p-3 rounded-3 me-4" style={{
-                    background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                    background: 'linear-gradient(135deg, #1e8449 0%, #27ae60 100%)',
                     width: '60px',
                     height: '60px',
                     display: 'flex',
@@ -1155,7 +1155,7 @@ export default function AddProjects() {
                         className="btn btn-lg px-6 py-3 fw-semibold"
                         style={{
                           borderRadius: '50px',
-                          background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                          background: 'linear-gradient(135deg, #1e8449 0%, #27ae60 100%)',
                           border: 'none',
                           color: '#fff',
                           fontSize: '1.1rem',

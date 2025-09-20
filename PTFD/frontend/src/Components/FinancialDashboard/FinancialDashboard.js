@@ -1,27 +1,29 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Nav from "../Nav/Nav";
+import { exportFinancialDashboardToPDF } from '../ExportUtils';
 import {
-  BsBuilding,
   BsCurrencyDollar,
   BsGraphUp,
   BsPeople,
   BsFileEarmarkBarGraph,
   BsCalculator,
   BsSearch,
-  BsSortAlphaDown,
-  BsSortAlphaUp,
-  BsChevronLeft,
-  BsChevronRight,
-  BsDownload,
-  BsShare,
   BsPieChart,
   BsBarChart,
   BsCheckCircle,
   BsEye,
-  BsTrash
-} from "react-icons/bs";
+  BsTrash,
+  BsPencil,
+  BsGrid,
+  BsList,
+  BsBriefcase,
+  BsExclamationTriangle,
+  BsActivity,
+  BsShare,
+  BsDownload
+} from 'react-icons/bs';
 import {
   PieChart,
   Pie,
@@ -33,77 +35,60 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Area,
+  AreaChart,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  LineChart,
+  Line,
+  ScatterChart,
+  Scatter
 } from "recharts";
 
-// Add this import at the top with other imports
-import { exportFinancialDashboardToPDF } from '../ExportUtils';
+const URL = 'http://localhost:5050/financial-dashboard';
+
+async function fetchFinancialDashboards() {
+  try {
+    const res = await axios.get(URL);
+    return Array.isArray(res.data.data) ? res.data.data : [];
+  } catch (err) {
+    console.error('Error fetching financial dashboards:', err);
+    return [];
+  }
+}
 
 export default function FinancialDashboard() {
   const navigate = useNavigate();
-  
+
   // Debug logging
   useEffect(() => {
-    console.log('📍 FinancialDashboard component mounted successfully!');
+    console.log('💰 FinancialDashboard component mounted');
     console.log('🔍 Current URL:', window.location.href);
-  }, []);
+    console.log('🔍 Navigate function:', typeof navigate, navigate);
+  }, [navigate]);
 
-  // Ensure FontAwesome is loaded with multiple fallback strategies
-  useEffect(() => {
-    // Strategy 1: Check if FontAwesome is already loaded
-    const existingLink = document.querySelector('link[href*="font-awesome"]');
-    
-    if (!existingLink) {
-      // Strategy 2: Add FontAwesome CSS link
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
-      link.crossOrigin = 'anonymous';
-      document.head.appendChild(link);
-      
-      // Strategy 3: Verify loading and add fallback
-      link.onload = () => {
-        console.log('✅ FontAwesome loaded successfully');
-      };
-      
-      link.onerror = () => {
-        console.warn('⚠️ FontAwesome failed to load, using emoji fallbacks');
-        // Force fallback by adding a class to body
-        document.body.classList.add('fontawesome-fallback');
-      };
-    }
-    
-    // Strategy 4: Test FontAwesome loading after a delay
-    setTimeout(() => {
-      const testElement = document.createElement('i');
-      testElement.className = 'fas fa-heart';
-      testElement.style.position = 'absolute';
-      testElement.style.left = '-9999px';
-      document.body.appendChild(testElement);
-      
-      const computedStyle = window.getComputedStyle(testElement);
-      const fontFamily = computedStyle.fontFamily;
-      
-      if (!fontFamily.includes('Font Awesome')) {
-        console.warn('⚠️ FontAwesome not detected, activating fallbacks');
-        document.body.classList.add('fontawesome-fallback');
-      } else {
-        console.log('✅ FontAwesome verified and working');
-      }
-      
-      document.body.removeChild(testElement);
-    }, 1000);
-  }, []);
-  
   const [dashboards, setDashboards] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [calculatingNew, setCalculatingNew] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [sortBy, setSortBy] = useState("createdAt");
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [sortField, setSortField] = useState("createdAt");
+  const [sortDirection, setSortDirection] = useState("desc");
+  const [filterStatus, setFilterStatus] = useState("");
+
+  // Enhanced state for modern features
+  const [viewMode, setViewMode] = useState("overview"); // overview, analytics, dashboards, table
+  const [selectedDashboards, setSelectedDashboards] = useState([]);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [valueRange, setValueRange] = useState({ min: "", max: "" });
+  const [selectedDashboardDetail, setSelectedDashboardDetail] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [quickFilter, setQuickFilter] = useState("");
 
   // New calculation form states
   const [showCalculationModal, setShowCalculationModal] = useState(false);
@@ -112,57 +97,18 @@ export default function FinancialDashboard() {
   const [dashboardName, setDashboardName] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [dateRangePreset, setDateRangePreset] = useState("last30days");
-  const [autoDateRange, setAutoDateRange] = useState(true);
-  const [calculationType, setCalculationType] = useState("standard"); // New: standard, advanced, predictive
+  const [calculatingNew, setCalculatingNew] = useState(false);
 
-  // Statistics
-  const [statistics, setStatistics] = useState({
-    totalDashboards: 0,
-    totalValue: 0,
-    avgProjectCost: 0,
-    activeDashboards: 0
-  });
-
-  // Chart data (mocked for demo, fetch real in production)
-  const [chartData, setChartData] = useState({
-    pieData: [
-      { name: 'Active', value: 65, color: '#10b981' },
-      { name: 'Inactive', value: 35, color: '#ef4444' }
-    ],
-    barData: [
-      { month: 'Jan', value: 4000 },
-      { month: 'Feb', value: 3000 },
-      { month: 'Mar', value: 5000 },
-      { month: 'Apr', value: 4500 },
-      { month: 'May', value: 6000 },
-      { month: 'Jun', value: 5500 }
-    ]
-  });
-
-  // New: Export and share states
-  const [exporting, setExporting] = useState(false);
-  const [sharing, setSharing] = useState(false);
-
-  const fetchDashboards = useCallback(async () => {
-    try {
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
       setLoading(true);
-      console.log('🔄 Fetching financial dashboards...');
-      
-      const response = await axios.get('http://localhost:5050/financial-dashboard');
-      const dashboardData = response.data.data || [];
-      
-      setDashboards(dashboardData);
-      calculateStatistics(dashboardData);
-      updateChartData(dashboardData); // New: Update charts
-      
-      console.log(`✅ Loaded ${dashboardData.length} financial dashboards`);
-    } catch (error) {
-      console.error('❌ Error fetching dashboards:', error);
-      alert('Error loading financial dashboards. Please try again.');
-    } finally {
+      const data = await fetchFinancialDashboards();
+      if (!mounted) return;
+      setDashboards(data || []);
       setLoading(false);
-    }
+    })();
+    return () => { mounted = false; };
   }, []);
 
   const fetchAvailableProjects = useCallback(async () => {
@@ -170,7 +116,6 @@ export default function FinancialDashboard() {
       console.log('🔄 Fetching available projects...');
       const response = await axios.get('http://localhost:5050/financial-dashboard/config/projects');
       const projects = response.data.data || [];
-      // Map the project fields to match what the UI expects
       const mappedProjects = projects.map(project => ({
         id: project.pcode,
         name: project.pname,
@@ -183,112 +128,270 @@ export default function FinancialDashboard() {
       console.log(`✅ Loaded ${mappedProjects.length} projects`);
     } catch (error) {
       console.error('❌ Error fetching projects:', error);
-      alert(`Error loading projects: ${error.response?.data?.message || error.message}. Using empty list.`);
-      setAvailableProjects([]); // Fallback to empty
+      setAvailableProjects([]);
     }
   }, []);
 
-  // New: Update chart data based on dashboards
-  const updateChartData = (data) => {
-    const activeCount = data.filter(d => d.status === 'Active').length;
-    const total = data.length;
-    const pieData = [
-      { name: 'Active', value: activeCount, color: '#10b981' },
-      { name: 'Inactive', value: total - activeCount, color: '#ef4444' }
-    ];
-    // Mock bar data for revenue - in real, aggregate from data
-    setChartData(prev => ({ ...prev, pieData }));
-  };
-
   useEffect(() => {
-    fetchDashboards();
     fetchAvailableProjects();
-  }, [fetchDashboards, fetchAvailableProjects]);
+  }, [fetchAvailableProjects]);
 
-  const calculateStatistics = (data) => {
-    const stats = {
-      totalDashboards: data.length,
-      totalValue: data.reduce((sum, dashboard) => sum + (dashboard.financialSummary?.grandTotal || 0), 0),
-      avgProjectCost: 0,
-      activeDashboards: data.filter(d => d.status === 'Active').length
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this financial dashboard? This action cannot be undone.")) {
+      try {
+        await axios.delete(`${URL}/${id}`);
+        setDashboards(dashboards.filter(d => d._id !== id));
+        setSelectedDashboards(selectedDashboards.filter(selectedId => selectedId !== id));
+        showNotification("success", "Financial dashboard deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting dashboard:", error);
+        showNotification("error", "Error deleting financial dashboard. Please try again.");
+      }
+    }
+  };
+
+  // Enhanced notification system
+  const showNotification = (type, message) => {
+    const alertClass = {
+      success: 'alert-success',
+      error: 'alert-danger',
+      warning: 'alert-warning',
+      info: 'alert-info'
+    }[type];
+
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 1055; min-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+    alert.innerHTML = `
+      <div class="d-flex align-items-center">
+        <div class="me-2">
+          ${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}
+        </div>
+        <div>${message}</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+      </div>
+    `;
+    document.body.appendChild(alert);
+    setTimeout(() => alert.remove(), 4000);
+  };
+
+  // Toggle dashboard selection
+  const toggleDashboardSelection = (dashboardId) => {
+    setSelectedDashboards(prev =>
+      prev.includes(dashboardId)
+        ? prev.filter(id => id !== dashboardId)
+        : [...prev, dashboardId]
+    );
+  };
+
+  // Select all dashboards
+  const toggleSelectAll = () => {
+    const filteredIds = getSortedAndFilteredDashboards().map(d => d._id);
+    setSelectedDashboards(
+      selectedDashboards.length === filteredIds.length ? [] : filteredIds
+    );
+  };
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortedAndFilteredDashboards = () => {
+    let filtered = dashboards.filter(dashboard => {
+      // Search filter
+      const matchesSearch =
+        dashboard.dashboardName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        dashboard.dashboardId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (dashboard.status && dashboard.status.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      // Status filter
+      const matchesStatus = !filterStatus || dashboard.status === filterStatus;
+
+      // Date range filter
+      const matchesDateRange = (
+        !dateRange.start || new Date(dashboard.createdAt) >= new Date(dateRange.start)
+      ) && (
+          !dateRange.end || new Date(dashboard.createdAt) <= new Date(dateRange.end)
+        );
+
+      // Value range filter
+      const dashboardValue = dashboard.financialSummary?.grandTotal || 0;
+      const matchesValueRange = (
+        !valueRange.min || dashboardValue >= parseFloat(valueRange.min)
+      ) && (
+          !valueRange.max || dashboardValue <= parseFloat(valueRange.max)
+        );
+
+      // Quick filters
+      const matchesQuickFilter = (() => {
+        switch (quickFilter) {
+          case 'today':
+            return new Date(dashboard.createdAt).toDateString() === new Date().toDateString();
+          case 'week':
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return new Date(dashboard.createdAt) >= weekAgo;
+          case 'month':
+            const monthAgo = new Date();
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            return new Date(dashboard.createdAt) >= monthAgo;
+          case 'high-value':
+            return dashboardValue > 50000;
+          case 'active':
+            return dashboard.status === 'Active';
+          default:
+            return true;
+        }
+      })();
+
+      return matchesSearch && matchesStatus && matchesDateRange && matchesValueRange && matchesQuickFilter;
+    });
+
+    return filtered.sort((a, b) => {
+      let aVal, bVal;
+
+      switch (sortField) {
+        case "createdAt":
+          aVal = new Date(a.createdAt);
+          bVal = new Date(b.createdAt);
+          break;
+        case "dashboardName":
+          aVal = a.dashboardName || '';
+          bVal = b.dashboardName || '';
+          break;
+        case "status":
+          aVal = a.status || '';
+          bVal = b.status || '';
+          break;
+        case "grandTotal":
+          aVal = a.financialSummary?.grandTotal || 0;
+          bVal = b.financialSummary?.grandTotal || 0;
+          break;
+        default:
+          aVal = a[sortField];
+          bVal = b[sortField];
+      }
+
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const getSortIcon = (field) => {
+    if (sortField !== field) return "↕️";
+    return sortDirection === "asc" ? "⬆️" : "⬇️";
+  };
+
+  const getUniqueStatuses = useCallback(() => {
+    const statuses = dashboards.map(d => d.status).filter(Boolean);
+    return [...new Set(statuses)];
+  }, [dashboards]);
+
+  // Enhanced utility functions
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setFilterStatus("");
+    setDateRange({ start: "", end: "" });
+    setValueRange({ min: "", max: "" });
+    setQuickFilter("");
+    setCurrentPage(1);
+  };
+
+  const openDetailModal = (dashboard) => {
+    setSelectedDashboardDetail(dashboard);
+    setShowDetailModal(true);
+  };
+
+  // Pagination
+  const getPaginatedData = () => {
+    const sorted = getSortedAndFilteredDashboards();
+    const startIndex = (currentPage - 1) * 10;
+    const endIndex = startIndex + 10;
+    return {
+      data: sorted.slice(startIndex, endIndex),
+      totalItems: sorted.length,
+      totalPages: Math.ceil(sorted.length / 10)
     };
-    
-    stats.avgProjectCost = stats.totalDashboards > 0 ? stats.totalValue / stats.totalDashboards : 0;
-    setStatistics(stats);
   };
 
-  // Auto-calculate date ranges based on preset
-  const applyDateRangePreset = (preset) => {
-    const today = new Date();
-    const formatDate = (date) => date.toISOString().split('T')[0];
-    
-    let fromDate, toDate;
-    
-    switch (preset) {
-      case 'last7days':
-        fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-        toDate = today;
-        break;
-      case 'last30days':
-        fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-        toDate = today;
-        break;
-      case 'last3months':
-        fromDate = new Date(today.getFullYear(), today.getMonth() - 3, today.getDate());
-        toDate = today;
-        break;
-      case 'last6months':
-        fromDate = new Date(today.getFullYear(), today.getMonth() - 6, today.getDate());
-        toDate = today;
-        break;
-      case 'lastyear':
-        fromDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
-        toDate = today;
-        break;
-      case 'thismonth':
-        fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
-        toDate = today;
-        break;
-      case 'thisyear':
-        fromDate = new Date(today.getFullYear(), 0, 1);
-        toDate = today;
-        break;
-      default:
-        fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-        toDate = today;
-    }
-    
-    setDateFrom(formatDate(fromDate));
-    setDateTo(formatDate(toDate));
-  };
+  // Calculate statistics
+  const statistics = useMemo(() => {
+    const totalValue = dashboards.reduce((sum, d) => sum + (d.financialSummary?.grandTotal || 0), 0);
+    const activeDashboards = dashboards.filter(d => d.status === 'Active').length;
+    const highValueDashboards = dashboards.filter(d => (d.financialSummary?.grandTotal || 0) > 50000).length;
 
-  // Apply date range when preset changes
-  useEffect(() => {
-    if (autoDateRange && dateRangePreset) {
-      applyDateRangePreset(dateRangePreset);
-    }
-  }, [dateRangePreset, autoDateRange]);
-
-  // Initialize with default date range when modal opens
-  useEffect(() => {
-    if (showCalculationModal && autoDateRange) {
-      applyDateRangePreset(dateRangePreset);
-    }
-  }, [showCalculationModal, dateRangePreset, autoDateRange]);
-
-  const getDateRangeLabel = (preset) => {
-    const labels = {
-      'last7days': 'Last 7 Days',
-      'last30days': 'Last 30 Days',
-      'last3months': 'Last 3 Months',
-      'last6months': 'Last 6 Months',
-      'lastyear': 'Last Year',
-      'thismonth': 'This Month',
-      'thisyear': 'This Year',
-      'custom': 'Custom Range'
+    return {
+      totalDashboards: dashboards.length,
+      activeDashboards,
+      totalValue,
+      avgValue: dashboards.length > 0 ? totalValue / dashboards.length : 0,
+      highValueDashboards
     };
-    return labels[preset] || 'Last 30 Days';
-  };
+  }, [dashboards]);
+
+  // Chart data
+  const chartData = useMemo(() => {
+    // Status distribution for pie chart
+    const statusDistribution = dashboards.reduce((acc, dashboard) => {
+      const status = dashboard.status || 'Unknown';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+
+    const statusData = Object.entries(statusDistribution).map(([status, count]) => ({
+      name: status,
+      value: count,
+      color: status === 'Active' ? '#f59e0b' : status === 'Inactive' ? '#ef4444' : '#6b7280'
+    }));
+
+    // Value by dashboard for bar chart
+    const valueData = dashboards.slice(0, 10).map(dashboard => ({
+      name: dashboard.dashboardName?.substring(0, 15) + '...' || 'Unknown',
+      value: dashboard.financialSummary?.grandTotal || 0,
+      id: dashboard.dashboardId
+    })).sort((a, b) => b.value - a.value);
+
+    // Monthly creation data
+    const monthlyData = dashboards.reduce((acc, dashboard) => {
+      const date = new Date(dashboard.createdAt);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      if (!acc[monthKey]) {
+        acc[monthKey] = { month: monthKey, dashboards: 0, totalValue: 0 };
+      }
+
+      acc[monthKey].dashboards += 1;
+      acc[monthKey].totalValue += dashboard.financialSummary?.grandTotal || 0;
+
+      return acc;
+    }, {});
+
+    const activityData = Object.values(monthlyData)
+      .sort((a, b) => a.month.localeCompare(b.month))
+      .slice(-6)
+      .map(item => ({
+        ...item,
+        month: new Date(item.month + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+      }));
+
+    // Hexagonal (Radar) chart data
+    const radarData = [
+      { subject: 'Active', A: statistics.activeDashboards, fullMark: Math.max(dashboards.length, 10) },
+      { subject: 'High Value', A: statistics.highValueDashboards, fullMark: Math.max(dashboards.length, 10) },
+      { subject: 'Total Count', A: dashboards.length, fullMark: Math.max(dashboards.length, 10) },
+      { subject: 'Avg Value', A: statistics.avgValue / 1000, fullMark: 100 },
+      { subject: 'Recent', A: dashboards.filter(d => new Date(d.createdAt) > new Date(Date.now() - 30*24*60*60*1000)).length, fullMark: Math.max(dashboards.length, 10) },
+      { subject: 'Coverage', A: dashboards.length > 0 ? 100 : 0, fullMark: 100 }
+    ];
+
+    return { statusData, valueData, activityData, radarData };
+  }, [dashboards, statistics]);
 
   const handleCalculateNewDashboard = async () => {
     if (!dashboardName.trim()) {
@@ -305,152 +408,44 @@ export default function FinancialDashboard() {
         selectedProjects: selectedProjects.length > 0 ? selectedProjects : undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
-        calculationType // New: Include type
       };
 
-      const response = await axios.post('http://localhost:5050/financial-dashboard/calculate', calculationData);
+      const response = await axios.post(`${URL}/calculate`, calculationData);
       console.log('✅ Response:', response.data);
-      
+
       console.log('✅ Financial calculation completed');
-      alert('✅ Financial dashboard calculated successfully!');
-      
+      showNotification('success', 'Financial dashboard calculated successfully!');
+
       // Reset form and close modal
       setDashboardName('');
       setSelectedProjects([]);
       setDateFrom('');
       setDateTo('');
-      setCalculationType('standard');
       setShowCalculationModal(false);
-      
+
       // Refresh dashboards
-      fetchDashboards();
-      
+      const data = await fetchFinancialDashboards();
+      setDashboards(data || []);
+
     } catch (error) {
       console.error('❌ Error calculating dashboard:', error);
-      alert(`❌ Error calculating financial dashboard: ${error.response?.data?.message || error.message}`);
+      showNotification('error', `Error calculating financial dashboard: ${error.response?.data?.message || error.message}`);
     } finally {
       setCalculatingNew(false);
     }
   };
 
-  // New: Handle export - fallback to client-side CSV if backend fails
-  const handleExport = async (dashboardId, dashboardName) => {
-    setExporting(true);
-    try {
-      console.log('🔄 Exporting dashboard:', dashboardId);
-      // First try to get detailed dashboard data for PDF export
-      const response = await axios.get(`http://localhost:5050/financial-dashboard/${dashboardId}`);
-      const dashboardData = response.data.data;
-      
-      if (dashboardData) {
-        // Use our professional PDF export function
-        exportFinancialDashboardToPDF(dashboardData, `${dashboardName}.pdf`);
-        console.log('✅ PDF export successful');
-      } else {
-        // Fallback to backend export if PDF generation fails
-        const exportResponse = await axios.get(`http://localhost:5050/financial-dashboard/${dashboardId}/export`, { responseType: 'blob' });
-        const url = window.URL.createObjectURL(new Blob([exportResponse.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `financial-dashboard-${dashboardId}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-        console.log('✅ Export successful');
-      }
-    } catch (error) {
-      console.error('❌ Export failed:', error);
-      // Fallback: Generate simple CSV from current dashboard data (if available)
-      const dashboard = dashboards.find(d => d._id === dashboardId);
-      if (dashboard) {
-        const csvContent = `Dashboard Name,Grand Total,Status,Created At\n${dashboard.dashboardName},${dashboard.financialSummary?.grandTotal || 0},${dashboard.status},${dashboard.createdAt}`;
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${dashboardName}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-        alert('✅ CSV export completed (PDF unavailable)');
-      } else {
-        alert('❌ Export failed: Dashboard not found');
-      }
-    } finally {
-      setExporting(false);
-    }
+  const handleExportAll = () => {
+    const summaryData = {
+      dashboards: dashboards,
+      totalDashboards: dashboards.length,
+      totalValue: dashboards.reduce((sum, d) => sum + (d.financialSummary?.grandTotal || 0), 0),
+      activeDashboards: dashboards.filter(d => d.status === 'Active').length,
+      generatedAt: new Date()
+    };
+
+    exportFinancialDashboardToPDF(summaryData, `financial-dashboards-summary-${new Date().toISOString().split('T')[0]}.pdf`);
   };
-
-  // New: Handle share - generate share URL
-  const handleShare = async (dashboardId) => {
-    setSharing(true);
-    try {
-      console.log('🔄 Sharing dashboard:', dashboardId);
-      // Assume backend generates share URL
-      const response = await axios.post(`http://localhost:5050/financial-dashboard/${dashboardId}/share`);
-      const shareUrl = response.data.shareUrl || `http://localhost:3000/financial-dashboard/${dashboardId}`;
-      await navigator.clipboard.writeText(shareUrl);
-      alert(`✅ Share URL copied: ${shareUrl}`);
-    } catch (error) {
-      console.error('❌ Share failed, using direct URL:', error);
-      // Fallback: Use direct view URL
-      const shareUrl = `http://localhost:3000/financial-dashboard/${dashboardId}`;
-      await navigator.clipboard.writeText(shareUrl);
-      alert(`✅ Direct URL copied: ${shareUrl} (backend share unavailable)`);
-    } finally {
-      setSharing(false);
-    }
-  };
-
-  const handleDeleteDashboard = async (id, dashboardName) => {
-    if (window.confirm(`Are you sure you want to delete the dashboard "${dashboardName}"?`)) {
-      try {
-        console.log('🗑️ Deleting dashboard:', id);
-        await axios.delete(`http://localhost:5050/financial-dashboard/${id}`);
-        alert('✅ Financial dashboard deleted successfully!');
-        fetchDashboards();
-      } catch (error) {
-        console.error('❌ Error deleting dashboard:', error);
-        alert(`❌ Error deleting dashboard: ${error.response?.data?.message || error.message}`);
-      }
-    }
-  };
-
-  // Filter and sort dashboards
-  const filteredDashboards = dashboards
-    .filter(dashboard => {
-      const matchesSearch = dashboard.dashboardName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           dashboard.dashboardId.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === "All" || dashboard.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    })
-    .sort((a, b) => {
-      let aValue = a[sortBy];
-      let bValue = b[sortBy];
-      
-      if (sortBy === 'grandTotal') {
-        aValue = a.financialSummary?.grandTotal || 0;
-        bValue = b.financialSummary?.grandTotal || 0;
-      }
-      
-      if (typeof aValue === 'string') {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      }
-      
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
-
-  // Pagination
-  const totalPages = Math.ceil(filteredDashboards.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedDashboards = filteredDashboards.slice(startIndex, startIndex + itemsPerPage);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -460,370 +455,577 @@ export default function FinancialDashboard() {
     }).format(amount || 0);
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
   if (loading) {
     return (
-      <>
+      <div>
         <Nav />
-        <div className="container mt-5">
-          <div className="row justify-content-center">
-            <div className="col-md-6 text-center">
-              <div className="card shadow-lg border-0" style={{ borderRadius: '24px' }}>
-                <div className="card-body p-5">
-                  <div className="spinner-border text-primary mb-3" role="status" style={{width: '3rem', height: '3rem'}}>
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                  <h4 className="text-muted">Loading Financial Dashboard...</h4>
-                  <p className="text-secondary">Please wait while we fetch the financial data.</p>
-                </div>
-              </div>
+        <div className="container mt-4">
+          <div className="text-center">
+            <div className="spinner-border text-warning" style={{ width: '3rem', height: '3rem' }} role="status">
+              <span className="visually-hidden">Loading...</span>
             </div>
+            <p className="mt-3 text-muted">Loading financial dashboard...</p>
           </div>
         </div>
-      </>
+      </div>
     );
   }
 
+  const uniqueStatuses = getUniqueStatuses();
+  const paginatedData = getPaginatedData();
+
   return (
-    <div style={{ backgroundColor: '#fdfcfb', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+    <div className="financial-dashboard">
       <Nav />
+      <div className="container-fluid mt-4">
+        <style>{`
+          .chart-container { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+          .stats-card { transition: transform 0.2s; }
+          .stats-card:hover { transform: translateY(-2px); }
+          .golden-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+          .success-gradient { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); }
+          .warning-gradient { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
+          .info-gradient { background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); }
+          .card-hover { transition: all 0.3s ease; }
+          .card-hover:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+          .progress-bar-custom { height: 8px; border-radius: 4px; }
+        `}</style>
 
-      {/* Premium Dashboard-Style Header */}
-      <section className="container-fluid px-4 py-5" style={{
-        background: 'linear-gradient(135deg, #fdfcfb 0%, #f8f7f4 100%)',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: 'radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 50%)',
-          pointerEvents: 'none'
-        }}></div>
+        {/* Premium Financial Dashboard-Style Hero Header */}
+        <section className="container-fluid px-4 py-5" style={{
+          background: 'linear-gradient(135deg, #fdfcfb 0%, #f8f7f4 100%)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: 'radial-gradient(circle at 20% 80%, rgba(245, 158, 11, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.03) 0%, transparent 50%)',
+            pointerEvents: 'none'
+          }}></div>
 
-        <div className="row justify-content-center position-relative">
-          <div className="col-lg-10">
-            <div className="text-center mb-5" style={{
-              borderRadius: '24px',
-              padding: '4rem 3rem',
-              background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 251, 0.8) 100%)',
-              backdropFilter: 'blur(20px)',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
-            }}>
-              <div className="d-flex align-items-center justify-content-center mb-4">
-                <div style={{
-                  width: '80px',
-                  height: '80px',
-                  background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 8px 25px rgba(212, 175, 55, 0.3)',
-                  marginRight: '1rem'
-                }}>
-                  <BsFileEarmarkBarGraph className="text-white fs-1" />
+          <div className="row justify-content-center position-relative">
+            <div className="col-lg-10">
+              <div className="text-center mb-5" style={{
+                borderRadius: '24px',
+                padding: '4rem 3rem',
+                background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 251, 0.8) 100%)',
+                backdropFilter: 'blur(20px)',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}>
+                <div className="d-flex align-items-center justify-content-center mb-4">
+                  <div style={{
+                    width: '80px',
+                    height: '80px',
+                    background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 8px 25px rgba(212, 175, 55, 0.3)',
+                    marginRight: '1rem'
+                  }}>
+                    <BsFileEarmarkBarGraph className="text-white fs-1" />
+                  </div>
+                  <div>
+                    <h1 className="display-3 fw-bold mb-1" style={{
+                      color: '#1a1a1a',
+                      fontWeight: '700',
+                      letterSpacing: '-0.02em'
+                    }}>Financial Nexus</h1>
+                    <p className="h5 text-muted mb-0" style={{ fontWeight: '300' }}>
+                      Orchestrate fiscal intelligence with unparalleled acuity
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="display-3 fw-bold mb-1" style={{
-                    color: '#1a1a1a',
-                    fontWeight: '700',
-                    letterSpacing: '-0.02em'
-                  }}>Financial Nexus</h1>
-                  <p className="h5 text-muted mb-0" style={{ fontWeight: '300' }}>
-                    Orchestrate fiscal intelligence with unparalleled acuity
-                  </p>
+                <p className="lead mb-4" style={{
+                  color: '#6b7280',
+                  fontSize: '1.25rem',
+                  lineHeight: '1.6',
+                  maxWidth: '600px',
+                  margin: '0 auto'
+                }}>
+                  Your premium financial management platform. Track monetary flows, analyze performance metrics, and monitor fiscal health across all your enterprise dashboards.</p>
+                <div className="d-flex justify-content-center gap-3 flex-wrap">
+                  <button onClick={() => navigate("/projects")} className="btn btn-outline-warning btn-lg px-5 py-3 fw-semibold" style={{
+                    borderRadius: '50px',
+                    border: '2px solid #d4af37',
+                    color: '#d4af37',
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)'
+                  }}>
+                    <BsBriefcase className="me-2" />View Projects
+                  </button>
+                  <button onClick={() => setShowCalculationModal(true)} className="btn btn-warning btn-lg px-5 py-3 fw-semibold" style={{
+                    borderRadius: '50px',
+                    background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                    border: 'none',
+                    color: '#fff',
+                    fontWeight: '600',
+                    boxShadow: '0 4px 20px rgba(212, 175, 55, 0.4)',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <BsCalculator className="me-2" />Create Dashboard
+                  </button>
+                  <button onClick={handleExportAll} className="btn btn-outline-warning btn-lg px-5 py-3 fw-semibold" style={{
+                    borderRadius: '50px',
+                    border: '2px solid #d4af37',
+                    color: '#d4af37',
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)'
+                  }}>
+                    <BsShare className="me-2" />Export All Dashboards
+                  </button>
                 </div>
               </div>
-              <p className="lead mb-4" style={{
-                color: '#6b7280',
-                fontSize: '1.25rem',
-                lineHeight: '1.6',
-                maxWidth: '600px',
-                margin: '0 auto'
-              }}>
-                Synthesize comprehensive financial matrices, prognosticate trajectories, and calibrate resource vectors across your enterprise constellation.
-              </p>
-              <div className="d-flex justify-content-center gap-3 flex-wrap">
-                <button onClick={() => navigate("/projects-fd")} className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
-                  borderRadius: '50px',
-                  border: '2px solid #d4af37',
-                  color: '#d4af37',
-                  fontWeight: '600',
-                  textDecoration: 'none',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)'
-                }}>
-                  <BsBuilding className="me-2" />View Projects
-                </button>
-                <button onClick={() => setShowCalculationModal(true)} className="btn btn-primary btn-lg px-5 py-3 fw-semibold" style={{
-                  borderRadius: '50px',
-                  background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
-                  border: 'none',
-                  color: '#fff',
-                  fontWeight: '600',
-                  boxShadow: '0 4px 20px rgba(212, 175, 55, 0.4)',
-                  transition: 'all 0.3s ease'
-                }}>
-                  <BsCalculator className="me-2" />Forge Analytics
-                </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Statistics Cards */}
+        <div className="row mb-4 g-3">
+          <div className="col-xl-3 col-md-6">
+            <div className="card border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #f59e0b' }}>
+              <div className="card-body">
+                <div className="d-flex align-items-center">
+                  <div className="flex-shrink-0">
+                    <div className="bg-warning bg-opacity-10 rounded-circle p-3">
+                      <span style={{ fontSize: '1.5rem' }}>📊</span>
+                    </div>
+                  </div>
+                  <div className="flex-grow-1 ms-3">
+                    <h6 className="text-muted mb-1">Total Dashboards</h6>
+                    <h3 className="mb-0 text-warning">{statistics.totalDashboards}</h3>
+                    <small className="text-success">
+                      <span className="me-1">↗</span>
+                      Active tracking
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-xl-3 col-md-6">
+            <div className="card border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #10b981' }}>
+              <div className="card-body">
+                <div className="d-flex align-items-center">
+                  <div className="flex-shrink-0">
+                    <div className="bg-success bg-opacity-10 rounded-circle p-3">
+                      <span style={{ fontSize: '1.5rem' }}>✅</span>
+                    </div>
+                  </div>
+                  <div className="flex-grow-1 ms-3">
+                    <h6 className="text-muted mb-1">Active Dashboards</h6>
+                    <h3 className="mb-0 text-success">{statistics.activeDashboards}</h3>
+                    <small className="text-info">
+                      <span className="me-1">📈</span>
+                      {statistics.activeDashboards > 0 ? 'Multiple active' : 'No active dashboards'}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-xl-3 col-md-6">
+            <div className="card border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #d4af37' }}>
+              <div className="card-body">
+                <div className="d-flex align-items-center">
+                  <div className="flex-shrink-0">
+                    <div className="bg-warning bg-opacity-10 rounded-circle p-3">
+                      <span style={{ fontSize: '1.5rem' }}>💰</span>
+                    </div>
+                  </div>
+                  <div className="flex-grow-1 ms-3">
+                    <h6 className="text-muted mb-1">Total Value</h6>
+                    <h3 className="mb-0 text-warning">
+                      {formatCurrency(statistics.totalValue)}
+                    </h3>
+                    <small className="text-muted">
+                      <span className="me-1">💼</span>
+                      Financial tracking
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-xl-3 col-md-6">
+            <div className="card border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #f59e0b' }}>
+              <div className="card-body">
+                <div className="d-flex align-items-center">
+                  <div className="flex-shrink-0">
+                    <div className="bg-warning bg-opacity-10 rounded-circle p-3">
+                      <span style={{ fontSize: '1.5rem' }}>📈</span>
+                    </div>
+                  </div>
+                  <div className="flex-grow-1 ms-3">
+                    <h6 className="text-muted mb-1">Average Value</h6>
+                    <h3 className="mb-0 text-warning">
+                      {formatCurrency(statistics.avgValue)}
+                    </h3>
+                    <small className="text-success">
+                      <span className="me-1">📊</span>
+                      Performance metric
+                    </small>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
 
-      <div className="container mb-5">
-        <div className="row justify-content-center">
-          <div className="col-lg-10">
-            {/* Statistics Cards - Enhanced */}
-            <div className="row g-4 mb-5">
-              <div className="col-lg-3 col-md-6">
-                <div className="card border-0 shadow-sm h-100" style={{
-                  borderRadius: '20px',
-                  background: 'linear-gradient(135deg, rgba(0,123,255,0.1) 0%, rgba(0,123,255,0.05) 100%)',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px)';
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,123,255,0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-                }}>
-                  <div className="card-body text-center p-4">
-                    <div className="position-relative mb-3">
-                      <div 
-                        className="rounded-circle mx-auto d-flex align-items-center justify-content-center position-relative"
-                        style={{
-                          width: '80px', 
-                          height: '80px',
-                          background: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
-                          boxShadow: '0 8px 25px rgba(0,123,255,0.3)'
-                        }}
-                      >
-                        <BsFileEarmarkBarGraph className="text-white" style={{fontSize: '1.8rem'}} />
+        {/* Navigation Tabs */}
+        <div className="row mb-4">
+          <div className="col-12">
+            <div className="card shadow-sm border-0">
+              <div className="card-body">
+                <div className="row align-items-center">
+                  <div className="col-lg-6">
+                    <ul className="nav nav-pills">
+                      <li className="nav-item">
+                        <button
+                          className={`nav-link ${viewMode === 'overview' ? 'active' : ''}`}
+                          onClick={() => setViewMode('overview')}
+                        >
+                          <BsActivity className="me-2" />
+                          Overview
+                        </button>
+                      </li>
+                      <li className="nav-item">
+                        <button
+                          className={`nav-link ${viewMode === 'analytics' ? 'active' : ''}`}
+                          onClick={() => setViewMode('analytics')}
+                        >
+                          <BsPieChart className="me-2" />
+                          Analytics
+                        </button>
+                      </li>
+                      <li className="nav-item">
+                        <button
+                          className={`nav-link ${viewMode === 'dashboards' ? 'active' : ''}`}
+                          onClick={() => setViewMode('dashboards')}
+                        >
+                          <BsGrid className="me-2" />
+                          Dashboards
+                        </button>
+                      </li>
+                      <li className="nav-item">
+                        <button
+                          className={`nav-link ${viewMode === 'table' ? 'active' : ''}`}
+                          onClick={() => setViewMode('table')}
+                        >
+                          <BsList className="me-2" />
+                          Table View
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                  <div className="col-lg-6">
+                    <div className="row g-2 align-items-center">
+                      <div className="col">
+                        <div className="input-group">
+                          <span className="input-group-text">
+                            <BsSearch />
+                          </span>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Search dashboards..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                        </div>
                       </div>
-                      <div 
-                        className="position-absolute rounded-circle"
-                        style={{
-                          top: '-5px',
-                          right: '-5px',
-                          width: '30px',
-                          height: '30px',
-                          background: 'linear-gradient(45deg, #28a745, #20c997)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: '0 4px 15px rgba(40,167,69,0.3)'
-                        }}
-                      >
-                        <BsCheckCircle className="text-white" style={{fontSize: '0.8rem'}} />
+                      <div className="col-auto">
+                        <select
+                          className="form-select form-select-sm"
+                          value={filterStatus}
+                          onChange={(e) => setFilterStatus(e.target.value)}
+                        >
+                          <option value="">All Statuses</option>
+                          {uniqueStatuses.map(status => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                    </div>
-                    <h3 className="fw-bold text-primary mb-1" style={{fontSize: '1.8rem'}}>{statistics.totalDashboards}</h3>
-                    <p className="text-muted mb-0 fw-semibold">Total Dashboards</p>
-                    <div className="progress mt-2" style={{height: '4px'}}>
-                      <div className="progress-bar bg-primary" style={{width: '100%'}}></div>
+                      <div className="col-auto">
+                        <button
+                          className="btn btn-outline-secondary btn-sm"
+                          onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                        >
+                          <span className="me-1">🔧</span>
+                          {showAdvancedFilters ? 'Hide' : 'Advanced'} Filters
+                        </button>
+                      </div>
+                      <div className="col-auto">
+                        <button
+                          className="btn btn-outline-info btn-sm"
+                          onClick={clearAllFilters}
+                        >
+                          <span className="me-1">🧹</span> Clear All
+                        </button>
+                      </div>
+                      <div className="col-auto">
+                        <button
+                          className="btn btn-outline-primary btn-sm"
+                          onClick={() => {
+                            setLoading(true);
+                            fetchFinancialDashboards().then(data => {
+                              setDashboards(data || []);
+                              setLoading(false);
+                            });
+                          }}
+                        >
+                          <span className="me-1">🔄</span> Refresh
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="col-lg-3 col-md-6">
-                <div className="card border-0 shadow-sm h-100" style={{
-                  borderRadius: '20px',
-                  background: 'linear-gradient(135deg, rgba(40,167,69,0.1) 0%, rgba(40,167,69,0.05) 100%)',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px)';
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(40,167,69,0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-                }}>
-                  <div className="card-body text-center p-4">
-                    <div className="position-relative mb-3">
-                      <div 
-                        className="rounded-circle mx-auto d-flex align-items-center justify-content-center position-relative"
-                        style={{
-                          width: '80px', 
-                          height: '80px',
-                          background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
-                          boxShadow: '0 8px 25px rgba(40,167,69,0.3)'
-                        }}
-                      >
-                        <BsCurrencyDollar className="text-white" style={{fontSize: '1.8rem'}} />
+
+                {/* Advanced Filters - Collapsible */}
+                {showAdvancedFilters && (
+                  <div className="border-top pt-4 mt-4">
+                    <h6 className="text-muted mb-3">
+                      <span className="me-2">🔧</span>Advanced Filters
+                    </h6>
+                    <div className="row g-3">
+                      <div className="col-lg-3">
+                        <label className="form-label small text-muted">Date Range Start</label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          value={dateRange.start}
+                          onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                        />
                       </div>
-                      <div 
-                        className="position-absolute rounded-circle"
-                        style={{
-                          top: '-5px',
-                          right: '-5px',
-                          width: '30px',
-                          height: '30px',
-                          background: 'linear-gradient(45deg, #ffc107, #e0a800)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: '0 4px 15px rgba(255,193,7,0.3)'
-                        }}
-                      >
-                        <BsGraphUp className="text-white" style={{fontSize: '0.8rem'}} />
+                      <div className="col-lg-3">
+                        <label className="form-label small text-muted">Date Range End</label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          value={dateRange.end}
+                          onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                        />
                       </div>
-                    </div>
-                    <h3 className="fw-bold text-success mb-1" style={{fontSize: '1.5rem'}}>{formatCurrency(statistics.totalValue)}</h3>
-                    <p className="text-muted mb-0 fw-semibold">Total Value</p>
-                    <div className="progress mt-2" style={{height: '4px'}}>
-                      <div className="progress-bar bg-success" style={{width: '85%'}}></div>
+                      <div className="col-lg-3">
+                        <label className="form-label small text-muted">Min Value ($)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="0"
+                          value={valueRange.min}
+                          onChange={(e) => setValueRange({ ...valueRange, min: e.target.value })}
+                        />
+                      </div>
+                      <div className="col-lg-3">
+                        <label className="form-label small text-muted">Max Value ($)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="∞"
+                          value={valueRange.max}
+                          onChange={(e) => setValueRange({ ...valueRange, max: e.target.value })}
+                        />
+                      </div>
                     </div>
                   </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <style>
+          {`
+            .nav-pills .nav-link.active {
+              background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%) !important;
+              color: #fff !important;
+              border-radius: 8px;
+            }
+            .nav-pills .nav-link {
+              color: #d4af37;
+            }
+            .nav-pills .nav-link:hover {
+              color: #f4d03f;
+            }
+          `}
+        </style>
+
+        {/* Overview Tab */}
+        {viewMode === 'overview' && (
+          <div className="row g-4">
+            {/* Dashboard Progress */}
+            <div className="col-lg-6">
+              <div className="card border-0 shadow h-100">
+                <div className="card-header bg-light border-0">
+                  <h5 className="mb-0 d-flex align-items-center">
+                    <BsGraphUp className="me-2 text-warning" />
+                    Dashboard Progress
+                  </h5>
+                  <small className="text-muted">Recent dashboard activities</small>
+                </div>
+                <div className="card-body">
+                  {paginatedData.data.slice(0, 4).map((dashboard, index) => (
+                    <div key={dashboard._id} className="mb-4">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                          <h6 className="mb-0">{dashboard.dashboardName || 'Unknown Dashboard'}</h6>
+                          <small className="text-muted">{new Date(dashboard.createdAt).toLocaleDateString()}</small>
+                        </div>
+                        <div className="text-end">
+                          <small className="fw-bold">
+                            {formatCurrency(dashboard.financialSummary?.grandTotal || 0)}
+                          </small>
+                        </div>
+                      </div>
+                      <div className="progress progress-bar-custom mb-2">
+                        <div
+                          className="progress-bar bg-warning"
+                          style={{
+                            width: `${Math.min((dashboard.financialSummary?.grandTotal || 0) / 100000 * 100, 100)}%`
+                          }}
+                        ></div>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span className={`badge ${dashboard.status === 'Active' ? 'bg-success' : 'bg-secondary'} text-white`}>
+                          {dashboard.status || 'Unknown'}
+                        </span>
+                        <span className="badge bg-light text-dark">
+                          {dashboard.dashboardId}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-              
-              <div className="col-lg-3 col-md-6">
-                <div className="card border-0 shadow-sm h-100" style={{
-                  borderRadius: '20px',
-                  background: 'linear-gradient(135deg, rgba(23,162,184,0.1) 0%, rgba(23,162,184,0.05) 100%)',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px)';
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(23,162,184,0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-                }}>
-                  <div className="card-body text-center p-4">
-                    <div className="position-relative mb-3">
-                      <div 
-                        className="rounded-circle mx-auto d-flex align-items-center justify-content-center position-relative"
-                        style={{
-                          width: '80px', 
-                          height: '80px',
-                          background: 'linear-gradient(135deg, #17a2b8 0%, #138496 100%)',
-                          boxShadow: '0 8px 25px rgba(23,162,184,0.3)'
-                        }}
-                      >
-                        <BsGraphUp className="text-white" style={{fontSize: '1.8rem'}} />
-                      </div>
-                      <div 
-                        className="position-absolute rounded-circle"
-                        style={{
-                          top: '-5px',
-                          right: '-5px',
-                          width: '30px',
-                          height: '30px',
-                          background: 'linear-gradient(45deg, #6f42c1, #5a2d91)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: '0 4px 15px rgba(111,66,193,0.3)'
-                        }}
-                      >
-                        <BsCalculator className="text-white" style={{fontSize: '0.8rem'}} />
-                      </div>
-                    </div>
-                    <h3 className="fw-bold text-info mb-1" style={{fontSize: '1.5rem'}}>{formatCurrency(statistics.avgProjectCost)}</h3>
-                    <p className="text-muted mb-0 fw-semibold">Avg Project Cost</p>
-                    <div className="progress mt-2" style={{height: '4px'}}>
-                      <div className="progress-bar bg-info" style={{width: '70%'}}></div>
-                    </div>
-                  </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="col-lg-6">
+              <div className="card border-0 shadow h-100">
+                <div className="card-header bg-light border-0">
+                  <h5 className="mb-0 d-flex align-items-center">
+                    <BsFileEarmarkBarGraph className="me-2 text-warning" />
+                    Recent Activity
+                  </h5>
+                  <small className="text-muted">Latest dashboard updates</small>
                 </div>
-              </div>
-              
-              <div className="col-lg-3 col-md-6">
-                <div className="card border-0 shadow-sm h-100" style={{
-                  borderRadius: '20px',
-                  background: 'linear-gradient(135deg, rgba(220,53,69,0.1) 0%, rgba(220,53,69,0.05) 100%)',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px)';
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(220,53,69,0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-                }}>
-                  <div className="card-body text-center p-4">
-                    <div className="position-relative mb-3">
-                      <div 
-                        className="rounded-circle mx-auto d-flex align-items-center justify-content-center position-relative"
-                        style={{
-                          width: '80px', 
-                          height: '80px',
-                          background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
-                          boxShadow: '0 8px 25px rgba(220,53,69,0.3)'
-                        }}
-                      >
-                        <BsPeople className="text-white" style={{fontSize: '1.8rem'}} />
+                <div className="card-body">
+                  <div className="activity-feed">
+                    <div className="d-flex mb-4">
+                      <div className="flex-shrink-0">
+                        <div className="bg-success rounded-circle d-flex align-items-center justify-center" style={{ width: '32px', height: '32px' }}>
+                          <BsCheckCircle className="text-white" size={16} />
+                        </div>
                       </div>
-                      <div 
-                        className="position-absolute rounded-circle"
-                        style={{
-                          top: '-5px',
-                          right: '-5px',
-                          width: '30px',
-                          height: '30px',
-                          background: 'linear-gradient(45deg, #fd7e14, #e86209)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: '0 4px 15px rgba(253,126,20,0.3)'
-                        }}
-                      >
-                        <BsEye className="text-white" style={{fontSize: '0.8rem'}} />
+                      <div className="flex-grow-1 ms-3">
+                        <p className="mb-1 fw-semibold">Dashboard calculated</p>
+                        <small className="text-muted">Financial Matrix • 1h ago</small>
                       </div>
                     </div>
-                    <h3 className="fw-bold text-danger mb-1" style={{fontSize: '1.5rem'}}>{statistics.activeDashboards}</h3>
-                    <p className="text-muted mb-0 fw-semibold">Active Dashboards</p>
-                    <div className="progress mt-2" style={{height: '4px'}}>
-                      <div className="progress-bar bg-danger" style={{width: '60%'}}></div>
+
+                    <div className="d-flex mb-4">
+                      <div className="flex-shrink-0">
+                        <div className="bg-warning rounded-circle d-flex align-items-center justify-center" style={{ width: '32px', height: '32px' }}>
+                          <BsExclamationTriangle className="text-white" size={16} />
+                        </div>
+                      </div>
+                      <div className="flex-grow-1 ms-3">
+                        <p className="mb-1 fw-semibold">High value detected</p>
+                        <small className="text-muted">Revenue Analysis • 3h ago</small>
+                      </div>
+                    </div>
+
+                    <div className="d-flex mb-4">
+                      <div className="flex-shrink-0">
+                        <div className="bg-info rounded-circle d-flex align-items-center justify-center" style={{ width: '32px', height: '32px' }}>
+                          <BsPeople className="text-white" size={16} />
+                        </div>
+                      </div>
+                      <div className="flex-grow-1 ms-3">
+                        <p className="mb-1 fw-semibold">Team access granted</p>
+                        <small className="text-muted">Cost Analysis • 5h ago</small>
+                      </div>
+                    </div>
+
+                    <div className="d-flex">
+                      <div className="flex-shrink-0">
+                        <div className="bg-primary rounded-circle d-flex align-items-center justify-center" style={{ width: '32px', height: '32px' }}>
+                          <BsCalculator className="text-white" size={16} />
+                        </div>
+                      </div>
+                      <div className="flex-grow-1 ms-3">
+                        <p className="mb-1 fw-semibold">New calculation started</p>
+                        <small className="text-muted">Project Metrics • 1d ago</small>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Charts Section - New */}
-            <div className="row g-4 mb-5">
-              <div className="col-lg-6">
-                <div className="card border-0 shadow-sm" style={{ borderRadius: '20px' }}>
-                  <div className="card-header bg-transparent border-0 py-3">
-                    <h5 className="mb-0 fw-bold" style={{ color: '#d4af37' }}>
-                      <BsPieChart className="me-2" /> Dashboard Distribution
-                    </h5>
+            {/* Hexagonal Chart */}
+            <div className="col-lg-6">
+              <div className="card border-0 shadow h-100">
+                <div className="card-header bg-light border-0">
+                  <h5 className="mb-0 d-flex align-items-center">
+                    <BsBarChart className="me-2 text-warning" />
+                    Financial Metrics (Hexagonal)
+                  </h5>
+                </div>
+                <div className="card-body">
+                  <div className="chart-container">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData.radarData}>
+                        <PolarGrid />
+                        <PolarAngleAxis dataKey="subject" />
+                        <PolarRadiusAxis />
+                        <Radar name="Metrics" dataKey="A" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
+                      </RadarChart>
+                    </ResponsiveContainer>
                   </div>
-                  <div className="card-body p-4">
+                </div>
+              </div>
+            </div>
+
+            {/* Circle Diagram */}
+            <div className="col-lg-6">
+              <div className="card border-0 shadow h-100">
+                <div className="card-header bg-light border-0">
+                  <h5 className="mb-0 d-flex align-items-center">
+                    <BsPieChart className="me-2 text-warning" />
+                    Status Distribution (Circle)
+                  </h5>
+                </div>
+                <div className="card-body">
+                  <div className="chart-container">
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
                         <Pie
-                          data={chartData.pieData}
+                          data={chartData.statusData}
                           cx="50%"
                           cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                           outerRadius={80}
                           fill="#8884d8"
                           dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         >
-                          {chartData.pieData.map((entry, index) => (
+                          {chartData.statusData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -833,22 +1035,31 @@ export default function FinancialDashboard() {
                   </div>
                 </div>
               </div>
-              <div className="col-lg-6">
-                <div className="card border-0 shadow-sm" style={{ borderRadius: '20px' }}>
-                  <div className="card-header bg-transparent border-0 py-3">
-                    <h5 className="mb-0 fw-bold" style={{ color: '#d4af37' }}>
-                      <BsBarChart className="me-2" /> Revenue Trajectory
-                    </h5>
-                  </div>
-                  <div className="card-body p-4">
+            </div>
+          </div>
+        )}
+
+        {/* Analytics Tab */}
+        {viewMode === 'analytics' && (
+          <div className="row g-4">
+            {/* Value Distribution Chart */}
+            <div className="col-lg-6">
+              <div className="card border-0 shadow h-100">
+                <div className="card-header bg-light border-0">
+                  <h5 className="mb-0 d-flex align-items-center">
+                    <BsBarChart className="me-2 text-warning" />
+                    Value Distribution by Dashboard
+                  </h5>
+                </div>
+                <div className="card-body">
+                  <div className="chart-container">
                     <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={chartData.barData}>
+                      <BarChart data={chartData.valueData}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
+                        <XAxis dataKey="name" />
                         <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="value" fill="#d4af37" />
+                        <Tooltip formatter={(value) => [`${value.toLocaleString()}`, 'Total Value']} />
+                        <Bar dataKey="value" fill="#f59e0b" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -856,715 +1067,1011 @@ export default function FinancialDashboard() {
               </div>
             </div>
 
-            {/* Search and Filters - Enhanced */}
-            <div className="card border-0 shadow-sm mb-5" style={{ borderRadius: '20px' }}>
-              <div className="card-body p-4">
-                <div className="row g-3 align-items-end">
-                  <div className="col-md-4">
-                    <label className="form-label fw-semibold">Search Dashboards</label>
-                    <div className="input-group">
-                      <span className="input-group-text" style={{ backgroundColor: '#fdfcfb', borderColor: '#e5e7eb' }}>
-                        <BsSearch />
-                      </span>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Search by name or ID..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ borderRadius: '12px', borderLeft: 'none' }}
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-3">
-                    <label className="form-label fw-semibold">Status Filter</label>
-                    <select
-                      className="form-select"
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                      style={{ borderRadius: '12px' }}
-                    >
-                      <option value="All">All Statuses</option>
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
-                      <option value="Archived">Archived</option>
-                    </select>
-                  </div>
-                  <div className="col-md-3">
-                    <label className="form-label fw-semibold">Sort By</label>
-                    <select
-                      className="form-select"
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      style={{ borderRadius: '12px' }}
-                    >
-                      <option value="createdAt">Created Date</option>
-                      <option value="dashboardName">Name</option>
-                      <option value="grandTotal">Total Value</option>
-                      <option value="status">Status</option>
-                    </select>
-                  </div>
-                  <div className="col-md-2">
-                    <button
-                      className="btn btn-outline-secondary w-100"
-                      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                      style={{ borderRadius: '12px' }}
-                    >
-                      {sortOrder === 'asc' ? <BsSortAlphaUp /> : <BsSortAlphaDown />}
-                    </button>
+            {/* Monthly Activity Chart */}
+            <div className="col-lg-6">
+              <div className="card border-0 shadow h-100">
+                <div className="card-header bg-light border-0">
+                  <h5 className="mb-0 d-flex align-items-center">
+                    <BsGraphUp className="me-2 text-warning" />
+                    Monthly Creation Trends
+                  </h5>
+                </div>
+                <div className="card-body">
+                  <div className="chart-container">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <AreaChart data={chartData.activityData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Area type="monotone" dataKey="dashboards" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
+                        <Area type="monotone" dataKey="totalValue" stroke="#d97706" fill="#d97706" fillOpacity={0.6} />
+                        <Legend />
+                      </AreaChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Dashboards Table - Enhanced with actions */}
-            <div className="card border-0 shadow-sm" style={{ borderRadius: '20px', overflow: 'hidden' }}>
-              <div className="card-header bg-transparent border-0 py-3">
-                <h5 className="mb-0 fw-bold" style={{ color: '#d4af37' }}>
-                  Financial Matrices
-                </h5>
-              </div>
-              <div className="card-body p-0">
-                <div className="table-responsive">
-                  <table className="table table-hover mb-0">
-                    <thead className="table-light">
-                      <tr>
-                        <th>Name</th>
-                        <th>ID</th>
-                        <th>Status</th>
-                        <th>Total Value</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedDashboards.length > 0 ? paginatedDashboards.map((dashboard) => (
-                        <tr key={dashboard.dashboardId}>
-                          <td>{dashboard.dashboardName}</td>
-                          <td>{dashboard.dashboardId}</td>
-                          <td>
-                            <span className={`badge ${dashboard.status === 'Active' ? 'bg-success' : 'bg-secondary'}`}>
-                              {dashboard.status}
-                            </span>
-                          </td>
-                          <td>{formatCurrency(dashboard.financialSummary?.grandTotal)}</td>
-                          <td>{formatDate(dashboard.createdAt)}</td>
-                          <td>
-                            <div className="btn-group" role="group">
-                              <button className="btn btn-sm btn-outline-primary" onClick={() => navigate(`/financial-dashboard/${dashboard._id}`)} title="View">
-                                <BsEye />
-                              </button>
-                              <button className="btn btn-sm btn-outline-success" onClick={() => handleExport(dashboard._id, dashboard.dashboardName)} disabled={exporting} title="Export">
-                                {exporting ? <span className="spinner-border spinner-border-sm" style={{width: '1rem', height: '1rem'}}></span> : <BsDownload />}
-                              </button>
-                              <button className="btn btn-sm btn-outline-info" onClick={() => handleShare(dashboard._id)} disabled={sharing} title="Share">
-                                {sharing ? <span className="spinner-border spinner-border-sm" style={{width: '1rem', height: '1rem'}}></span> : <BsShare />}
-                              </button>
-                              <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteDashboard(dashboard._id, dashboard.dashboardName)} title="Delete">
-                                <BsTrash />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      )) : (
-                        <tr>
-                          <td colSpan="6" className="text-center text-muted py-4">No dashboards found</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+            {/* Financial Performance Scatter Chart */}
+            <div className="col-lg-6">
+              <div className="card border-0 shadow h-100">
+                <div className="card-header bg-light border-0">
+                  <h5 className="mb-0 d-flex align-items-center">
+                    <BsCurrencyDollar className="me-2 text-warning" />
+                    Value vs Creation Time Correlation
+                  </h5>
                 </div>
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="d-flex justify-content-between align-items-center p-3 border-top">
-                    <div className="text-muted small">
-                      Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredDashboards.length)} of {filteredDashboards.length} entries
-                    </div>
-                    <nav>
-                      <ul className="pagination pagination-sm mb-0">
-                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                          <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>
-                            <BsChevronLeft />
-                          </button>
-                        </li>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                          <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
-                            <button className="page-link" onClick={() => setCurrentPage(page)}>{page}</button>
-                          </li>
-                        ))}
-                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                          <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>
-                            <BsChevronRight />
-                          </button>
-                        </li>
-                      </ul>
-                    </nav>
+                <div className="card-body">
+                  <div className="chart-container">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <ScatterChart data={dashboards.map(d => ({
+                        x: new Date(d.createdAt).getTime(),
+                        y: d.financialSummary?.grandTotal || 0,
+                        name: d.dashboardName
+                      }))}>
+                        <CartesianGrid />
+                        <XAxis 
+                          type="number" 
+                          scale="time" 
+                          domain={['dataMin', 'dataMax']}
+                          tickFormatter={(tickItem) => new Date(tickItem).toLocaleDateString()}
+                        />
+                        <YAxis type="number" dataKey="y" />
+                        <Tooltip 
+                          labelFormatter={(value) => new Date(value).toLocaleDateString()}
+                          formatter={(value) => [`${value.toLocaleString()}`, 'Value']}
+                        />
+                        <Scatter dataKey="y" fill="#f59e0b" />
+                      </ScatterChart>
+                    </ResponsiveContainer>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Performance Line Chart */}
+            <div className="col-lg-6">
+              <div className="card border-0 shadow h-100">
+                <div className="card-header bg-light border-0">
+                  <h5 className="mb-0 d-flex align-items-center">
+                    <BsActivity className="me-2 text-warning" />
+                    Financial Performance Timeline
+                  </h5>
+                </div>
+                <div className="card-body">
+                  <div className="chart-container">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={chartData.activityData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="totalValue" stroke="#f59e0b" strokeWidth={3} />
+                        <Line type="monotone" dataKey="dashboards" stroke="#d97706" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dashboards View (Grid-like cards) */}
+        {viewMode === 'dashboards' && (
+          <div className="row g-4">
+            {paginatedData.data.map((dashboard) => (
+              <div key={dashboard._id} className="col-lg-4 col-md-6">
+                <div className="card border-0 shadow card-hover h-100">
+                  <div className="card-body">
+                    <h5 className="card-title">{dashboard.dashboardName || 'Unknown Dashboard'}</h5>
+                    <p className="text-muted small">{new Date(dashboard.createdAt).toLocaleDateString()}</p>
+
+                    <div className="mb-3">
+                      <div className="d-flex align-items-center mb-2">
+                        <BsFileEarmarkBarGraph className="me-2 text-muted" />
+                        <small>ID: {dashboard.dashboardId}</small>
+                      </div>
+                      <div className="d-flex align-items-center mb-2">
+                        <BsCheckCircle className="me-2 text-muted" />
+                        <small>Status: {dashboard.status || 'Unknown'}</small>
+                      </div>
+                      <div className="d-flex align-items-center mb-2">
+                        <BsCurrencyDollar className="me-2 text-muted" />
+                        <small>{formatCurrency(dashboard.financialSummary?.grandTotal || 0)}</small>
+                      </div>
+                    </div>
+
+                    <div className="d-flex justify-content-between align-items-center">
+                      <span className={`badge ${dashboard.status === 'Active' ? 'bg-success' : 'bg-secondary'} text-white`}>
+                        {dashboard.status || 'Unknown'}
+                      </span>
+                      <div className="btn-group btn-group-sm">
+                        <button
+                          className="btn btn-outline-primary"
+                          onClick={() => openDetailModal(dashboard)}
+                          title="View Details"
+                        >
+                          <BsEye />
+                        </button>
+                        <button
+                          className="btn btn-outline-warning"
+                          onClick={() => navigate(`/financial-dashboard/${dashboard._id}`)}
+                          title="Edit Dashboard"
+                        >
+                          <BsPencil />
+                        </button>
+                        <button
+                          className="btn btn-outline-success"
+                          onClick={() => exportFinancialDashboardToPDF(dashboard, `dashboard-${dashboard.dashboardId}-${new Date(dashboard.createdAt).toISOString().split('T')[0]}.pdf`)}
+                          title="Export Dashboard"
+                        >
+                          <BsDownload />
+                        </button>
+                        <button
+                          className="btn btn-outline-danger"
+                          onClick={() => handleDelete(dashboard._id)}
+                          title="Delete Dashboard"
+                        >
+                          <BsTrash />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Table View Tab */}
+        {viewMode === 'table' && (
+          <div className="container-fluid">
+            <div className="card border-0 shadow-sm">
+              <div className="card-header bg-white border-bottom">
+                <div className="d-flex justify-content-between align-items-center">
+                  <h5 className="mb-0 d-flex align-items-center">
+                    <span className="me-2">📊</span>
+                    Financial Dashboard Records
+                  </h5>
+                  <div className="d-flex gap-2">
+                    <span className="badge bg-light text-dark fs-6">
+                      Page {currentPage} of {paginatedData.totalPages}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card-body p-0">
+                {paginatedData.totalItems === 0 ? (
+                  <div className="text-center py-5">
+                    <div className="mb-4">
+                      <span style={{ fontSize: '4rem', opacity: 0.3 }}>🔍</span>
+                    </div>
+                    <h4 className="text-muted mb-3">No dashboard records found</h4>
+                    <p className="text-muted mb-4">
+                      {searchTerm || filterStatus || quickFilter || dateRange.start || dateRange.end || valueRange.min || valueRange.max
+                        ? 'Try adjusting your search criteria or filters.'
+                        : 'Start by creating your first financial dashboard.'}
+                    </p>
+                    {!searchTerm && !filterStatus && !quickFilter && (
+                      <button
+                        className="btn btn-warning btn-lg"
+                        onClick={() => setShowCalculationModal(true)}
+                        style={{ borderRadius: '50px', padding: '12px 30px' }}
+                      >
+                        <span className="me-2">✨</span>
+                        Create First Dashboard
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <div className="table-responsive">
+                      <table className="table table-hover mb-0">
+                        <thead className="table-warning">
+                          <tr>
+                            <th style={{ width: '50px' }}>
+                              <div className="form-check">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  checked={selectedDashboards.length === paginatedData.data.length && paginatedData.data.length > 0}
+                                  onChange={toggleSelectAll}
+                                />
+                              </div>
+                            </th>
+                            <th
+                              style={{ cursor: 'pointer', userSelect: 'none', minWidth: '140px' }}
+                              onClick={() => handleSort("createdAt")}
+                            >
+                              <div className="d-flex align-items-center">
+                                <span className="me-2">📅</span>
+                                Created {getSortIcon("createdAt")}
+                              </div>
+                            </th>
+                            <th
+                              style={{ cursor: 'pointer', userSelect: 'none', minWidth: '200px' }}
+                              onClick={() => handleSort("dashboardName")}
+                            >
+                              <div className="d-flex align-items-center">
+                                <span className="me-2">📊</span>
+                                Dashboard {getSortIcon("dashboardName")}
+                              </div>
+                            </th>
+                            <th
+                              style={{ cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
+                              onClick={() => handleSort("status")}
+                            >
+                              <div className="d-flex align-items-center justify-content-center">
+                                <span className="me-1">✅</span>
+                                Status {getSortIcon("status")}
+                              </div>
+                            </th>
+                            <th
+                              style={{ cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
+                              onClick={() => handleSort("grandTotal")}
+                            >
+                              <div className="d-flex align-items-center justify-content-center">
+                                <span className="me-1">💰</span>
+                                Total Value {getSortIcon("grandTotal")}
+                              </div>
+                            </th>
+                            <th style={{ minWidth: '120px' }}>
+                              <span className="me-1">🆔</span>ID
+                            </th>
+                            <th style={{ width: '140px', textAlign: 'center' }}>
+                              <span className="me-1">🔧</span>Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paginatedData.data.map(dashboard => (
+                            <tr
+                              key={dashboard._id}
+                              className={selectedDashboards.includes(dashboard._id) ? 'table-active' : ''}
+                              style={{ cursor: 'pointer' }}
+                              onDoubleClick={() => openDetailModal(dashboard)}
+                            >
+                              <td>
+                                <div className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    checked={selectedDashboards.includes(dashboard._id)}
+                                    onChange={() => toggleDashboardSelection(dashboard._id)}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                              </td>
+                              <td>
+                                <div className="d-flex flex-column">
+                                  <strong className="text-primary">
+                                    {new Date(dashboard.createdAt).toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric'
+                                    })}
+                                  </strong>
+                                  <small className="text-muted">
+                                    {new Date(dashboard.createdAt).toLocaleDateString('en-US', { weekday: 'long' })}
+                                  </small>
+                                </div>
+                              </td>
+                              <td>
+                                <div className="d-flex flex-column">
+                                  <strong className="text-dark">
+                                    {dashboard.dashboardName || 'Unknown Dashboard'}
+                                  </strong>
+                                  <small className="text-muted">
+                                    Created: {new Date(dashboard.createdAt).toLocaleDateString()}
+                                  </small>
+                                </div>
+                              </td>
+                              <td className="text-center">
+                                <span className={`badge fs-6 ${dashboard.status === 'Active' ? 'bg-success' :
+                                    dashboard.status === 'Inactive' ? 'bg-danger' : 'bg-secondary'
+                                  }`}>
+                                  {dashboard.status || 'Unknown'}
+                                </span>
+                              </td>
+                              <td className="text-center">
+                                <span className={`fw-bold ${(dashboard.financialSummary?.grandTotal || 0) > 50000 ? 'text-success' :
+                                    (dashboard.financialSummary?.grandTotal || 0) > 10000 ? 'text-warning' : 'text-muted'
+                                  }`}>
+                                  {formatCurrency(dashboard.financialSummary?.grandTotal || 0)}
+                                </span>
+                              </td>
+                              <td>
+                                <small className="text-muted font-monospace">
+                                  {dashboard.dashboardId}
+                                </small>
+                              </td>
+                              <td>
+                                <div className="btn-group" role="group">
+                                  <button
+                                    className="btn btn-outline-info btn-sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openDetailModal(dashboard);
+                                    }}
+                                    title="View Details"
+                                  >
+                                    👁️
+                                  </button>
+                                  <button
+                                    className="btn btn-outline-success btn-sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      exportFinancialDashboardToPDF(dashboard, `dashboard-${dashboard.dashboardId}-${new Date(dashboard.createdAt).toISOString().split('T')[0]}.pdf`);
+                                    }}
+                                    title="Export Dashboard"
+                                  >
+                                    📄
+                                  </button>
+                                  <button
+                                    className="btn btn-outline-warning btn-sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/financial-dashboard/${dashboard._id}`);
+                                    }}
+                                    title="Edit Dashboard"
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDelete(dashboard._id);
+                                    }}
+                                    className="btn btn-outline-danger btn-sm"
+                                    title="Delete Dashboard"
+                                  >
+                                    🗑️
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Enhanced Pagination */}
+                    {paginatedData.totalPages > 1 && (
+                      <div className="d-flex justify-content-between align-items-center p-4 border-top bg-light">
+                        <div className="d-flex align-items-center gap-3">
+                          <span className="text-muted small">
+                            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, paginatedData.totalItems)} of {paginatedData.totalItems} entries
+                          </span>
+                        </div>
+
+                        <nav aria-label="Dashboard pagination">
+                          <ul className="pagination pagination-sm mb-0">
+                            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                              <button
+                                className="page-link"
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                              >
+                                ⮞
+                              </button>
+                            </li>
+                            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                              <button
+                                className="page-link"
+                                onClick={() => setCurrentPage(currentPage - 1)}
+                                disabled={currentPage === 1}
+                              >
+                                ⬅️
+                              </button>
+                            </li>
+
+                            {[...Array(Math.min(5, paginatedData.totalPages))].map((_, index) => {
+                              const pageNumber = Math.max(1, Math.min(
+                                paginatedData.totalPages - 4,
+                                currentPage - 2
+                              )) + index;
+
+                              if (pageNumber <= paginatedData.totalPages) {
+                                return (
+                                  <li key={pageNumber} className={`page-item ${currentPage === pageNumber ? 'active' : ''}`}>
+                                    <button
+                                      className="page-link"
+                                      onClick={() => setCurrentPage(pageNumber)}
+                                    >
+                                      {pageNumber}
+                                    </button>
+                                  </li>
+                                );
+                              }
+                              return null;
+                            })}
+
+                            <li className={`page-item ${currentPage === paginatedData.totalPages ? 'disabled' : ''}`}>
+                              <button
+                                className="page-link"
+                                onClick={() => setCurrentPage(currentPage + 1)}
+                                disabled={currentPage === paginatedData.totalPages}
+                              >
+                                ➡️
+                              </button>
+                            </li>
+                            <li className={`page-item ${currentPage === paginatedData.totalPages ? 'disabled' : ''}`}>
+                              <button
+                                className="page-link"
+                                onClick={() => setCurrentPage(paginatedData.totalPages)}
+                                disabled={currentPage === paginatedData.totalPages}
+                              >
+                                ⭐
+                              </button>
+                            </li>
+                          </ul>
+                        </nav>
+                      </div>
+                    )}
+                  </>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Enhanced Premium Dashboard Modal */}
+        {showDetailModal && selectedDashboardDetail && (
+          <div
+            className="modal fade show d-block"
+            style={{
+              backgroundColor: 'rgba(15, 23, 42, 0.75)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 1055
+            }}
+          >
+            <div className="modal-dialog modal-xl modal-dialog-centered">
+              <div
+                className="modal-content border-0 shadow-2xl"
+                style={{
+                  borderRadius: '32px',
+                  background: 'linear-gradient(145deg, #ffffff 0%, #fefefe 100%)',
+                  boxShadow: '0 25px 80px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+                  overflow: 'hidden'
+                }}
+              >
+                {/* Premium Header with Golden Gradient */}
+                <div
+                  className="modal-header border-0 position-relative"
+                  style={{
+                    background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #ffeb3b 100%)',
+                    padding: '2rem 2.5rem 1.5rem',
+                    color: '#1a1a1a'
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundImage: 'radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%)',
+                      pointerEvents: 'none'
+                    }}
+                  ></div>
+
+                  <div className="d-flex align-items-center position-relative">
+                    <div
+                      className="me-4 d-flex align-items-center justify-content-center"
+                      style={{
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '20px',
+                        background: 'linear-gradient(135deg, #b8860b 0%, #d4af37 100%)',
+                        boxShadow: '0 8px 25px rgba(212, 175, 55, 0.4)'
+                      }}
+                    >
+                      <BsFileEarmarkBarGraph className="text-white fs-3" />
+                    </div>
+                    <div className="flex-grow-1">
+                      <h3 className="modal-title fw-bold mb-2 text-black">
+                        Financial Chronicle
+                      </h3>
+                      <p className="mb-0 text-black-75 fs-5">
+                        {new Date(selectedDashboardDetail.createdAt).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Dashboard ID Badge */}
+                  <div className="mt-3 position-absolute top-0 end-0" style={{ marginTop: "50px", marginRight: "30px" }}>
+                    <span
+                      className="badge px-4 py-2 fw-semibold"
+                      style={{
+                        background: 'rgba(0, 0, 0, 0.2)',
+                        color: '#1a1a1a',
+                        borderRadius: '100px',
+                        fontSize: '0.9rem',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(0, 0, 0, 0.1)'
+                      }}
+                    >
+                      Dashboard ID: {selectedDashboardDetail.dashboardId}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Premium Body */}
+                <div className="modal-body" style={{ padding: '2.5rem' }}>
+
+                  {/* Key Metrics Dashboard */}
+                  <div className="row g-4 mb-5">
+                    <div className="col-12">
+                      <h5 className="fw-bold mb-4 d-flex align-items-center" style={{ color: '#1f2937' }}>
+                        <BsGraphUp className="me-3 text-warning" />
+                        Financial Metrics
+                      </h5>
+                    </div>
+
+                    <div className="col-lg-4 col-md-6">
+                      <div
+                        className="card h-100 border-0 shadow-sm"
+                        style={{
+                          borderRadius: '20px',
+                          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                          transform: 'translateY(0)',
+                          transition: 'transform 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        <div className="card-body text-center p-4">
+                          <div
+                            className="mb-3 d-inline-flex align-items-center justify-content-center"
+                            style={{
+                              width: '48px',
+                              height: '48px',
+                              borderRadius: '16px',
+                              background: 'rgba(255, 255, 255, 0.2)',
+                              backdropFilter: 'blur(10px)'
+                            }}
+                          >
+                            <BsCurrencyDollar className="text-white fs-4" />
+                          </div>
+                          <h2 className="fw-bold text-black mb-1">
+                            {formatCurrency(selectedDashboardDetail.financialSummary?.grandTotal || 0)}
+                          </h2>
+                          <p className="text-black-75 mb-0 fw-medium">Total Value</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-lg-4 col-md-6">
+                      <div
+                        className="card h-100 border-0 shadow-sm"
+                        style={{
+                          borderRadius: '20px',
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          transform: 'translateY(0)',
+                          transition: 'transform 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        <div className="card-body text-center p-4">
+                          <div
+                            className="mb-3 d-inline-flex align-items-center justify-content-center"
+                            style={{
+                              width: '48px',
+                              height: '48px',
+                              borderRadius: '16px',
+                              background: 'rgba(255, 255, 255, 0.2)',
+                              backdropFilter: 'blur(10px)'
+                            }}
+                          >
+                            <BsCheckCircle className="text-white fs-4" />
+                          </div>
+                          <h2 className="fw-bold text-black mb-1">{selectedDashboardDetail.status || 'Unknown'}</h2>
+                          <p className="text-black-75 mb-0 fw-medium">Current Status</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-lg-4 col-md-6">
+                      <div
+                        className="card h-100 border-0 shadow-sm"
+                        style={{
+                          borderRadius: '20px',
+                          background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                          transform: 'translateY(0)',
+                          transition: 'transform 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        <div className="card-body text-center p-4">
+                          <div
+                            className="mb-3 d-inline-flex align-items-center justify-content-center"
+                            style={{
+                              width: '48px',
+                              height: '48px',
+                              borderRadius: '16px',
+                              background: 'rgba(255, 255, 255, 0.2)',
+                              backdropFilter: 'blur(10px)'
+                            }}
+                          >
+                            <BsActivity className="text-white fs-4" />
+                          </div>
+                          <h2 className="fw-bold text-black mb-1">
+                            {new Date(selectedDashboardDetail.createdAt).toLocaleDateString()}
+                          </h2>
+                          <p className="text-black-75 mb-0 fw-medium">Creation Date</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dashboard Information */}
+                  <div className="row g-4 mb-5">
+                    <div className="col-lg-8">
+                      <div
+                        className="card border-0 shadow-sm h-100"
+                        style={{
+                          borderRadius: '24px',
+                          background: 'linear-gradient(145deg, #ffffff 0%, #fafafa 100%)',
+                          border: '1px solid rgba(0, 0, 0, 0.05)'
+                        }}
+                      >
+                        <div className="card-body p-4">
+                          <h6 className="fw-bold mb-4 d-flex align-items-center" style={{ color: '#374151' }}>
+                            <BsFileEarmarkBarGraph className="me-3 text-warning" />
+                            Dashboard Intelligence
+                          </h6>
+
+                          <div className="row g-4">
+                            <div className="col-md-6">
+                              <div className="border-start border-4 border-warning ps-3">
+                                <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.75rem' }}>Dashboard Name</small>
+                                <p className="fw-bold mb-0 mt-1" style={{ color: '#1f2937' }}>
+                                  {selectedDashboardDetail.dashboardName || 'Unknown Dashboard'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="border-start border-4 border-success ps-3">
+                                <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.75rem' }}>Dashboard ID</small>
+                                <p className="fw-bold mb-0 mt-1" style={{ color: '#1f2937' }}>
+                                  {selectedDashboardDetail.dashboardId || 'N/A'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="border-start border-4 border-info ps-3">
+                                <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.75rem' }}>Created Date</small>
+                                <p className="fw-bold mb-0 mt-1" style={{ color: '#1f2937' }}>
+                                  {new Date(selectedDashboardDetail.createdAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="border-start border-4 border-primary ps-3">
+                                <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.75rem' }}>Last Updated</small>
+                                <p className="fw-bold mb-0 mt-1" style={{ color: '#1f2937' }}>
+                                  {new Date(selectedDashboardDetail.updatedAt || selectedDashboardDetail.createdAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Financial Summary */}
+                    <div className="col-lg-4">
+                      <div
+                        className="card border-0 shadow-sm h-100"
+                        style={{
+                          borderRadius: '24px',
+                          background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                          color: '#1a1a1a'
+                        }}
+                      >
+                        <div className="card-body p-4 text-center">
+                          <div
+                            className="mb-3 mx-auto d-inline-flex align-items-center justify-content-center"
+                            style={{
+                              width: '56px',
+                              height: '56px',
+                              borderRadius: '18px',
+                              background: 'linear-gradient(135deg, #b8860b 0%, #d4af37 100%)',
+                              boxShadow: '0 8px 25px rgba(212, 175, 55, 0.3)'
+                            }}
+                          >
+                            <BsCurrencyDollar className="text-white fs-3" />
+                          </div>
+                          <h6 className="fw-bold mb-3 text-black-75">Total Investment</h6>
+                          <h2 className="fw-bold text-black mb-2">
+                            {formatCurrency(selectedDashboardDetail.financialSummary?.grandTotal || 0)}
+                          </h2>
+                          <p className="text-black-50 mb-0 small">
+                            Comprehensive financial valuation for this dashboard
+                          </p>
+
+                          {/* Additional Financial Details */}
+                          <div className="mt-3 pt-3 border-top border-black border-opacity-25">
+                            <div className="row text-center">
+                              <div className="col-12">
+                                <small className="text-black-75 d-block">Status</small>
+                                <strong className="text-black">
+                                  {selectedDashboardDetail.status || 'Unknown'}
+                                </strong>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Premium Footer */}
+                <div
+                  className="modal-footer border-0 d-flex justify-content-between align-items-center"
+                  style={{
+                    padding: '1.5rem 2.5rem 2rem',
+                    background: 'linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%)'
+                  }}
+                >
+                  <div className="text-muted small">
+                    <BsActivity className="me-2" />
+                    Created: {new Date(selectedDashboardDetail.createdAt).toLocaleDateString()}
+                  </div>
+
+                  <div className="d-flex gap-3">
+                    <button
+                      type="button"
+                      className="btn btn-light border-0 rounded-pill px-4 py-2 fw-semibold"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.8)',
+                        backdropFilter: 'blur(10px)',
+                        color: '#6b7280',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onClick={() => setShowDetailModal(false)}
+                    >
+                      Close
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn rounded-pill px-4 py-2 fw-semibold"
+                      style={{
+                        background: 'linear-gradient(135d, #f59e0b 0%, #d97706 100%)',
+                        border: 'none',
+                        color: '#ffffff',
+                        boxShadow: '0 4px 15px rgba(245, 158, 11, 0.4)',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onClick={() => {
+                        setShowDetailModal(false);
+                        navigate(`/financial-dashboard/${selectedDashboardDetail._id}`);
+                      }}
+                    >
+                      Edit Dashboard
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Calculation Modal */}
+        {showCalculationModal && (
+          <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-lg modal-dialog-centered">
+              <div className="modal-content border-0 shadow-xl" style={{
+                borderRadius: '24px',
+                overflow: 'hidden',
+                background: 'linear-gradient(145deg, #ffffff 0%, #fdfcfb 100%)',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 25px 80px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}>
+                <div className="modal-header border-0 bg-transparent py-4 px-5">
+                  <div className="d-flex align-items-center">
+                    <div className="bg-gradient p-3 rounded-3 me-4" style={{
+                      background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                      width: '60px',
+                      height: '60px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 8px 25px rgba(212, 175, 55, 0.3)'
+                    }}>
+                      <BsCalculator className="text-black fs-5" />
+                    </div>
+                    <div className="w-100 text-center">
+                      <h2 className="h3 fw-bold mb-1" style={{ color: "#111827" }}>
+                        Financial Calculator
+                      </h2>
+                      <p className="text-muted mb-0" style={{ fontSize: "0.95rem" }}>
+                        Create comprehensive financial analysis dashboard
+                      </p>
+                    </div>
+                  </div>
+                  <button type="button" className="btn-close" onClick={() => setShowCalculationModal(false)}></button>
+                </div>
+                <form onSubmit={(e) => { e.preventDefault(); handleCalculateNewDashboard(); }}>
+                  <div className="modal-body p-5">
+                    {/* Dashboard Name */}
+                    <div className="mb-4">
+                      <label className="form-label fw-bold">Dashboard Name</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="e.g., Q3 Financial Analysis"
+                        value={dashboardName}
+                        onChange={(e) => setDashboardName(e.target.value)}
+                        required
+                        style={{
+                          borderRadius: '16px',
+                          backgroundColor: '#fdfcfb',
+                          padding: '1rem 1.25rem',
+                          border: '1px solid #e5e7eb'
+                        }}
+                      />
+                    </div>
+
+                    {/* Project Selection */}
+                    <div className="mb-4">
+                      <label className="form-label fw-bold">Select Projects ({availableProjects.length} available)</label>
+                      <select
+                        multiple
+                        className="form-control"
+                        value={selectedProjects}
+                        onChange={(e) => setSelectedProjects(Array.from(e.target.selectedOptions, option => option.value))}
+                        style={{
+                          borderRadius: '16px',
+                          backgroundColor: '#fdfcfb',
+                          padding: '1rem',
+                          border: '1px solid #e5e7eb',
+                          height: '120px'
+                        }}
+                      >
+                        {availableProjects.length > 0 ? availableProjects.map(project => (
+                          <option key={project.code || project.id} value={project.code || project.id}>
+                            {project.name}
+                          </option>
+                        )) : (
+                          <option disabled>No projects loaded</option>
+                        )}
+                      </select>
+                      <small className="form-text text-muted mt-1">
+                        Hold Ctrl/Cmd to select multiple. Leave empty for all projects.
+                      </small>
+                    </div>
+
+                    {/* Date Range */}
+                    <div className="row g-3 mb-4">
+                      <div className="col-md-6">
+                        <label className="form-label fw-bold">From Date</label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          value={dateFrom}
+                          onChange={(e) => setDateFrom(e.target.value)}
+                          style={{
+                            borderRadius: '16px',
+                            backgroundColor: '#fdfcfb',
+                            padding: '1rem 1.25rem',
+                            border: '1px solid #e5e7eb'
+                          }}
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label fw-bold">To Date</label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          value={dateTo}
+                          onChange={(e) => setDateTo(e.target.value)}
+                          style={{
+                            borderRadius: '16px',
+                            backgroundColor: '#fdfcfb',
+                            padding: '1rem 1.25rem',
+                            border: '1px solid #e5e7eb'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="modal-footer border-0" style={{
+                    background: 'linear-gradient(135deg, rgba(248,249,250,0.9) 0%, rgba(255,255,255,0.9) 100%)',
+                    padding: '2rem'
+                  }}>
+                    <div className="d-flex gap-3 ms-auto">
+                      <button 
+                        type="button" 
+                        className="btn btn-outline-secondary btn-lg"
+                        onClick={() => setShowCalculationModal(false)}
+                        style={{
+                          borderRadius: '50px', 
+                          padding: '12px 25px'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      
+                      <button 
+                        type="submit" 
+                        className="btn btn-warning btn-lg shadow-lg"
+                        disabled={calculatingNew || !dashboardName.trim()}
+                        style={{
+                          borderRadius: '50px', 
+                          padding: '12px 30px',
+                          background: 'linear-gradient(45deg, #d4af37, #f4d03f)',
+                          border: 'none',
+                          color: 'white'
+                        }}
+                      >
+                        {calculatingNew ? (
+                          <>
+                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                            Calculating...
+                          </>
+                        ) : (
+                          <>
+                            <BsCalculator className="me-2" />
+                            Create Dashboard
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modern Footer */}
+        <div className="mt-5 py-4 border-top bg-light">
+          <div className="text-center">
+            <div className="row align-items-center">
+              <div className="col-md-6">
+                <p className="mb-0 text-muted">
+                  <small>
+                    Tips: Double-click rows for quick details • Use filters for precise searches •
+                    Export data for external analysis
+                  </small>
+                </p>
+              </div>
+              <div className="col-md-6 text-end">
+                <div className="d-flex justify-content-end gap-2">
+                  <span className="badge bg-warning text-dark">
+                    {paginatedData.totalItems} Total Records
+                  </span>
+                  <span className="badge bg-success">
+                    {statistics.activeDashboards} Active
+                  </span>
+                  <span className="badge bg-info">
+                    {formatCurrency(statistics.totalValue)} Total Value
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Enhanced Calculation Modal */}
-      {showCalculationModal && (
-        <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content border-0 shadow-xl" style={{
-              borderRadius: '24px',
-              overflow: 'hidden',
-              background: 'linear-gradient(145deg, #ffffff 0%, #fdfcfb 100%)',
-              backdropFilter: 'blur(10px)',
-              boxShadow: '0 25px 80px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
-            }}>
-              <div className="modal-header border-0 bg-transparent py-4 px-5">
-                <div className="d-flex align-items-center">
-                  <div className="bg-gradient p-3 rounded-3 me-4" style={{
-                    background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
-                    width: '60px',
-                    height: '60px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 8px 25px rgba(212, 175, 55, 0.3)'
-                  }}>
-                    <BsCalculator className="text-black fs-5" />
-                  </div>
-                  <div className="w-100 text-center">
-                    <h2 className="h3 fw-bold mb-1" style={{ color: "#111827" }}>
-                      Fiscal Forge
-                    </h2>
-                    <p className="text-muted mb-0" style={{ fontSize: "0.95rem" }}>
-                      Architect your financial matrix with granular precision
-                    </p>
-                  </div>
-                </div>
-                <button type="button" className="btn-close" onClick={() => setShowCalculationModal(false)}></button>
-              </div>
-              <form onSubmit={(e) => { e.preventDefault(); handleCalculateNewDashboard(); }}>
-                <div className="modal-body p-5">
-                  {/* Calculation Type - New */}
-                  <div className="mb-4">
-                    <label className="form-label fw-bold">
-                      <span className="me-2">⚙️</span>
-                      Analysis Paradigm
-                    </label>
-                    <div className="d-flex flex-wrap gap-2">
-                      {[
-                        { value: 'standard', label: 'Standard', icon: '📊', desc: 'Core metrics and summaries' },
-                        { value: 'advanced', label: 'Advanced', icon: '🔬', desc: 'Deep analytics and correlations' },
-                        { value: 'predictive', label: 'Predictive', icon: '🔮', desc: 'Forecasting and trends Visuals' }
-                      ].map(type => (
-                        <button
-                          key={type.value}
-                          type="button"
-                          className={`btn btn-sm p-3 ${
-                            calculationType === type.value 
-                              ? 'btn-primary shadow-sm' 
-                              : 'btn-outline-primary'
-                          }`}
-                          onClick={() => setCalculationType(type.value)}
-                          style={{
-                            borderRadius: '16px',
-                            fontSize: '0.85rem',
-                            transition: 'all 0.2s ease',
-                            minWidth: '140px'
-                          }}
-                        >
-                          <span className="me-1 d-block mb-1 fs-5">{type.icon}</span>
-                          <strong>{type.label}</strong>
-                          <small className="d-block">{type.desc}</small>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Dashboard Name */}
-                  <div className="mb-4">
-                    <label className="form-label fw-bold">
-                      <span className="me-2">📝</span>
-                      Matrix Designation
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="e.g., Q3 Revenue Synthesis"
-                      value={dashboardName}
-                      onChange={(e) => setDashboardName(e.target.value)}
-                      style={{
-                        borderRadius: '16px',
-                        backgroundColor: '#fdfcfb',
-                        padding: '1rem 1.25rem',
-                        border: '1px solid #e5e7eb',
-                        boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
-                        transition: 'all 0.2s ease',
-                        fontSize: '1rem'
-                      }}
-                      required
-                    />
-                  </div>
-
-                  {/* Project Selection */}
-                  <div className="mb-4">
-                    <label className="form-label fw-bold">
-                      <span className="me-2">🏢</span>
-                      Project Constellation ({availableProjects.length} available)
-                    </label>
-                    <select
-                      multiple
-                      className="form-control"
-                      value={selectedProjects}
-                      onChange={(e) => setSelectedProjects(Array.from(e.target.selectedOptions, option => option.value))}
-                      style={{
-                        borderRadius: '16px',
-                        backgroundColor: '#fdfcfb',
-                        padding: '1rem',
-                        border: '1px solid #e5e7eb',
-                        height: '120px'
-                      }}
-                    >
-                      {availableProjects.length > 0 ? availableProjects.map(project => (
-                        <option key={project.code || project.id} value={project.code || project.id}>{project.name}</option>
-                      )) : (
-                        <option disabled>No projects loaded</option>
-                      )}
-                    </select>
-                    <small className="form-text text-muted mt-1">
-                      Hold Ctrl/Cmd to select multiple. Leave empty for all projects.
-                    </small>
-                  </div>
-
-                  {/* Date Range Section - Premium */}
-                  <div className="mb-4">
-                    <label className="form-label fw-bold">
-                      <span className="me-2">📅</span>
-                      Temporal Vector
-                    </label>
-                    
-                    {/* Auto Date Range Toggle */}
-                    <div className="card border-0 shadow-sm mb-3" style={{borderRadius: '12px', background: 'linear-gradient(135deg, rgba(40,167,69,0.1) 0%, rgba(32,201,151,0.05) 100%)'}}>
-                      <div className="card-body p-3">
-                        <div className="form-check form-switch">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="autoDateRange"
-                            checked={autoDateRange}
-                            onChange={(e) => {
-                              setAutoDateRange(e.target.checked);
-                              if (e.target.checked) {
-                                applyDateRangePreset(dateRangePreset);
-                              }
-                            }}
-                            style={{transform: 'scale(1.2)'}}
-                          />
-                          <label className="form-check-label fw-semibold" htmlFor="autoDateRange">
-                            <span className="me-2">🤖</span>
-                            Quantum Temporal Calibration
-                          </label>
-                        </div>
-                        <small className="text-muted">
-                          Auto-calibrate optimal vectors for multidimensional synthesis
-                        </small>
-                      </div>
-                    </div>
-
-                    {/* Date Range Presets */}
-                    {autoDateRange && (
-                      <div className="mb-3">
-                        <label className="form-label fw-semibold">Temporal Presets</label>
-                        <div className="d-flex flex-wrap gap-2">
-                          {[
-                            { value: 'last7days', label: '7 Cycles', icon: '📅' },
-                            { value: 'last30days', label: '30 Cycles', icon: '📊' },
-                            { value: 'last3months', label: 'Quarter', icon: '📈' },
-                            { value: 'last6months', label: 'Semi-Annual', icon: '📉' },
-                            { value: 'thismonth', label: 'Current Cycle', icon: '🗓️' },
-                            { value: 'thisyear', label: 'Fiscal Year', icon: '📆' }
-                          ].map(preset => (
-                            <button
-                              key={preset.value}
-                              type="button"
-                              className={`btn btn-sm ${
-                                dateRangePreset === preset.value 
-                                  ? 'btn-primary' 
-                                  : 'btn-outline-primary'
-                              }`}
-                              onClick={() => {
-                                setDateRangePreset(preset.value);
-                                applyDateRangePreset(preset.value);
-                              }}
-                              style={{
-                                borderRadius: '25px',
-                                padding: '8px 16px',
-                                fontSize: '0.85rem',
-                                transition: 'all 0.2s ease'
-                              }}
-                            >
-                              <span className="me-1">{preset.icon}</span>
-                              {preset.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Date Range Display */}
-                    <div className="card border-0 shadow-sm" style={{borderRadius: '12px', background: 'linear-gradient(135deg, rgba(0,123,255,0.1) 0%, rgba(0,123,255,0.05) 100%)'}}>
-                      <div className="card-body p-3">
-                        <div className="row g-3">
-                          <div className="col-md-6">
-                            <label className="form-label fw-semibold small">Vector Origin</label>
-                            <input
-                              type="date"
-                              className="form-control border-0 shadow-sm"
-                              value={dateFrom}
-                              onChange={(e) => {
-                                setDateFrom(e.target.value);
-                                setAutoDateRange(false);
-                                setDateRangePreset('custom');
-                              }}
-                              style={{borderRadius: '8px', padding: '10px'}}
-                              disabled={autoDateRange}
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <label className="form-label fw-semibold small">Vector Terminus</label>
-                            <input
-                              type="date"
-                              className="form-control border-0 shadow-sm"
-                              value={dateTo}
-                              onChange={(e) => {
-                                setDateTo(e.target.value);
-                                setAutoDateRange(false);
-                                setDateRangePreset('custom');
-                              }}
-                              style={{borderRadius: '8px', padding: '10px'}}
-                              disabled={autoDateRange}
-                            />
-                          </div>
-                        </div>
-                        
-                        {/* Date Range Summary */}
-                        {dateFrom && dateTo && (
-                          <div className="mt-3 p-2 rounded" style={{backgroundColor: 'rgba(40,167,69,0.1)'}}>
-                            <small className="text-success fw-semibold">
-                              <span className="me-2">📊</span>
-                              Synthesis Span: {getDateRangeLabel(dateRangePreset)}
-                              <br />
-                              <span className="text-muted">
-                                From {new Date(dateFrom).toLocaleDateString()} to {new Date(dateTo).toLocaleDateString()}
-                                ({Math.ceil((new Date(dateTo) - new Date(dateFrom)) / (1000 * 60 * 60 * 24))} cycles)
-                              </span>
-                            </small>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <small className="form-text text-muted mt-2">
-                      <span className="me-1">💡</span>
-                      Quantum calibration yields optimal multidimensional vectors
-                    </small>
-                  </div>
-                </div>
-                
-                {/* Enhanced Modal Footer */}
-                <div className="modal-footer border-0" style={{
-                  background: 'linear-gradient(135deg, rgba(248,249,250,0.9) 0%, rgba(255,255,255,0.9) 100%)',
-                  padding: '2rem'
-                }}>
-                  {/* Validation Summary */}
-                  <div className="flex-grow-1 me-3">
-                    <div className="d-flex align-items-center mb-2">
-                      {dashboardName.trim() ? (
-                        <span className="badge bg-success me-2">
-                          <span className="me-1">✓</span> Matrix Name
-                        </span>
-                      ) : (
-                        <span className="badge bg-secondary me-2">
-                          <span className="me-1">•</span> Designation Required
-                        </span>
-                      )}
-                      
-                      {dateFrom && dateTo ? (
-                        <span className="badge bg-success me-2">
-                          <span className="me-1">✓</span> Temporal Span
-                        </span>
-                      ) : (
-                        <span className="badge bg-info me-2">
-                          <span className="me-1">📅</span> Quantum Calibration
-                        </span>
-                      )}
-                      
-                      {selectedProjects.length > 0 ? (
-                        <span className="badge bg-primary">
-                          <span className="me-1">🏢</span> {selectedProjects.length} Vectors
-                        </span>
-                      ) : (
-                        <span className="badge bg-warning">
-                          <span className="me-1">🌌</span> Omniverse Scope
-                        </span>
-                      )}
-                    </div>
-                    
-                    <small className="text-muted">
-                      <span className="me-2">💡</span>
-                      {autoDateRange 
-                        ? `Quantum synthesis for ${getDateRangeLabel(dateRangePreset).toLowerCase()}`
-                        : 'Custom vector calibration'
-                      }
-                    </small>
-                  </div>
-                  
-                  {/* Action Buttons */}
-                  <div className="d-flex gap-3">
-                    <button 
-                      type="button" 
-                      className="btn btn-outline-secondary btn-lg"
-                      onClick={() => {
-                        setShowCalculationModal(false);
-                        // Reset form
-                        setDashboardName('');
-                        setSelectedProjects([]);
-                        setAutoDateRange(true);
-                        setDateRangePreset('last30days');
-                      }}
-                      style={{
-                        borderRadius: '50px', 
-                        padding: '12px 25px',
-                        transition: 'all 0.3s ease',
-                        border: '2px solid #6c757d'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 8px 25px rgba(108,117,125,0.2)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = 'none';
-                      }}
-                    >
-                      <span className="me-2">✕</span> Abort
-                    </button>
-                    
-                    <button 
-                      type="submit" 
-                      className="btn btn-lg shadow-lg"
-                      disabled={calculatingNew || !dashboardName.trim()}
-                      style={{
-                        borderRadius: '50px', 
-                        padding: '12px 30px',
-                        background: calculatingNew || !dashboardName.trim() 
-                          ? 'linear-gradient(45deg, #6c757d, #5a6268)'
-                          : 'linear-gradient(45deg, #28a745, #20c997)',
-                        border: 'none',
-                        color: 'white',
-                        transition: 'all 0.3s ease',
-                        position: 'relative',
-                        overflow: 'hidden'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!calculatingNew && dashboardName.trim()) {
-                          e.target.style.transform = 'translateY(-3px)';
-                          e.target.style.boxShadow = '0 15px 40px rgba(40,167,69,0.4)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-                      }}
-                    >
-                      {/* Button shimmer effect */}
-                      {!calculatingNew && dashboardName.trim() && (
-                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{
-                          background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
-                          animation: 'shimmer 2s infinite',
-                          pointerEvents: 'none'
-                        }}></div>
-                      )}
-                      
-                      <span className="position-relative">
-                        {calculatingNew ? (
-                          <>
-                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                            Synthesizing Matrix...
-                          </>
-                        ) : (
-                          <>
-                            <span className="me-2">🔮</span> 
-                            Crystallize Synthesis
-                          </>
-                        )}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Enhanced FontAwesome Fallback CSS & Premium Animations */}
-      <style>{`
-        /* Ensure FontAwesome icons have proper font family and fallback */
-        .fas {
-          font-family: "Font Awesome 5 Free", "FontAwesome", sans-serif !important;
-          font-weight: 900 !important;
-        }
-        
-        /* Premium Animations */
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-        
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.7; }
-        }
-        
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        /* Modal enhancements */
-        .modal {
-          animation: fadeIn 0.3s ease-out;
-        }
-        
-        .modal-content {
-          animation: slideIn 0.4s ease-out;
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        /* Button hover effects */
-        .btn:hover {
-          transform: translateY(-2px) !important;
-        }
-        
-        /* Card hover animations */
-        .card {
-          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-        }
-        
-        /* Badge animations */
-        .badge {
-          animation: slideIn 0.3s ease-out;
-          transition: all 0.2s ease;
-        }
-        
-        .badge:hover {
-          transform: scale(1.05);
-        }
-        
-        /* Progress bar animations */
-        .progress-bar {
-          animation: progressFill 1.5s ease-out;
-        }
-        
-        @keyframes progressFill {
-          from { width: 0% !important; }
-        }
-        
-        /* Specific icon mappings with fallbacks */
-        .fas.fa-chart-line:before { content: "\\f201"; }
-        .fas.fa-dollar-sign:before { content: "\\f155"; }
-        .fas.fa-calculator:before { content: "\\f1ec"; }
-        .fas.fa-check-circle:before { content: "\\f058"; }
-        .fas.fa-check:before { content: "\\f00c"; }
-        .fas.fa-arrow-up:before { content: "\\f062"; }
-        .fas.fa-star:before { content: "\\f005"; }
-        .fas.fa-thumbs-up:before { content: "\\f164"; }
-        .fas.fa-eye:before { content: "\\f06e"; }
-        .fas.fa-edit:before { content: "\\f044"; }
-        .fas.fa-trash:before { content: "\\f1f8"; }
-        .fas.fa-search:before { content: "\\f002"; }
-        .fas.fa-sort-amount-up:before { content: "\\f160"; }
-        .fas.fa-sort-amount-down:before { content: "\\f161"; }
-        
-        /* Emoji fallbacks when FontAwesome fails */
-        body.fontawesome-fallback .fas.fa-chart-line:before,
-        .fas.fa-chart-line:empty:after { content: "📊"; font-family: sans-serif !important; }
-        
-        body.fontawesome-fallback .fas.fa-dollar-sign:before,
-        .fas.fa-dollar-sign:empty:after { content: "💰"; font-family: sans-serif !important; }
-        
-        body.fontawesome-fallback .fas.fa-calculator:before,
-        .fas.fa-calculator:empty:after { content: "🧮"; font-family: sans-serif !important; }
-        
-        body.fontawesome-fallback .fas.fa-check-circle:before,
-        .fas.fa-check-circle:empty:after { content: "✅"; font-family: sans-serif !important; }
-        
-        body.fontawesome-fallback .fas.fa-check:before,
-        .fas.fa-check:empty:after { content: "✓"; font-family: sans-serif !important; }
-        
-        body.fontawesome-fallback .fas.fa-arrow-up:before,
-        .fas.fa-arrow-up:empty:after { content: "⬆️"; font-family: sans-serif !important; }
-        
-        body.fontawesome-fallback .fas.fa-star:before,
-        .fas.fa-star:empty:after { content: "⭐"; font-family: sans-serif !important; }
-        
-        body.fontawesome-fallback .fas.fa-thumbs-up:before,
-        .fas.fa-thumbs-up:empty:after { content: "👍"; font-family: sans-serif !important; }
-        
-        body.fontawesome-fallback .fas.fa-eye:before,
-        .fas.fa-eye:empty:after { content: "👁️"; font-family: sans-serif !important; }
-        
-        body.fontawesome-fallback .fas.fa-edit:before,
-        .fas.fa-edit:empty:after { content: "✏️"; font-family: sans-serif !important; }
-        
-        body.fontawesome-fallback .fas.fa-trash:before,
-        .fas.fa-trash:empty:after { content: "🗑️"; font-family: sans-serif !important; }
-        
-        body.fontawesome-fallback .fas.fa-search:before,
-        .fas.fa-search:empty:after { content: "🔍"; font-family: sans-serif !important; }
-        
-        /* Force emoji display when FontAwesome fails */
-        body.fontawesome-fallback .fas:before {
-          font-family: sans-serif !important;
-        }
-        
-        .fas:empty:after {
-          display: inline-block;
-          font-size: inherit;
-        }
-        
-        /* Premium scrollbar */
-        ::-webkit-scrollbar {
-          width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-          background: linear-gradient(45deg, #667eea, #764ba2);
-          border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(45deg, #764ba2, #667eea);
-        }
-
-        .bg-purple { background-color: #6f42c1 !important; }
-      `}</style>
     </div>
   );
 }

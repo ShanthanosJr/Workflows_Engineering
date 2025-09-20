@@ -241,7 +241,7 @@ function UpdateProjects() {
                 <div style={{
                   width: '80px',
                   height: '80px',
-                  background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                  background: 'linear-gradient(135deg, #1e8449 0%, #27ae60 100%)',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -276,8 +276,8 @@ function UpdateProjects() {
                   className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold"
                   style={{
                     borderRadius: '50px',
-                    border: '2px solid #d4af37',
-                    color: '#d4af37',
+                    border: '2px solid #1e8449',
+                    color: '#1e8449',
                     fontWeight: '600',
                     textDecoration: 'none',
                     transition: 'all 0.3s ease',
@@ -308,7 +308,7 @@ function UpdateProjects() {
               <div className="card-header bg-transparent border-0 py-5 px-5">
                 <div className="d-flex align-items-center">
                   <div className="bg-gradient p-3 rounded-3 me-4" style={{
-                    background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                    background: 'linear-gradient(135deg, #1e8449 0%, #27ae60 100%)',
                     width: '60px',
                     height: '60px',
                     display: 'flex',
@@ -953,8 +953,8 @@ function UpdateProjects() {
                         className="btn px-6 py-3 fw-semibold"
                         style={{
                           borderRadius: '50px',
-                          border: '2px solid #6b7280',
-                          color: '#6b7280',
+                          border: '2px solid #1e8449',
+                          color: '#1e8449',
                           background: 'transparent',
                           fontSize: '1.1rem',
                           boxShadow: '0 4px 15px rgba(107, 114, 128, 0.2)',
@@ -971,7 +971,7 @@ function UpdateProjects() {
                         className="btn px-6 py-3 fw-semibold"
                         style={{
                           borderRadius: '50px',
-                          background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                          background: 'linear-gradient(135deg, #1e8449 0%, #27ae60 100%)',
                           border: 'none',
                           color: '#fff',
                           fontSize: '1.1rem',

@@ -916,7 +916,7 @@ export default function ProjectsView() {
                       minWidth: '200px',
                       transition: 'all 0.3s ease'
                     }}
-                    onClick={() => navigate("/projects-fd")}
+                    onClick={() => navigate("/projects")}
                   >
                     <i className="fas fa-th-list me-2"></i>Project Portfolio
                   </button>

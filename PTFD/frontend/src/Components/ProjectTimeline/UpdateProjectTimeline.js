@@ -320,7 +320,7 @@ export default function UpdateProjectTimeline() {
                 <div style={{
                   width: '80px',
                   height: '80px',
-                  background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                  background: 'linear-gradient(135deg, #c53030 0%, #e53e3e 100%)',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -353,8 +353,8 @@ export default function UpdateProjectTimeline() {
               <div className="d-flex justify-content-center gap-3 flex-wrap">
                 <button onClick={() => navigate("/projects")} className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
                   borderRadius: '50px',
-                  border: '2px solid #d4af37',
-                  color: '#d4af37',
+                  border: '2px solid #c53030',
+                  color: '#c53030',
                   fontWeight: '600',
                   textDecoration: 'none',
                   transition: 'all 0.3s ease',
@@ -364,7 +364,7 @@ export default function UpdateProjectTimeline() {
                 </button>
                 <button onClick={() => navigate("/project-timelines")} className="btn btn-primary btn-lg px-5 py-3 fw-semibold" style={{
                   borderRadius: '50px',
-                  background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                  background: 'linear-gradient(135deg, #c53030 0%, #e53e3e 100%)',
                   border: 'none',
                   color: '#fff',
                   fontWeight: '600',
@@ -542,8 +542,8 @@ export default function UpdateProjectTimeline() {
                       {projectDetails && (
                         <div className="row g-4 justify-content-center mt-4">
                           <div className="col-12">
-                            <div className="p-4 rounded-3 border border-warning-subtle bg-warning-subtle bg-opacity-10">
-                              <h6 className="text-warning mb-3 fw-bold d-flex align-items-center">
+                            <div className="p-4 rounded-3 border border-danger-subtle bg-danger-subtle bg-opacity-10">
+                              <h6 className="text-danger mb-3 fw-bold d-flex align-items-center">
                                 <BsCheckCircle className="me-2" /> Anchor Verified (Immutable)
                               </h6>
                               <div className="row g-3">
@@ -553,7 +553,7 @@ export default function UpdateProjectTimeline() {
                                 </div>
                                 <div className="col-md-3">
                                   <small className="text-muted">Code</small>
-                                  <p className="fw-semibold text-warning mb-0">{projectDetails.pcode || 'N/A'}</p>
+                                  <p className="fw-semibold text-danger mb-0">{projectDetails.pcode || 'N/A'}</p>
                                 </div>
                                 <div className="col-md-2">
                                   <small className="text-muted">Number</small>
@@ -565,7 +565,7 @@ export default function UpdateProjectTimeline() {
                                 </div>
                                 <div className="col-md-2">
                                   <small className="text-muted">Status</small>
-                                  <span className="badge bg-warning text-dark fs-6">{projectDetails.pstatus || 'N/A'}</span>
+                                  <span className="badge bg-danger text-dark fs-6">{projectDetails.pstatus || 'N/A'}</span>
                                 </div>
                               </div>
                               <div className="row g-3 mt-2">
@@ -718,7 +718,7 @@ export default function UpdateProjectTimeline() {
                         <div className="col-12">
                           <button
                             type="button"
-                            className="btn btn-outline-warning mb-3"
+                            className="btn btn-outline-danger mb-3"
                             style={{ borderRadius: '20px', fontWeight: '600' }}
                             onClick={() => addField("tworker", { name: "", role: "", hoursWorked: 0 })}
                           >
@@ -815,7 +815,7 @@ export default function UpdateProjectTimeline() {
                         <div className="col-12">
                           <button
                             type="button"
-                            className="btn btn-outline-warning mb-3"
+                            className="btn btn-outline-danger mb-3"
                             style={{ borderRadius: '20px', fontWeight: '600' }}
                             onClick={() => addField("tengineer", { name: "", specialty: "", hoursWorked: 0 })}
                           >
@@ -912,7 +912,7 @@ export default function UpdateProjectTimeline() {
                         <div className="col-12">
                           <button
                             type="button"
-                            className="btn btn-outline-warning mb-3"
+                            className="btn btn-outline-danger mb-3"
                             style={{ borderRadius: '20px', fontWeight: '600' }}
                             onClick={() => addField("tarchitect", { name: "", specialty: "", hoursWorked: 0 })}
                           >
@@ -989,7 +989,7 @@ export default function UpdateProjectTimeline() {
                         <div className="col-12">
                           <button
                             type="button"
-                            className="btn btn-outline-warning mb-3"
+                            className="btn btn-outline-danger mb-3"
                             style={{ borderRadius: '20px', fontWeight: '600' }}
                             onClick={() => addField("tprojectManager", { name: "", contact: "" })}
                           >
@@ -1103,7 +1103,7 @@ export default function UpdateProjectTimeline() {
                         <div className="col-12">
                           <button
                             type="button"
-                            className="btn btn-outline-warning mb-3"
+                            className="btn btn-outline-danger mb-3"
                             style={{ borderRadius: '20px', fontWeight: '600' }}
                             onClick={() => addField("tmaterials", { name: "", quantity: 0, unit: "", cost: 0 })}
                           >
@@ -1205,7 +1205,7 @@ export default function UpdateProjectTimeline() {
                         <div className="col-12">
                           <button
                             type="button"
-                            className="btn btn-outline-warning mb-3"
+                            className="btn btn-outline-danger mb-3"
                             style={{ borderRadius: '20px', fontWeight: '600' }}
                             onClick={() => addField("ttools", { name: "", quantity: 0, status: "" })}
                           >
@@ -1306,7 +1306,7 @@ export default function UpdateProjectTimeline() {
                         <div className="col-12">
                           <button
                             type="button"
-                            className="btn btn-outline-warning mb-3"
+                            className="btn btn-outline-danger mb-3"
                             style={{ borderRadius: '20px', fontWeight: '600' }}
                             onClick={() => addField("texpenses", { description: "", amount: 0, date: "" })}
                           >
@@ -1366,7 +1366,7 @@ export default function UpdateProjectTimeline() {
                         className="btn btn-lg px-6 py-3 fw-semibold"
                         style={{
                           borderRadius: '50px',
-                          background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                          background: 'linear-gradient(135deg, #c53030 0%, #e53e3e 100%)',
                           border: 'none',
                           color: '#fff',
                           fontSize: '1.1rem',

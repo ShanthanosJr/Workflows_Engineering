@@ -102,15 +102,16 @@ const ProjectHome = () => {
 
     // Better video URLs - using more reliable sources
     const videos = {
-      hero: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-      intro: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", 
-      types: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-      process: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-      projectShowcase: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-      timelineShowcase: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-      dashboardShowcase: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-      technology: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-      growth: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+      hero: "https://www.pexels.com/download/video/1197801/",
+      intro: "https://www.pexels.com/download/video/2048246/",
+      types: "https://www.pexels.com/download/video/856439/",
+      process: "https://www.pexels.com/download/video/2274600/",
+      projectShowcase: "https://www.pexels.com/download/video/2274600/",
+      timelineShowcase: "https://www.pexels.com/download/video/7947451/",
+      dashboardShowcase: "https://www.pexels.com/download/video/3752548/",
+      technology: "https://www.pexels.com/download/video/5349085/",
+      growth: "https://www.pexels.com/download/video/5342015/",
+      cta: "https://www.pexels.com/download/video/1817871/",
     };
 
     const posterImages = {
@@ -122,7 +123,8 @@ const ProjectHome = () => {
       timelineShowcase: "https://images.unsplash.com/photo-1626885930974-4b69aa21bbf9?w=1600&h=900&fit=crop&q=80",
       dashboardShowcase: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1600&h=900&fit=crop&q=80",
       technology: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1600&h=900&fit=crop&q=80",
-      growth: "https://images.unsplash.com/photo-1542621334-a254cf47733d?w=1600&h=900&fit=crop&q=80"
+      growth: "https://images.unsplash.com/photo-1542621334-a254cf47733d?w=1600&h=900&fit=crop&q=80",
+      cta: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1600&h=900&fit=crop&q=80",
     };
 
     // Reset states when videoId changes
@@ -136,11 +138,11 @@ const ProjectHome = () => {
     const handleVideoLoad = () => {
       console.log(`Video loaded for ${videoId}`);
       setLoaded(true);
-      
+
       // Try to play the video
       if (videoRef.current) {
         const playPromise = videoRef.current.play();
-        
+
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
@@ -218,9 +220,9 @@ const ProjectHome = () => {
               <source src={videos[videoId]} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
-            
+
             {/* Static background image as fallback */}
-            <div 
+            <div
               className="video-poster-fallback"
               style={{
                 position: 'absolute',
@@ -240,7 +242,7 @@ const ProjectHome = () => {
             />
           </>
         ) : (
-          <div 
+          <div
             className="video-fallback"
             style={{
               position: 'absolute',
@@ -264,7 +266,8 @@ const ProjectHome = () => {
               left: 0,
               width: '100%',
               height: '100%',
-              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 215, 0, 0.2) 50%, rgba(255, 255, 255, 0.3) 100%)',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(39, 174, 96, 0.15) 50%, rgba(255, 255, 255, 0.25) 100%)',
+              //background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 215, 0, 0.2) 50%, rgba(255, 255, 255, 0.3) 100%)',
               zIndex: 1
             }} />
             <div className="fallback-content" style={{
@@ -273,21 +276,21 @@ const ProjectHome = () => {
               textAlign: 'center',
               color: '#ff8c00'
             }}>
-              <div className="fallback-icon" style={{ fontSize: '4rem', marginBottom: '1rem' }}>🏗️</div>
-              <div className="fallback-text" style={{ 
+              <div className="fallback-icon" style={{ fontSize: '4rem', marginBottom: '1rem' }}>{/* 🏗️ */}</div>
+              <div className="fallback-text" style={{
                 fontSize: '1.3rem',
                 textTransform: 'uppercase',
                 letterSpacing: '0.15em',
                 fontWeight: '700'
               }}>
-                Construction Project
+                {/* Construction Project */}
               </div>
             </div>
           </div>
         )}
-        
+
         {/* Enhanced overlay for better text readability with light theme */}
-        <div 
+        <div
           className="video-overlay"
           style={{
             position: 'absolute',
@@ -295,7 +298,8 @@ const ProjectHome = () => {
             left: 0,
             width: '100%',
             height: '100%',
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 215, 0, 0.2) 50%, rgba(255, 255, 255, 0.4) 100%)',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(39, 174, 96, 0.15) 50%, rgba(255, 255, 255, 0.25) 100%)',
+           // background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 215, 0, 0.2) 50%, rgba(255, 255, 255, 0.4) 100%)',
             pointerEvents: 'none',
             zIndex: 2
           }}
@@ -355,14 +359,14 @@ const ProjectHome = () => {
             <span className="title-highlight">Financial Dashboard</span>
           </h1><br />
           <p className="hero-description">
-            Smart Construction Workflow & Safety Management System powered by AI innovation.
+            Smart Construction Workflow & Safety Management System powered by our innovation.
           </p>
           <div className="hero-buttons d-flex justify-content-center gap-4 flex-wrap">
-            <button className="btn btn-primary btn-lg shadow-btn" onClick={() => navigate("/projects-fd")} aria-label="Get Started">
+            <button className="btn btn-primary btn-lg shadow-btn" onClick={() => navigate("/projects")} aria-label="Get Started">
               Get Started <span className="arrow">→</span>
             </button>
             <button className="btn btn-outline-warning btn-lg shadow-btn-outline" onClick={() => navigate("/chatbot")} aria-label="Learn More">
-              Learn More <span className="arrow">↓</span>
+              Learn More <span className="arrow">💬</span>
             </button>
           </div>
         </div>
@@ -433,9 +437,9 @@ const ProjectHome = () => {
             </h2>
             <h4 className="types-subtitle">Different Sectors in Construction</h4>
             <p className="types-description">
-              Our construction services span multiple sectors, each with specialized approaches and methodologies. 
-              We excel in residential, commercial, industrial, and infrastructure projects, bringing decades of 
-              expertise to every build. Our team understands the unique requirements of each construction type 
+              Our construction services span multiple sectors, each with specialized approaches and methodologies.
+              We excel in residential, commercial, industrial, and infrastructure projects, bringing decades of
+              expertise to every build. Our team understands the unique requirements of each construction type
               and delivers tailored solutions that meet industry standards and client expectations.
             </p>
           </div>
@@ -465,7 +469,7 @@ const ProjectHome = () => {
             Project <span className="title-highlight">Showcase</span>
           </h2>
           <p className="section-description text-center mb-5" style={{ fontSize: "1.4rem", maxWidth: "800px", margin: "0 auto 2rem auto" }}>
-            Explore our latest construction projects with detailed insights, progress tracking, and live photo updates. 
+            Explore our latest construction projects with detailed insights, progress tracking, and live photo updates.
             Our project management system provides comprehensive visibility into every aspect of your construction projects.
           </p>
           <div className="photo-booth-wrapper">
@@ -495,8 +499,8 @@ const ProjectHome = () => {
             Manage Your <span className="title-highlight">Project Timeline</span>
           </h2>
           <p className="section-description mb-5 px-lg-5 mx-auto">
-            Track daily project activities, resource allocation, and progress with our comprehensive timeline tools. 
-            Monitor construction milestones, identify potential delays, and view real-time images from the field 
+            Track daily project activities, resource allocation, and progress with our comprehensive timeline tools.
+            Monitor construction milestones, identify potential delays, and view real-time images from the field
             to ensure your projects stay on schedule and within budget.
           </p>
           <div className="btn-group mb-5 d-flex justify-content-center gap-4 flex-wrap">
@@ -546,8 +550,8 @@ const ProjectHome = () => {
             Financial <span className="title-highlight">Dashboard</span>
           </h2>
           <p className="section-description mb-5 px-lg-5 mx-auto">
-            Monitor project budgets, expenses, and overall financial health with our comprehensive dashboard. 
-            Track costs in real-time, analyze spending patterns, generate financial reports, and make 
+            Monitor project budgets, expenses, and overall financial health with our comprehensive dashboard.
+            Track costs in real-time, analyze spending patterns, generate financial reports, and make
             data-driven decisions to keep your construction projects financially sound.
           </p>
           <div className="btn-group mb-5 d-flex justify-content-center gap-4 flex-wrap">
@@ -594,7 +598,7 @@ const ProjectHome = () => {
             Safety & <span className="title-highlight">Innovation</span>
           </h2>
           <p className="section-description mb-5 px-lg-5 mx-auto">
-            Embracing cutting-edge safety protocols and innovative construction technologies to ensure 
+            Embracing cutting-edge safety protocols and innovative construction technologies to ensure
             every project meets the highest standards of safety and efficiency.
           </p><br></br>
           <PhotoBooth
@@ -603,6 +607,8 @@ const ProjectHome = () => {
               "https://images.unsplash.com/photo-1549924231-f129b911e442?auto=format&fit=crop&w=600&q=80",
               "https://images.unsplash.com/photo-1515865644861-c7d11b5b98a0?auto=format&fit=crop&w=600&q=80",
               "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?auto=format&fit=crop&w=600&q=80",
+              "https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?auto=format&fit=crop&w=600&q=80",
+              "https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?auto=format&fit=crop&w=600&q=80"
             ]}
             title="Safety & Innovation"
           />
@@ -623,10 +629,10 @@ const ProjectHome = () => {
             Construction Market <span className="title-highlight">Growth</span>
           </h2>
           <p className="section-description mb-5 px-lg-5 mx-auto">
-            The construction industry continues to expand with innovative technologies, sustainable practices, 
+            The construction industry continues to expand with innovative technologies, sustainable practices,
             and smart building solutions driving unprecedented growth and opportunities.
           </p>
-          
+
           {/* Enhanced Market Growth Chart */}
           <div className="market-growth-chart">
             <div className="chart-container">
@@ -634,7 +640,7 @@ const ProjectHome = () => {
                 <div className="y-axis-label">Market Value (Billions)</div>
                 <div className="y-axis-values">
                   {[15000, 12000, 9000, 6000, 3000, 0].map((val) => (
-                    <span key={val}>${val/1000}T</span>
+                    <span key={val}>${val / 1000}T</span>
                   ))}
                 </div>
               </div>
@@ -648,11 +654,11 @@ const ProjectHome = () => {
                   { year: '2025', value: 18500, height: '93%' }
                 ].map((data) => (
                   <div key={data.year} className="chart-bar-group">
-                    <div 
-                      className="chart-bar residential" 
+                    <div
+                      className="chart-bar residential"
                       style={{ height: data.height }}
                     >
-                      <div className="bar-value">${(data.value/1000).toFixed(1)}T</div>
+                      <div className="bar-value">${(data.value / 1000).toFixed(1)}T</div>
                     </div>
                     <div className="bar-label">{data.year}</div>
                   </div>
@@ -696,6 +702,7 @@ const ProjectHome = () => {
         ref={addRef("cta")}
         tabIndex={-1}
       >
+        <VideoBackground videoId="cta" /><br></br>
         <div className="container text-center">
           <div className="caution-tape-section-bar" aria-hidden="true"></div>
           <h2 className="section-title mb-4">
@@ -724,7 +731,7 @@ const ProjectHome = () => {
               <div className="footer-widget">
                 <h4 className="footer-title">Workflows Engineering</h4>
                 <p className="footer-description">
-                  Leading construction management platform powered by AI innovation. 
+                  Leading construction management platform powered by AI innovation.
                   Building the future with smart technology and expert craftsmanship.
                 </p>
                 <div className="footer-social">
@@ -806,8 +813,8 @@ const ProjectHome = () => {
 
         {/* Footer caution tape bar */}
         <div className="caution-tape-bar bottom-bar" aria-hidden="true">
-                    <div className="caution-stripes"></div>
-        <div className="caution-text">BUILD YOUR DREAMS</div><br></br>
+          <div className="caution-stripes"></div>
+          <div className="caution-text">BUILD YOUR DREAMS</div><br></br>
         </div>
       </footer>
     </div>

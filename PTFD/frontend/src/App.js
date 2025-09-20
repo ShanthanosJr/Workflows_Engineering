@@ -32,7 +32,7 @@ export default function App() {
       <Routes>
         {/* Home route */}
         <Route path="/" element={<ProjectHome />} />
-        <Route path="/home" element={<ProjectHome />} />
+        <Route path="/projectshome" element={<ProjectHome />} />
         <Route path="/construction" element={<ConstructionHome />} />
         {/* Auth routes */}
         <Route path="/signin" element={<SignIn />} />

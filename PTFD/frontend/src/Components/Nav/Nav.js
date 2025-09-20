@@ -201,7 +201,7 @@ export default function Nav() {
                 <ul className="nav-submenu-list">
                   <li>
                     <NavLink 
-                      to="/construction" 
+                      to="/projectshome" 
                       className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
                       onClick={closeMenu}
                     >
@@ -211,7 +211,7 @@ export default function Nav() {
                   </li>
                   <li>
                     <NavLink 
-                      to="/projects-fd" 
+                      to="/projects" 
                       className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
                       onClick={closeMenu}
                     >

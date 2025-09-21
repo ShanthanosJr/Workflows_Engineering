@@ -151,7 +151,7 @@ const ProjectHome = () => {
             })
             .catch((error) => {
               console.log(`Autoplay failed for ${videoId}:`, error);
-              // Autoplay failed, but video is loaded - this is normal
+              // Autoplay failed
               setPlaying(false);
             });
         }
@@ -320,6 +320,7 @@ const PhotoBooth = ({ photos, title }) => {
             loading="lazy"
             onError={(e) => {
               e.target.src =
+              // "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23ffd700'/%3E%3Ctext x='150' y='100' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' fill='%23000'%3EImage Not Available%3C/text%3E%3C/svg%3E";
                 "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23999999'/%3E%3Ctext x='150' y='100' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' fill='%23ffffff'%3EImage Not Available%3C/text%3E%3C/svg%3E";
             }}
           />

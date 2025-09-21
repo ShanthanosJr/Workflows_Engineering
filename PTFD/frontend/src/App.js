@@ -15,6 +15,7 @@ import ProjectsFD from './Components/Projects/ProjectsFD';
 import ProjectTimeline from './Components/ProjectTimeline/ProjectTimeline';
 import AddProjectTimelines from './Components/ProjectTimeline/AddProjectTimelines';
 import UpdateProjectTimeline from './Components/ProjectTimeline/UpdateProjectTimeline';
+import ProjectTimelinesView from './Components/ProjectTimeline/ProjectTimelinesView';
 import FinancialDashboard from './Components/FinancialDashboard/FinancialDashboard';
 import FinancialDashboardView from './Components/FinancialDashboard/FinancialDashboardView';
 import ChatBot from './Components/ChatBot/ChatBot';
@@ -58,6 +59,7 @@ export default function App() {
         <Route path="/project-timelines" element={<ProjectTimeline />} />
         <Route path="/add-project-timeline" element={<AddProjectTimelines />} />
         <Route path="/update-project-timeline/:id" element={<UpdateProjectTimeline />} />
+        <Route path="/project-timelines-view/:id" element={<ProjectTimelinesView />} />
         {/* Financial Dashboard routes */}
         <Route path="/financial-dashboard" element={<FinancialDashboard />} />
         <Route path="/financial-dashboard/:id" element={<FinancialDashboardView />} />

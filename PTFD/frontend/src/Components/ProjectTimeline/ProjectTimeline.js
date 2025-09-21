@@ -853,7 +853,7 @@ export default function ProjectTimelines() {
     color: #c53030;
   }
   .nav-pills .nav-link:hover {
-    color: #e53e3e;
+    color: #e53e3e !important;
   }
 `}
         </style>
@@ -2071,6 +2071,34 @@ export default function ProjectTimelines() {
                     >
                       <i className="fas fa-edit me-2"></i>
                       Edit Timeline
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn rounded-pill px-4 py-2 fw-semibold"
+                      style={{
+                        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                        border: 'none',
+                        color: '#ffffff',
+                        boxShadow: '0 4px 15px rgba(59, 130, 246, 0.4)',
+                        transition: 'all 0.3s ease',
+                        marginLeft: '10px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.6)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 15px rgba(59, 130, 246, 0.4)';
+                      }}
+                      onClick={() => {
+                        setShowDetailModal(false);
+                        navigate(`/project-timelines-view/${selectedTimelineDetail._id}`);
+                      }}
+                    >
+                      <i className="fas fa-external-link-alt me-2"></i>
+                      See More
                     </button>
                   </div>
                 </div>

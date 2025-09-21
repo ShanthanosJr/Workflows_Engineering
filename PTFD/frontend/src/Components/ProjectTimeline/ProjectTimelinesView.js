@@ -15,7 +15,8 @@ import {
   BsBarChart,
   BsPencil,
   BsBriefcase,
-  BsActivity
+  BsActivity,
+  BsBack
 } from 'react-icons/bs';
 import {
   PieChart,
@@ -30,7 +31,7 @@ import {
   ResponsiveContainer
 } from "recharts";
 
-export default function TimelineView() {
+export default function ProjectTimelinesView() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [timeline, setTimeline] = useState(null);
@@ -292,6 +293,17 @@ export default function TimelineView() {
                     boxShadow: '0 4px 15px rgba(197, 48, 48, 0.2)'
                   }}>
                     <BsFileEarmarkBarGraph className="me-2"/> Export PDF
+                  </button>
+                                    <button onClick={() => navigate(`/project-timelines`)} className="btn btn-primary btn-lg px-5 py-3 fw-semibold" style={{
+                    borderRadius: '50px',
+                    background: 'linear-gradient(135deg, #c53030 0%, #e53e3e 100%)',
+                    border: 'none',
+                    color: '#fff',
+                    fontWeight: '600',
+                    boxShadow: '0 4px 20px rgba(197, 48, 48, 0.4)',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <BsBack className="me-2" /> Back To Timelines
                   </button>
                 </div>
               </div>

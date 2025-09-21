@@ -99,6 +99,37 @@ export default function FinancialDashboard() {
   const [dateTo, setDateTo] = useState("");
   const [calculatingNew, setCalculatingNew] = useState(false);
 
+  // Additional states for the enhanced calculation modal
+  const [selectedMetrics, setSelectedMetrics] = useState([
+    'totalCost', 'totalHours', 'workerCount', 'engineerCount', 'architectCount', 'avgDailyCost'
+  ]);
+  const [selectedCharts, setSelectedCharts] = useState(['line', 'bar', 'pie']);
+  const [groupBy, setGroupBy] = useState('day');
+  const [minCost, setMinCost] = useState('');
+  const [maxCost, setMaxCost] = useState('');
+  const [minHours, setMinHours] = useState('');
+  const [maxHours, setMaxHours] = useState('');
+  const [includeNotes, setIncludeNotes] = useState('all');
+  const [includeForecast, setIncludeForecast] = useState(false);
+  const [emailReport, setEmailReport] = useState(false);
+  const [emailAddress, setEmailAddress] = useState('');
+
+  // Toggle metric selection
+  const toggleMetric = (metric) => {
+    setSelectedMetrics(prev =>
+      prev.includes(metric)
+        ? prev.filter(m => m !== metric)
+        : [...prev, metric]
+    );
+  };
+
+  // Handle preview dashboard
+  const handlePreviewDashboard = () => {
+    // This would typically open a preview modal or navigate to a preview page
+    console.log('Previewing dashboard with current settings');
+    showNotification('info', 'Preview functionality would be implemented here');
+  };
+
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -386,7 +417,7 @@ export default function FinancialDashboard() {
       { subject: 'High Value', A: statistics.highValueDashboards, fullMark: Math.max(dashboards.length, 10) },
       { subject: 'Total Count', A: dashboards.length, fullMark: Math.max(dashboards.length, 10) },
       { subject: 'Avg Value', A: statistics.avgValue / 1000, fullMark: 100 },
-      { subject: 'Recent', A: dashboards.filter(d => new Date(d.createdAt) > new Date(Date.now() - 30*24*60*60*1000)).length, fullMark: Math.max(dashboards.length, 10) },
+      { subject: 'Recent', A: dashboards.filter(d => new Date(d.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, fullMark: Math.max(dashboards.length, 10) },
       { subject: 'Coverage', A: dashboards.length > 0 ? 100 : 0, fullMark: 100 }
     ];
 
@@ -484,7 +515,7 @@ export default function FinancialDashboard() {
           .stats-card:hover { transform: translateY(-2px); }
           .golden-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
           .success-gradient { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); }
-          .warning-gradient { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
+          .warning-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
           .info-gradient { background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); }
           .card-hover { transition: all 0.3s ease; }
           .card-hover:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
@@ -521,7 +552,7 @@ export default function FinancialDashboard() {
                   <div style={{
                     width: '80px',
                     height: '80px',
-                    background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
@@ -553,8 +584,8 @@ export default function FinancialDashboard() {
                 <div className="d-flex justify-content-center gap-3 flex-wrap">
                   <button onClick={() => navigate("/projects")} className="btn btn-outline-warning btn-lg px-5 py-3 fw-semibold" style={{
                     borderRadius: '50px',
-                    border: '2px solid #d4af37',
-                    color: '#d4af37',
+                    border: '2px solid #f59e0b',
+                    color: '#f59e0b',
                     fontWeight: '600',
                     textDecoration: 'none',
                     transition: 'all 0.3s ease',
@@ -564,7 +595,7 @@ export default function FinancialDashboard() {
                   </button>
                   <button onClick={() => setShowCalculationModal(true)} className="btn btn-warning btn-lg px-5 py-3 fw-semibold" style={{
                     borderRadius: '50px',
-                    background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                     border: 'none',
                     color: '#fff',
                     fontWeight: '600',
@@ -575,8 +606,8 @@ export default function FinancialDashboard() {
                   </button>
                   <button onClick={handleExportAll} className="btn btn-outline-warning btn-lg px-5 py-3 fw-semibold" style={{
                     borderRadius: '50px',
-                    border: '2px solid #d4af37',
-                    color: '#d4af37',
+                    border: '2px solid #f59e0b',
+                    color: '#f59e0b',
                     fontWeight: '600',
                     textDecoration: 'none',
                     transition: 'all 0.3s ease',
@@ -637,7 +668,7 @@ export default function FinancialDashboard() {
           </div>
 
           <div className="col-xl-3 col-md-6">
-            <div className="card border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #d4af37' }}>
+            <div className="card border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #f59e0b' }}>
               <div className="card-body">
                 <div className="d-flex align-items-center">
                   <div className="flex-shrink-0">
@@ -852,15 +883,15 @@ export default function FinancialDashboard() {
         <style>
           {`
             .nav-pills .nav-link.active {
-              background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%) !important;
+              background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
               color: #fff !important;
               border-radius: 8px;
             }
             .nav-pills .nav-link {
-              color: #d4af37;
+              color: #f59e0b;
             }
             .nav-pills .nav-link:hover {
-              color: #f4d03f;
+              color: #f59e0b;
             }
           `}
         </style>
@@ -1112,14 +1143,14 @@ export default function FinancialDashboard() {
                         name: d.dashboardName
                       }))}>
                         <CartesianGrid />
-                        <XAxis 
-                          type="number" 
-                          scale="time" 
+                        <XAxis
+                          type="number"
+                          scale="time"
                           domain={['dataMin', 'dataMax']}
                           tickFormatter={(tickItem) => new Date(tickItem).toLocaleDateString()}
                         />
                         <YAxis type="number" dataKey="y" />
-                        <Tooltip 
+                        <Tooltip
                           labelFormatter={(value) => new Date(value).toLocaleDateString()}
                           formatter={(value) => [`${value.toLocaleString()}`, 'Value']}
                         />
@@ -1373,14 +1404,14 @@ export default function FinancialDashboard() {
                               </td>
                               <td className="text-center">
                                 <span className={`badge fs-6 ${dashboard.status === 'Active' ? 'bg-success' :
-                                    dashboard.status === 'Inactive' ? 'bg-danger' : 'bg-secondary'
+                                  dashboard.status === 'Inactive' ? 'bg-danger' : 'bg-secondary'
                                   }`}>
                                   {dashboard.status || 'Unknown'}
                                 </span>
                               </td>
                               <td className="text-center">
                                 <span className={`fw-bold ${(dashboard.financialSummary?.grandTotal || 0) > 50000 ? 'text-success' :
-                                    (dashboard.financialSummary?.grandTotal || 0) > 10000 ? 'text-warning' : 'text-muted'
+                                  (dashboard.financialSummary?.grandTotal || 0) > 10000 ? 'text-warning' : 'text-muted'
                                   }`}>
                                   {formatCurrency(dashboard.financialSummary?.grandTotal || 0)}
                                 </span>
@@ -1847,24 +1878,33 @@ export default function FinancialDashboard() {
                     >
                       Close
                     </button>
-
                     <button
                       type="button"
                       className="btn rounded-pill px-4 py-2 fw-semibold"
                       style={{
-                        background: 'linear-gradient(135d, #f59e0b 0%, #d97706 100%)',
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                         border: 'none',
                         color: '#ffffff',
                         boxShadow: '0 4px 15px rgba(245, 158, 11, 0.4)',
                         transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 6px 20px rgba(245, 158, 11, 0.6)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 15px rgba(245, 158, 11, 0.4)';
                       }}
                       onClick={() => {
                         setShowDetailModal(false);
                         navigate(`/financial-dashboard/${selectedDashboardDetail._id}`);
                       }}
                     >
+                      <i className="fas fa-chart-line me-2"></i>
                       Edit Dashboard
                     </button>
+
                   </div>
                 </div>
 
@@ -1876,7 +1916,7 @@ export default function FinancialDashboard() {
         {/* Calculation Modal */}
         {showCalculationModal && (
           <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-dialog modal-xl modal-dialog-centered">
               <div className="modal-content border-0 shadow-xl" style={{
                 borderRadius: '24px',
                 overflow: 'hidden',
@@ -1900,123 +1940,501 @@ export default function FinancialDashboard() {
                     </div>
                     <div className="w-100 text-center">
                       <h2 className="h3 fw-bold mb-1" style={{ color: "#111827" }}>
-                        Financial Calculator
+                        Advanced Financial Calculator
                       </h2>
                       <p className="text-muted mb-0" style={{ fontSize: "0.95rem" }}>
-                        Create comprehensive financial analysis dashboard
+                        Create comprehensive financial analysis dashboard with advanced filters and metrics
                       </p>
                     </div>
                   </div>
                   <button type="button" className="btn-close" onClick={() => setShowCalculationModal(false)}></button>
                 </div>
                 <form onSubmit={(e) => { e.preventDefault(); handleCalculateNewDashboard(); }}>
-                  <div className="modal-body p-5">
-                    {/* Dashboard Name */}
-                    <div className="mb-4">
-                      <label className="form-label fw-bold">Dashboard Name</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="e.g., Q3 Financial Analysis"
-                        value={dashboardName}
-                        onChange={(e) => setDashboardName(e.target.value)}
-                        required
-                        style={{
-                          borderRadius: '16px',
-                          backgroundColor: '#fdfcfb',
-                          padding: '1rem 1.25rem',
-                          border: '1px solid #e5e7eb'
-                        }}
-                      />
-                    </div>
+                  <div className="modal-body p-5 pt-0">
+                    <ul className="nav nav-tabs nav-tabs-custom mb-4" role="tablist">
+                      <li className="nav-item" role="presentation">
+                        <button
+                          className="nav-link active"
+                          id="basic-tab"
+                          data-bs-toggle="tab"
+                          data-bs-target="#basic"
+                          type="button"
+                          role="tab"
+                          aria-controls="basic"
+                          aria-selected="true"
+                        >
+                          Basic Settings
+                        </button>
+                      </li>
+                      <li className="nav-item" role="presentation">
+                        <button
+                          className="nav-link"
+                          id="metrics-tab"
+                          data-bs-toggle="tab"
+                          data-bs-target="#metrics"
+                          type="button"
+                          role="tab"
+                          aria-controls="metrics"
+                          aria-selected="false"
+                        >
+                          Metrics & Charts
+                        </button>
+                      </li>
+                      <li className="nav-item" role="presentation">
+                        <button
+                          className="nav-link"
+                          id="advanced-tab"
+                          data-bs-toggle="tab"
+                          data-bs-target="#advanced"
+                          type="button"
+                          role="tab"
+                          aria-controls="advanced"
+                          aria-selected="false"
+                        >
+                          Advanced Filters
+                        </button>
+                      </li>
+                    </ul>
 
-                    {/* Project Selection */}
-                    <div className="mb-4">
-                      <label className="form-label fw-bold">Select Projects ({availableProjects.length} available)</label>
-                      <select
-                        multiple
-                        className="form-control"
-                        value={selectedProjects}
-                        onChange={(e) => setSelectedProjects(Array.from(e.target.selectedOptions, option => option.value))}
-                        style={{
-                          borderRadius: '16px',
-                          backgroundColor: '#fdfcfb',
-                          padding: '1rem',
-                          border: '1px solid #e5e7eb',
-                          height: '120px'
-                        }}
-                      >
-                        {availableProjects.length > 0 ? availableProjects.map(project => (
-                          <option key={project.code || project.id} value={project.code || project.id}>
-                            {project.name}
-                          </option>
-                        )) : (
-                          <option disabled>No projects loaded</option>
-                        )}
-                      </select>
-                      <small className="form-text text-muted mt-1">
-                        Hold Ctrl/Cmd to select multiple. Leave empty for all projects.
-                      </small>
-                    </div>
+                    <div className="tab-content">
+                      {/* Basic Settings Tab */}
+                      <div className="tab-pane fade show active" id="basic" role="tabpanel">
+                        {/* Dashboard Name */}
+                        <div className="mb-4">
+                          <label className="form-label fw-bold">Dashboard Name</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="e.g., Q3 Financial Analysis"
+                            value={dashboardName}
+                            onChange={(e) => setDashboardName(e.target.value)}
+                            required
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb'
+                            }}
+                          />
+                        </div>
 
-                    {/* Date Range */}
-                    <div className="row g-3 mb-4">
-                      <div className="col-md-6">
-                        <label className="form-label fw-bold">From Date</label>
-                        <input
-                          type="date"
-                          className="form-control"
-                          value={dateFrom}
-                          onChange={(e) => setDateFrom(e.target.value)}
-                          style={{
-                            borderRadius: '16px',
-                            backgroundColor: '#fdfcfb',
-                            padding: '1rem 1.25rem',
-                            border: '1px solid #e5e7eb'
-                          }}
-                        />
+                        {/* Project Selection */}
+                        <div className="mb-4">
+                          <label className="form-label fw-bold d-flex align-items-center">
+                            Select Projects ({availableProjects.length} available)
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-info ms-auto"
+                              onClick={() => setSelectedProjects(availableProjects.map(p => p.code || p.id))}
+                            >
+                              Select All
+                            </button>
+                          </label>
+                          <select
+                            multiple
+                            className="form-control"
+                            value={selectedProjects}
+                            onChange={(e) => setSelectedProjects(Array.from(e.target.selectedOptions, option => option.value))}
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem',
+                              border: '1px solid #e5e7eb',
+                              height: '150px'
+                            }}
+                          >
+                            {availableProjects.length > 0 ? availableProjects.map(project => (
+                              <option key={project.code || project.id} value={project.code || project.id}>
+                                {project.name} ({project.code || project.id})
+                              </option>
+                            )) : (
+                              <option disabled>No projects loaded</option>
+                            )}
+                          </select>
+                          <small className="form-text text-muted mt-1">
+                            Hold Ctrl/Cmd to select multiple. Leave empty for all projects. Selected: {selectedProjects.length}
+                          </small>
+                        </div>
+
+                        {/* Date Range */}
+                        <div className="row g-3 mb-4">
+                          <div className="col-md-6">
+                            <label className="form-label fw-bold">From Date</label>
+                            <input
+                              type="date"
+                              className="form-control"
+                              value={dateFrom}
+                              onChange={(e) => setDateFrom(e.target.value)}
+                              style={{
+                                borderRadius: '16px',
+                                backgroundColor: '#fdfcfb',
+                                padding: '1rem 1.25rem',
+                                border: '1px solid #e5e7eb'
+                              }}
+                            />
+                          </div>
+                          <div className="col-md-6">
+                            <label className="form-label fw-bold">To Date</label>
+                            <input
+                              type="date"
+                              className="form-control"
+                              value={dateTo}
+                              onChange={(e) => setDateTo(e.target.value)}
+                              style={{
+                                borderRadius: '16px',
+                                backgroundColor: '#fdfcfb',
+                                padding: '1rem 1.25rem',
+                                border: '1px solid #e5e7eb'
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Quick Date Presets */}
+                        <div className="d-flex gap-2 mb-4 flex-wrap">
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={() => {
+                              const today = new Date();
+                              setDateFrom(new Date(today.setDate(today.getDate() - 7)).toISOString().split('T')[0]);
+                              setDateTo(new Date().toISOString().split('T')[0]);
+                            }}
+                          >
+                            Last Week
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={() => {
+                              const today = new Date();
+                              setDateFrom(new Date(today.setMonth(today.getMonth() - 1)).toISOString().split('T')[0]);
+                              setDateTo(new Date().toISOString().split('T')[0]);
+                            }}
+                          >
+                            Last Month
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={() => {
+                              const today = new Date();
+                              setDateFrom(new Date(today.setMonth(today.getMonth() - 3)).toISOString().split('T')[0]);
+                              setDateTo(new Date().toISOString().split('T')[0]);
+                            }}
+                          >
+                            Last Quarter
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={() => {
+                              setDateFrom('');
+                              setDateTo('');
+                            }}
+                          >
+                            Clear Dates
+                          </button>
+                        </div>
                       </div>
-                      <div className="col-md-6">
-                        <label className="form-label fw-bold">To Date</label>
-                        <input
-                          type="date"
-                          className="form-control"
-                          value={dateTo}
-                          onChange={(e) => setDateTo(e.target.value)}
-                          style={{
-                            borderRadius: '16px',
-                            backgroundColor: '#fdfcfb',
-                            padding: '1rem 1.25rem',
-                            border: '1px solid #e5e7eb'
-                          }}
-                        />
+
+                      {/* Metrics & Charts Tab */}
+                      <div className="tab-pane fade" id="metrics" role="tabpanel">
+                        <div className="mb-4">
+                          <label className="form-label fw-bold">Select Metrics to Include</label>
+                          <div className="row g-3">
+                            <div className="col-md-6">
+                              <div className="form-check">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id="totalCost"
+                                  checked={selectedMetrics.includes('totalCost')}
+                                  onChange={() => toggleMetric('totalCost')}
+                                />
+                                <label className="form-check-label" htmlFor="totalCost">Total Cost</label>
+                              </div>
+                              <div className="form-check">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id="totalHours"
+                                  checked={selectedMetrics.includes('totalHours')}
+                                  onChange={() => toggleMetric('totalHours')}
+                                />
+                                <label className="form-check-label" htmlFor="totalHours">Total Hours</label>
+                              </div>
+                              <div className="form-check">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id="workerCount"
+                                  checked={selectedMetrics.includes('workerCount')}
+                                  onChange={() => toggleMetric('workerCount')}
+                                />
+                                <label className="form-check-label" htmlFor="workerCount">Worker Count</label>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="form-check">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id="engineerCount"
+                                  checked={selectedMetrics.includes('engineerCount')}
+                                  onChange={() => toggleMetric('engineerCount')}
+                                />
+                                <label className="form-check-label" htmlFor="engineerCount">Engineer Count</label>
+                              </div>
+                              <div className="form-check">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id="architectCount"
+                                  checked={selectedMetrics.includes('architectCount')}
+                                  onChange={() => toggleMetric('architectCount')}
+                                />
+                                <label className="form-check-label" htmlFor="architectCount">Architect Count</label>
+                              </div>
+                              <div className="form-check">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id="avgDailyCost"
+                                  checked={selectedMetrics.includes('avgDailyCost')}
+                                  onChange={() => toggleMetric('avgDailyCost')}
+                                />
+                                <label className="form-check-label" htmlFor="avgDailyCost">Avg Daily Cost</label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mb-4">
+                          <label className="form-label fw-bold">Chart Types</label>
+                          <select
+                            multiple
+                            className="form-control"
+                            value={selectedCharts}
+                            onChange={(e) => setSelectedCharts(Array.from(e.target.selectedOptions, option => option.value))}
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem',
+                              border: '1px solid #e5e7eb',
+                              height: '150px'
+                            }}
+                          >
+                            <option value="line">Line Chart (Trends)</option>
+                            <option value="bar">Bar Chart (Comparisons)</option>
+                            <option value="pie">Pie Chart (Distributions)</option>
+                            <option value="area">Area Chart (Cumulative)</option>
+                            <option value="radar">Radar Chart (Multi-Metrics)</option>
+                          </select>
+                          <small className="form-text text-muted mt-1">
+                            Select chart types to include in the dashboard.
+                          </small>
+                        </div>
+
+                        <div className="mb-4">
+                          <label className="form-label fw-bold">Group By</label>
+                          <select
+                            className="form-control"
+                            value={groupBy}
+                            onChange={(e) => setGroupBy(e.target.value)}
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb'
+                            }}
+                          >
+                            <option value="day">Daily</option>
+                            <option value="week">Weekly</option>
+                            <option value="month">Monthly</option>
+                            <option value="project">By Project</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Advanced Filters Tab */}
+                      <div className="tab-pane fade" id="advanced" role="tabpanel">
+                        <div className="row g-3 mb-4">
+                          <div className="col-md-6">
+                            <label className="form-label fw-bold">Min Daily Cost ($)</label>
+                            <input
+                              type="number"
+                              className="form-control"
+                              placeholder="0"
+                              value={minCost}
+                              onChange={(e) => setMinCost(e.target.value)}
+                              style={{
+                                borderRadius: '16px',
+                                backgroundColor: '#fdfcfb',
+                                padding: '1rem 1.25rem',
+                                border: '1px solid #e5e7eb'
+                              }}
+                            />
+                          </div>
+                          <div className="col-md-6">
+                            <label className="form-label fw-bold">Max Daily Cost ($)</label>
+                            <input
+                              type="number"
+                              className="form-control"
+                              placeholder="No limit"
+                              value={maxCost}
+                              onChange={(e) => setMaxCost(e.target.value)}
+                              style={{
+                                borderRadius: '16px',
+                                backgroundColor: '#fdfcfb',
+                                padding: '1rem 1.25rem',
+                                border: '1px solid #e5e7eb'
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="row g-3 mb-4">
+                          <div className="col-md-6">
+                            <label className="form-label fw-bold">Min Hours</label>
+                            <input
+                              type="number"
+                              className="form-control"
+                              placeholder="0"
+                              value={minHours}
+                              onChange={(e) => setMinHours(e.target.value)}
+                              style={{
+                                borderRadius: '16px',
+                                backgroundColor: '#fdfcfb',
+                                padding: '1rem 1.25rem',
+                                border: '1px solid #e5e7eb'
+                              }}
+                            />
+                          </div>
+                          <div className="col-md-6">
+                            <label className="form-label fw-bold">Max Hours</label>
+                            <input
+                              type="number"
+                              className="form-control"
+                              placeholder="No limit"
+                              value={maxHours}
+                              onChange={(e) => setMaxHours(e.target.value)}
+                              style={{
+                                borderRadius: '16px',
+                                backgroundColor: '#fdfcfb',
+                                padding: '1rem 1.25rem',
+                                border: '1px solid #e5e7eb'
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mb-4">
+                          <label className="form-label fw-bold">Include Notes</label>
+                          <select
+                            className="form-control"
+                            value={includeNotes}
+                            onChange={(e) => setIncludeNotes(e.target.value)}
+                            style={{
+                              borderRadius: '16px',
+                              backgroundColor: '#fdfcfb',
+                              padding: '1rem 1.25rem',
+                              border: '1px solid #e5e7eb'
+                            }}
+                          >
+                            <option value="all">All Timelines</option>
+                            <option value="withNotes">Only with Notes</option>
+                            <option value="withoutNotes">Only without Notes</option>
+                          </select>
+                        </div>
+
+                        <div className="form-check mb-4">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="includeForecast"
+                            checked={includeForecast}
+                            onChange={(e) => setIncludeForecast(e.target.checked)}
+                          />
+                          <label className="form-check-label" htmlFor="includeForecast">
+                            Include AI-Powered Forecast (Beta)
+                          </label>
+                          <small className="form-text text-muted">
+                            Generate projections based on historical data
+                          </small>
+                        </div>
+
+                        <div className="form-check mb-4">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="emailReport"
+                            checked={emailReport}
+                            onChange={(e) => setEmailReport(e.target.checked)}
+                          />
+                          <label className="form-check-label" htmlFor="emailReport">
+                            Send Report via Email
+                          </label>
+                          {emailReport && (
+                            <input
+                              type="email"
+                              className="form-control mt-2"
+                              placeholder="Enter email address"
+                              value={emailAddress}
+                              onChange={(e) => setEmailAddress(e.target.value)}
+                              required={emailReport}
+                              style={{
+                                borderRadius: '16px',
+                                backgroundColor: '#fdfcfb',
+                                padding: '1rem 1.25rem',
+                                border: '1px solid #e5e7eb'
+                              }}
+                            />
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="modal-footer border-0" style={{
                     background: 'linear-gradient(135deg, rgba(248,249,250,0.9) 0%, rgba(255,255,255,0.9) 100%)',
                     padding: '2rem'
                   }}>
                     <div className="d-flex gap-3 ms-auto">
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className="btn btn-outline-secondary btn-lg"
                         onClick={() => setShowCalculationModal(false)}
                         style={{
-                          borderRadius: '50px', 
+                          borderRadius: '50px',
                           padding: '12px 25px'
                         }}
                       >
                         Cancel
                       </button>
-                      
-                      <button 
-                        type="submit" 
+
+                      <button
+                        type="button"
+                        className="btn btn-outline-warning btn-lg"
+                        onClick={handlePreviewDashboard}
+                        disabled={calculatingNew || !dashboardName.trim()}
+                        style={{
+                          borderRadius: '50px',
+                          padding: '12px 25px',
+                          borderColor: '#d4af37',
+                          color: '#d4af37'
+                        }}
+                      >
+                        <BsEye className="me-2" />
+                        Preview
+                      </button>
+
+                      <button
+                        type="submit"
                         className="btn btn-warning btn-lg shadow-lg"
                         disabled={calculatingNew || !dashboardName.trim()}
                         style={{
-                          borderRadius: '50px', 
+                          borderRadius: '50px',
                           padding: '12px 30px',
                           background: 'linear-gradient(45deg, #d4af37, #f4d03f)',
                           border: 'none',
@@ -2042,7 +2460,6 @@ export default function FinancialDashboard() {
             </div>
           </div>
         )}
-
         {/* Modern Footer */}
         <div className="mt-5 py-4 border-top bg-light">
           <div className="text-center">

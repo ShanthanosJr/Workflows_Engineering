@@ -64,6 +64,10 @@ export default function ProjectsDisplay() {
   const [sortDirection, setSortDirection] = useState("desc");
   const [viewMode, setViewMode] = useState("overview");
 
+  // Add these state variables after your existing useState declarations
+  const [selectedProjectDetail, setSelectedProjectDetail] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -168,6 +172,22 @@ export default function ProjectsDisplay() {
       return 0;
     });
   };
+
+  // Function to open project detail modal
+  const openProjectDetailModal = (project) => {
+    setSelectedProjectDetail(project);
+    setShowDetailModal(true);
+  };
+
+  // Function to format currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0
+    }).format(amount || 0);
+  };
+
 
   // Calculate statistics
   const statistics = useMemo(() => {
@@ -395,7 +415,7 @@ export default function ProjectsDisplay() {
                     boxShadow: '0 4px 20px rgba(212, 175, 55, 0.4)',
                     transition: 'all 0.3s ease'
                   }}>
-                    <BsBuilding className="me-2" />Forge Analytics
+                    <BsBuilding className="me-2" />Forge New Project
                   </button>
                   <button onClick={handleExportAll} className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
                     borderRadius: '50px',
@@ -406,7 +426,7 @@ export default function ProjectsDisplay() {
                     transition: 'all 0.3s ease',
                     boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)'
                   }}>
-                    <BsBuilding className="me-2"/>Export to PDF
+                    <BsBuilding className="me-2" />Export to PDF
                   </button>
                 </div>
               </div>
@@ -655,8 +675,8 @@ export default function ProjectsDisplay() {
                           className={`progress-bar bg-${getStatusColor(project.pstatus)}`}
                           style={{
                             width: `${project.pstatus === 'Completed' ? 100 :
-                                project.pstatus === 'In Progress' ? 65 :
-                                  project.pstatus === 'On Hold' ? 35 : 0
+                              project.pstatus === 'In Progress' ? 65 :
+                                project.pstatus === 'On Hold' ? 35 : 0
                               }%`
                           }}
                         ></div>
@@ -905,7 +925,7 @@ export default function ProjectsDisplay() {
                         <div className="btn-group btn-group-sm">
                           <button
                             className="btn btn-outline-primary"
-                            onClick={() => navigate(`/project-view/${project._id}`)}
+                            onClick={() => openProjectDetailModal(project)}
                             title="View Details"
                           >
                             <BsEye />
@@ -1039,7 +1059,10 @@ export default function ProjectsDisplay() {
                           <div className="btn-group btn-group-sm">
                             <button
                               className="btn btn-outline-primary"
-                              onClick={() => navigate(`/project-view/${project._id}`)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openProjectDetailModal(project);
+                              }}
                               title="View Details"
                             >
                               <BsEye />
@@ -1071,6 +1094,564 @@ export default function ProjectsDisplay() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Enhanced Premium Project Modal */}
+        {showDetailModal && selectedProjectDetail && (
+          <div
+            className="modal fade show d-block"
+            style={{
+              backgroundColor: 'rgba(15, 23, 42, 0.75)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 1055
+            }}
+          >
+            <div className="modal-dialog modal-xl modal-dialog-centered">
+              <div
+                className="modal-content border-0 shadow-2xl"
+                style={{
+                  borderRadius: '32px',
+                  background: 'linear-gradient(145deg, #ffffff 0%, #fefefe 100%)',
+                  boxShadow: '0 25px 80px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+                  overflow: 'hidden'
+                }}
+              >
+                {/* Premium Header with Green Gradient */}
+                <div
+                  className="modal-header border-0 position-relative"
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
+                    padding: '2rem 2.5rem 1.5rem',
+                    color: '#ffffff'
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundImage: 'radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%)',
+                      pointerEvents: 'none'
+                    }}
+                  ></div>
+
+                  <div className="d-flex align-items-center position-relative">
+                    <div
+                      className="me-4 d-flex align-items-center justify-content-center"
+                      style={{
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '20px',
+                        background: 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
+                        boxShadow: '0 8px 25px rgba(16, 185, 129, 0.4)'
+                      }}
+                    >
+                      <BsBuilding className="text-white fs-3" />
+                    </div>
+                    <div className="flex-grow-1">
+                      <h3 className="modal-title fw-bold mb-2 text-white">
+                        Project Chronicle
+                      </h3>
+                      <p className="mb-0 text-white-75 fs-5">
+                        {new Date(selectedProjectDetail.pcreatedat).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Project Code Badge */}
+                  <div className="mt-3 position-absolute top-0 end-0" style={{ marginTop: "50px", marginRight: "30px" }}>
+                    <span
+                      className="badge px-4 py-2 fw-semibold"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        color: '#ffffff',
+                        borderRadius: '100px',
+                        fontSize: '0.9rem',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                      }}
+                    >
+                      Project Code: {selectedProjectDetail.pcode}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Premium Body */}
+                <div className="modal-body" style={{ padding: '2.5rem' }}>
+
+                  {/* Key Metrics Dashboard */}
+                  <div className="row g-4 mb-5">
+                    <div className="col-12">
+                      <h5 className="fw-bold mb-4 d-flex align-items-center" style={{ color: '#1f2937' }}>
+                        <BsGraphUp className="me-3 text-success" />
+                        Project Metrics
+                      </h5>
+                    </div>
+
+                    <div className="col-lg-3 col-md-6">
+                      <div
+                        className="card h-100 border-0 shadow-sm"
+                        style={{
+                          borderRadius: '20px',
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          transform: 'translateY(0)',
+                          transition: 'transform 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        <div className="card-body text-center p-4">
+                          <div
+                            className="mb-3 d-inline-flex align-items-center justify-content-center"
+                            style={{
+                              width: '48px',
+                              height: '48px',
+                              borderRadius: '16px',
+                              background: 'rgba(255, 255, 255, 0.2)',
+                              backdropFilter: 'blur(10px)'
+                            }}
+                          >
+                            <BsCurrencyDollar className="text-black fs-4" />
+                          </div>
+                          <h2 className="fw-bold text-black mb-1">
+                            {formatCurrency(selectedProjectDetail.pbudget || 0)}
+                          </h2>
+                          <p className="text-black-75 mb-0 fw-medium">Project Budget</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-lg-3 col-md-6">
+                      <div
+                        className="card h-100 border-0 shadow-sm"
+                        style={{
+                          borderRadius: '20px',
+                          background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                          transform: 'translateY(0)',
+                          transition: 'transform 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        <div className="card-body text-center p-4">
+                          <div
+                            className="mb-3 d-inline-flex align-items-center justify-content-center"
+                            style={{
+                              width: '48px',
+                              height: '48px',
+                              borderRadius: '16px',
+                              background: 'rgba(255, 255, 255, 0.2)',
+                              backdropFilter: 'blur(10px)'
+                            }}
+                          >
+                            <BsCheckCircle className="text-black fs-4" />
+                          </div>
+                          <h2 className="fw-bold text-black mb-1">{selectedProjectDetail.pstatus || 'Unknown'}</h2>
+                          <p className="text-black-75 mb-0 fw-medium">Current Status</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-lg-3 col-md-6">
+                      <div
+                        className="card h-100 border-0 shadow-sm"
+                        style={{
+                          borderRadius: '20px',
+                          background: 'linear-gradient(135deg, #047857 0%, #065f46 100%)',
+                          transform: 'translateY(0)',
+                          transition: 'transform 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        <div className="card-body text-center p-4">
+                          <div
+                            className="mb-3 d-inline-flex align-items-center justify-content-center"
+                            style={{
+                              width: '48px',
+                              height: '48px',
+                              borderRadius: '16px',
+                              background: 'rgba(255, 255, 255, 0.2)',
+                              backdropFilter: 'blur(10px)'
+                            }}
+                          >
+                            <BsCalendar className="text-black fs-4" />
+                          </div>
+                          <h2 className="fw-bold text-black mb-1">
+                            {new Date(selectedProjectDetail.pcreatedat).toLocaleDateString()}
+                          </h2>
+                          <p className="text-black-75 mb-0 fw-medium">Start Date</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-lg-3 col-md-6">
+                      <div
+                        className="card h-100 border-0 shadow-sm"
+                        style={{
+                          borderRadius: '20px',
+                          background: 'linear-gradient(135deg, #065f46 0%, #064e3b 100%)',
+                          transform: 'translateY(0)',
+                          transition: 'transform 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        <div className="card-body text-center p-4">
+                          <div
+                            className="mb-3 d-inline-flex align-items-center justify-content-center"
+                            style={{
+                              width: '48px',
+                              height: '48px',
+                              borderRadius: '16px',
+                              background: 'rgba(255, 255, 255, 0.2)',
+                              backdropFilter: 'blur(10px)'
+                            }}
+                          >
+                            <BsActivity className="text-black fs-4" />
+                          </div>
+                          <h2 className="fw-bold text-black mb-1">
+                            {selectedProjectDetail.ppriority || 'Medium'}
+                          </h2>
+                          <p className="text-black-75 mb-0 fw-medium">Priority Level</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Project Information */}
+                  <div className="row g-4 mb-5">
+                    <div className="col-lg-8">
+                      <div
+                        className="card border-0 shadow-sm h-100"
+                        style={{
+                          borderRadius: '24px',
+                          background: 'linear-gradient(145deg, #ffffff 0%, #fafafa 100%)',
+                          border: '1px solid rgba(0, 0, 0, 0.05)'
+                        }}
+                      >
+                        <div className="card-body p-4">
+                          <h6 className="fw-bold mb-4 d-flex align-items-center" style={{ color: '#374151' }}>
+                            <BsBuilding className="me-3 text-success" />
+                            Project Intelligence
+                          </h6>
+
+                          <div className="row g-4">
+                            <div className="col-md-6">
+                              <div className="border-start border-4 border-success ps-3">
+                                <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.75rem' }}>Project Name</small>
+                                <p className="fw-bold mb-0 mt-1" style={{ color: '#1f2937' }}>
+                                  {selectedProjectDetail.pname || 'Unknown Project'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="border-start border-4 border-info ps-3">
+                                <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.75rem' }}>Project Code</small>
+                                <p className="fw-bold mb-0 mt-1" style={{ color: '#1f2937' }}>
+                                  {selectedProjectDetail.pcode || 'N/A'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="border-start border-4 border-warning ps-3">
+                                <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.75rem' }}>Project Type</small>
+                                <p className="fw-bold mb-0 mt-1" style={{ color: '#1f2937' }}>
+                                  {selectedProjectDetail.ptype || 'N/A'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="border-start border-4 border-danger ps-3">
+                                <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.75rem' }}>Location</small>
+                                <p className="fw-bold mb-0 mt-1" style={{ color: '#1f2937' }}>
+                                  {selectedProjectDetail.plocation || 'N/A'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="border-start border-4 border-primary ps-3">
+                                <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.75rem' }}>End Date</small>
+                                <p className="fw-bold mb-0 mt-1" style={{ color: '#1f2937' }}>
+                                  {selectedProjectDetail.penddate ? new Date(selectedProjectDetail.penddate).toLocaleDateString() : 'Not set'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="border-start border-4 border-secondary ps-3">
+                                <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.75rem' }}>Project Owner</small>
+                                <p className="fw-bold mb-0 mt-1" style={{ color: '#1f2937' }}>
+                                  {selectedProjectDetail.pownername || 'Not specified'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Project Summary */}
+                    <div className="col-lg-4">
+                      <div
+                        className="card border-0 shadow-sm h-100"
+                        style={{
+                          borderRadius: '24px',
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          color: '#ffffff'
+                        }}
+                      >
+                        <div className="card-body p-4 text-center">
+                          <div
+                            className="mb-3 mx-auto d-inline-flex align-items-center justify-content-center"
+                            style={{
+                              width: '56px',
+                              height: '56px',
+                              borderRadius: '18px',
+                              background: 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
+                              boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)'
+                            }}
+                          >
+                            <BsCurrencyDollar className="text-white fs-3" />
+                          </div>
+                          <h6 className="fw-bold mb-3 text-black-75">Total Investment</h6>
+                          <h2 className="fw-bold text-black mb-2">
+                            {formatCurrency(selectedProjectDetail.pbudget || 0)}
+                          </h2>
+                          <p className="text-black-50 mb-0 small">
+                            Allocated budget for this construction project
+                          </p>
+
+                          {/* Additional Project Details */}
+                          <div className="mt-3 pt-3 border-top border-white border-opacity-25">
+                            <div className="row text-center">
+                              <div className="col-6">
+                                <small className="text-black-75 d-block">Type</small>
+                                <strong className="text-black">
+                                  {selectedProjectDetail.ptype || 'Standard'}
+                                </strong>
+                              </div>
+                              <div className="col-6">
+                                <small className="text-black-75 d-block">Priority</small>
+                                <strong className="text-black">
+                                  {selectedProjectDetail.ppriority || 'Medium'}
+                                </strong>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Project Description */}
+                  {selectedProjectDetail.pdescription && (
+                    <div className="mb-4">
+                      <div
+                        className="card border-0 shadow-sm"
+                        style={{
+                          borderRadius: '24px',
+                          background: 'linear-gradient(145deg, #f0fdf4 0%, #dcfce7 100%)',
+                          border: '1px solid rgba(16, 185, 129, 0.2)'
+                        }}
+                      >
+                        <div className="card-body p-4">
+                          <h6 className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#065f46' }}>
+                            <BsPencil className="me-3" />
+                            Project Description
+                          </h6>
+                          <div
+                            className="p-4 rounded-3"
+                            style={{
+                              background: 'rgba(255, 255, 255, 0.7)',
+                              border: '1px solid rgba(16, 185, 129, 0.1)',
+                              fontStyle: 'italic',
+                              lineHeight: '1.6'
+                            }}
+                          >
+                            <p className="mb-0" style={{ color: '#064e3b' }}>
+                              "{selectedProjectDetail.pdescription}"
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Project Observations */}
+                  {selectedProjectDetail.pobservations && (
+                    <div className="mb-4">
+                      <div
+                        className="card border-0 shadow-sm"
+                        style={{
+                          borderRadius: '24px',
+                          background: 'linear-gradient(145deg, #fef3c7 0%, #fde68a 100%)',
+                          border: '1px solid rgba(245, 158, 11, 0.2)'
+                        }}
+                      >
+                        <div className="card-body p-4">
+                          <h6 className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#92400e' }}>
+                            <BsExclamationTriangle className="me-3" />
+                            Observations & Notes
+                          </h6>
+                          <div
+                            className="p-4 rounded-3"
+                            style={{
+                              background: 'rgba(255, 255, 255, 0.7)',
+                              border: '1px solid rgba(245, 158, 11, 0.1)',
+                              fontStyle: 'italic',
+                              lineHeight: '1.6'
+                            }}
+                          >
+                            <p className="mb-0" style={{ color: '#78350f' }}>
+                              "{selectedProjectDetail.pobservations}"
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Project Issues */}
+                  {selectedProjectDetail.pissues && selectedProjectDetail.pissues.length > 0 && (
+                    <div className="mb-4">
+                      <div
+                        className="card border-0 shadow-sm"
+                        style={{
+                          borderRadius: '24px',
+                          background: 'linear-gradient(145deg, #fef2f2 0%, #fee2e2 100%)',
+                          border: '1px solid rgba(239, 68, 68, 0.2)'
+                        }}
+                      >
+                        <div className="card-body p-4">
+                          <h6 className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#991b1b' }}>
+                            <BsExclamationTriangle className="me-3" />
+                            Project Issues ({selectedProjectDetail.pissues.length})
+                          </h6>
+                          <div className="row g-2">
+                            {selectedProjectDetail.pissues.slice(0, 4).map((issue, index) => (
+                              <div key={index} className="col-md-6">
+                                <div
+                                  className="p-3 rounded-3"
+                                  style={{
+                                    background: 'rgba(255, 255, 255, 0.7)',
+                                    border: '1px solid rgba(239, 68, 68, 0.1)'
+                                  }}
+                                >
+                                  <small className="text-danger fw-semibold">Issue {index + 1}</small>
+                                  <p className="mb-0 small" style={{ color: '#7f1d1d' }}>
+                                    {typeof issue === 'string' ? issue : issue.description || 'Issue description'}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                            {selectedProjectDetail.pissues.length > 4 && (
+                              <div className="col-12">
+                                <small className="text-muted">
+                                  +{selectedProjectDetail.pissues.length - 4} more issues...
+                                </small>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Premium Footer */}
+                <div
+                  className="modal-footer border-0 d-flex justify-content-between align-items-center"
+                  style={{
+                    padding: '1.5rem 2.5rem 2rem',
+                    background: 'linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%)'
+                  }}
+                >
+                  <div className="text-muted small">
+                    <BsActivity className="me-2" />
+                    Created: {new Date(selectedProjectDetail.pcreatedat).toLocaleDateString()}
+                  </div>
+
+                  <div className="d-flex gap-3">
+                    <button
+                      type="button"
+                      className="btn btn-light border-0 rounded-pill px-4 py-2 fw-semibold"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.8)',
+                        backdropFilter: 'blur(10px)',
+                        color: '#6b7280',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onClick={() => setShowDetailModal(false)}
+                    >
+                      Close
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn rounded-pill px-4 py-2 fw-semibold"
+                      style={{
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        border: 'none',
+                        color: '#ffffff',
+                        boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.6)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.4)';
+                      }}
+                      onClick={() => {
+                        setShowDetailModal(false);
+                        navigate(`/projects/${selectedProjectDetail._id}`);
+                      }}
+                    >
+                      <BsPencil className="me-2" />
+                      Edit Project
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn rounded-pill px-4 py-2 fw-semibold"
+                      style={{
+                        background: 'linear-gradient(135deg, #047857 0%, #065f46 100%)',
+                        border: 'none',
+                        color: '#ffffff',
+                        boxShadow: '0 4px 15px rgba(4, 120, 87, 0.4)',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 6px 20px rgba(4, 120, 87, 0.6)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 15px rgba(4, 120, 87, 0.4)';
+                      }}
+                      onClick={() => {
+                        setShowDetailModal(false);
+                        navigate(`/project-view/${selectedProjectDetail._id}`);
+                      }}
+                    >
+                      <BsEye className="me-2" />
+                      See More
+                    </button>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>

@@ -156,10 +156,11 @@ export default function FinancialDashboardView() {
   };
 
   const statistics = dashboard ? {
-    totalCost: dashboard.totalCost || 0,
-    avgDailyCost: dashboard.avgDailyCost || 0,
-    totalHours: dashboard.totalHours || 0,
-    projectCount: dashboard.projectCount || 0
+    totalCost: dashboard.financialSummary?.grandTotal || 0,
+    avgDailyCost: dashboard.financialSummary?.grandTotal && dashboard.financialSummary?.timelineEntries ? 
+                 dashboard.financialSummary.grandTotal / dashboard.financialSummary.timelineEntries : 0,
+    totalHours: dashboard.laborAnalytics?.totalLaborHours || 0,
+    projectCount: dashboard.financialSummary?.projectCount || 0
   } : {
     totalCost: 0,
     avgDailyCost: 0,
@@ -178,7 +179,14 @@ export default function FinancialDashboardView() {
 
   const getProjectBreakdown = () => {
     if (!dashboard?.projectBreakdown) return [];
-    return dashboard.projectBreakdown;
+    return dashboard.projectBreakdown.map(project => ({
+      ...project,
+      totalCost: project.totalCost || 0,
+      laborCost: project.laborCost || 0,
+      materialCost: project.materialCost || 0,
+      toolCost: project.toolCost || 0,
+      expenses: project.expenses || 0
+    }));
   };
 
   if (loading) {
@@ -484,19 +492,12 @@ export default function FinancialDashboardView() {
                 <ul className="nav nav-pills">
                   <li className="nav-item">
                     <button
-                      className={`nav-link`}
+                      className={`nav-link ${viewMode === 'overview' ? 'active' : ''}`}
                       onClick={() => setViewMode('overview')}
-                      style={{
-                        background: viewMode === 'overview' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'transparent',
-                        color: viewMode === 'overview' ? '#fff' : '#f59e0b',
-                        borderRadius: '8px',
-                        transition: 'all 0.25s ease'
-                      }}
                     >
                       <BsActivity className="me-2" />
                       Overview
                     </button>
-
                   </li>
                   <li className="nav-item">
                     <button
@@ -719,28 +720,5 @@ export default function FinancialDashboardView() {
   .nav-pills .nav-link:hover {
     color: #d97706;
   }
-    .btn-primary {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-  border: none !important;
-  color: #fff !important;
-}
-
-.btn-primary:hover,
-.btn-primary:focus {
-  filter: brightness(1.1);
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4) !important; /* orange glow */
-}
-
-.btn-outline-primary {
-  background: transparent !important;
-  border: 2px solid #d97706 !important;
-  color: #d97706 !important;
-}
-
-.btn-outline-primary:hover,
-.btn-outline-primary:focus {
-  background: rgba(245, 158, 11, 0.1) !important; /* subtle orange fill */
-}
-
 `}
 </style>

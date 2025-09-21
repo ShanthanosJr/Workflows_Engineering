@@ -531,7 +531,7 @@ export default function ProjectTimelines() {
                     boxShadow: '0 4px 20px rgba(239, 68, 68, 0.4)',
                     transition: 'all 0.3s ease'
                   }}>
-                    <BsCalendar className="me-2" />Add New Timeline
+                    <BsCalendar className="me-2" />Forge New Timeline
                   </button>
                   <button onClick={handleExportAll} className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
                     borderRadius: '50px',

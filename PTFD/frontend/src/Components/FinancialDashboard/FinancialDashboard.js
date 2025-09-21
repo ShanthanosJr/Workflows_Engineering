@@ -582,7 +582,7 @@ export default function FinancialDashboard() {
                 }}>
                   Your premium financial management platform. Track monetary flows, analyze performance metrics, and monitor fiscal health across all your enterprise dashboards.</p>
                 <div className="d-flex justify-content-center gap-3 flex-wrap">
-                  <button onClick={() => navigate("/projects")} className="btn btn-outline-warning btn-lg px-5 py-3 fw-semibold" style={{
+                  <button onClick={() => navigate("/projects")} className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
                     borderRadius: '50px',
                     border: '2px solid #f59e0b',
                     color: '#f59e0b',
@@ -593,7 +593,7 @@ export default function FinancialDashboard() {
                   }}>
                     <BsBriefcase className="me-2" />View Projects
                   </button>
-                  <button onClick={() => setShowCalculationModal(true)} className="btn btn-warning btn-lg px-5 py-3 fw-semibold" style={{
+                  <button onClick={() => setShowCalculationModal(true)} className="btn btn-primary btn-lg px-5 py-3 fw-semibold" style={{
                     borderRadius: '50px',
                     background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                     border: 'none',
@@ -602,9 +602,9 @@ export default function FinancialDashboard() {
                     boxShadow: '0 4px 20px rgba(212, 175, 55, 0.4)',
                     transition: 'all 0.3s ease'
                   }}>
-                    <BsCalculator className="me-2" />Create Dashboard
+                    <BsCalculator className="me-2" />Forge New Dashboard
                   </button>
-                  <button onClick={handleExportAll} className="btn btn-outline-warning btn-lg px-5 py-3 fw-semibold" style={{
+                  <button onClick={handleExportAll} className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
                     borderRadius: '50px',
                     border: '2px solid #f59e0b',
                     color: '#f59e0b',

@@ -561,12 +561,12 @@ export default function ProjectsView() {
                       <strong>{project?.ptype || 'Not specified'}</strong>
                     </div>
                     <div className="list-group-item d-flex justify-content-between">
-                      <span><BsCalendar className="me-2 text-muted" />Start Date</span>
+                      <span><BsCalendar className="me-2 text-muted" />Created Date</span>
                       <strong>{project ? formatDate(project.pcreatedat) : 'Not specified'}</strong>
                     </div>
                     <div className="list-group-item d-flex justify-content-between">
-                      <span><BsCalendar className="me-2 text-muted" />End Date</span>
-                      <strong>{project ? formatDate(project.penddate) : 'Not specified'}</strong>
+                      <span><BsCalendar className="me-2 text-muted" />Updated Date</span>
+                      <strong>{project ? formatDate(project.pupdatedat) : 'Not specified'}</strong>
                     </div>
                     <div className="list-group-item d-flex justify-content-between">
                       <span><BsPeople className="me-2 text-muted" />Owner</span>

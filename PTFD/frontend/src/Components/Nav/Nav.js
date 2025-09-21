@@ -76,7 +76,7 @@ export default function Nav() {
             <ul className="nav-menu-list">
               <li className="nav-menu-item">
                 <NavLink
-                  to="/#"
+                  to="/HOME"
                   className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
                   onClick={closeMenu}
                 >
@@ -110,7 +110,7 @@ export default function Nav() {
 
               <li className="nav-menu-item">
                 <NavLink
-                  to="/#"
+                  to="/WSPM"
                   className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
                   onClick={closeMenu}
                 >
@@ -127,7 +127,7 @@ export default function Nav() {
 
               <li className="nav-menu-item">
                 <NavLink
-                  to="/#"
+                  to="/ETM"
                   className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
                   onClick={closeMenu}
                 >
@@ -144,7 +144,7 @@ export default function Nav() {
 
               <li className="nav-menu-item">
                 <NavLink
-                  to="/#"
+                  to="/MISTM"
                   className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
                   onClick={closeMenu}
                 >
@@ -161,7 +161,7 @@ export default function Nav() {
 
               <li className="nav-menu-item">
                 <NavLink
-                  to="/#"
+                  to="/CIM"
                   className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
                   onClick={closeMenu}
                 >

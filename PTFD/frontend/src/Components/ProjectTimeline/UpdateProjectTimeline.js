@@ -104,7 +104,10 @@ export default function UpdateProjectTimeline() {
         tengineer: timeline.tengineer || [],
         tarchitect: timeline.tarchitect || [],
         tprojectManager: timeline.tprojectManager || [],
-        texpenses: timeline.texpenses || [],
+        texpenses: (timeline.texpenses || []).map(expense => ({
+          ...expense,
+          date: expense.date ? expense.date.split('T')[0] : ""
+        })),
         tmaterials: timeline.tmaterials || [],
         ttools: timeline.ttools || [],
         tnotes: timeline.tnotes || ""
@@ -1308,7 +1311,7 @@ export default function UpdateProjectTimeline() {
                             type="button"
                             className="btn btn-outline-danger mb-3"
                             style={{ borderRadius: '20px', fontWeight: '600' }}
-                            onClick={() => addField("texpenses", { description: "", amount: 0, date: "" })}
+                            onClick={() => addField("texpenses", { description: "", amount: 0, date: new Date().toISOString().split('T')[0] })}
                           >
                             <BsPlusCircle className="me-2" /> Ledger Expenditure
                           </button>

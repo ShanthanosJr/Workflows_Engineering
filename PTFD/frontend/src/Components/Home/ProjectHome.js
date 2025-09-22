@@ -102,15 +102,15 @@ const ProjectHome = () => {
 
     // Better video URLs - using more reliable sources
     const videos = {
-      hero: "https://www.pexels.com/download/video/1197801/",
+      hero: "https://www.pexels.com/download/video/2836031/",
       intro: "https://www.pexels.com/download/video/2048246/",
       types: "https://www.pexels.com/download/video/856439/",
       process: "https://www.pexels.com/download/video/2274600/",
       projectShowcase: "https://www.pexels.com/download/video/2274600/",
-      timelineShowcase: "https://www.pexels.com/download/video/7947451/",
+      timelineShowcase: "https://www.pexels.com/download/video/7947389/",
       dashboardShowcase: "https://www.pexels.com/download/video/3752548/",
-      technology: "https://www.pexels.com/download/video/5349085/",
-      growth: "https://www.pexels.com/download/video/5342015/",
+      technology: "https://www.pexels.com/download/video/3960165/",
+      growth: "https://www.pexels.com/download/video/19432715/",
       cta: "https://www.pexels.com/download/video/1817871/",
     };
 
@@ -346,6 +346,7 @@ const PhotoBooth = ({ photos, title }) => {
       </header>
 
       {/* Hero Section with Enhanced Video Background */}
+      <br></br>
       <section
         id="hero"
         className="section hero-section d-flex align-items-center justify-content-center text-center"

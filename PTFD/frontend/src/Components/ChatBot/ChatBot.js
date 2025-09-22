@@ -842,6 +842,18 @@ export default function ChatBot() {
                 </div>
               </div>
             )}
+            {/* Footer Info */}
+            <div className="row mt-5 mb-4">
+              <div className="col-12">
+                <div className="card bg-light border-0">
+                  <div className="card-body text-center py-3">
+                    <small className="text-muted">
+                      Powered by intelligent automation, this chatbot is designed to guide, support, and provide instant answers — <br />available anytime to make your experience faster, easier, and more reliable
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

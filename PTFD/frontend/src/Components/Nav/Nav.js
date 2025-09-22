@@ -266,7 +266,7 @@ export default function Nav() {
 
       {/* Enhanced Styles - All Prefixed to Avoid Global Conflicts */}
       <style jsx global>{`
-        /* Navigation-specific styles - All prefixed with 'nav-' to avoid conflicts */
+        /* Navigation-specific styles - to avoid conflicts */
         
         /* Modern Hamburger Button */
         .nav-hamburger-btn {

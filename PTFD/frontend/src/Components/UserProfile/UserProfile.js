@@ -1,30 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UserProfile.css';
 
 const UserProfile = ({ inSidebar = false }) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState({
+    name: 'Guest User',
+    email: 'guest@example.com',
+    avatar: 'https://cdn-icons-png.flaticon.com/512/4514/4514759.png'
+  });
   
   // Get user data from localStorage or use default
   const getUserData = () => {
     const userData = localStorage.getItem('user');
     if (userData) {
-      const parsedUserData = JSON.parse(userData);
-      // Ensure avatar has a fallback if empty or null
-      return {
-        ...parsedUserData,
-        avatar: parsedUserData.avatar || 'https://courseweb.sliit.lk/pluginfile.php/310596/user/icon/lambda/f1?rev=7824289'
-      };
+      try {
+        const parsedUserData = JSON.parse(userData);
+        // Ensure avatar has a fallback if empty or null
+        let avatar = parsedUserData.avatar || 'https://cdn-icons-png.flaticon.com/512/4514/4514759.png';
+        
+        // Handle relative avatar paths
+        if (avatar && !avatar.startsWith('http') && !avatar.startsWith('data:')) {
+          avatar = `http://localhost:5050${avatar}`;
+        }
+        
+        return {
+          ...parsedUserData,
+          avatar: avatar
+        };
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
     }
     return {
       name: 'Guest User',
       email: 'guest@example.com',
-      avatar: 'https://courseweb.sliit.lk/pluginfile.php/310596/user/icon/lambda/f1?rev=7824289'
+      avatar: 'https://cdn-icons-png.flaticon.com/512/4514/4514759.png'
     };
   };
 
-  const [user] = useState(getUserData);
+  // Update user data when localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setUser(getUserData());
+    };
+
+    // Set initial user data
+    setUser(getUserData());
+
+    // Listen for storage changes
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Cleanup listener
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const toggleProfile = () => {
     setIsOpen(!isOpen);
@@ -34,6 +66,12 @@ const UserProfile = ({ inSidebar = false }) => {
     // Clear user data from localStorage
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    // Update state immediately
+    setUser({
+      name: 'Guest User',
+      email: 'guest@example.com',
+      avatar: 'https://cdn-icons-png.flaticon.com/512/4514/4514759.png'
+    });
     console.log('User signed out');
     setIsOpen(false);
     // Redirect to sign in page
@@ -58,7 +96,7 @@ const UserProfile = ({ inSidebar = false }) => {
           alt="User avatar" 
           className={`user-avatar ${inSidebar ? 'sidebar-avatar' : ''}`}
           onError={(e) => {
-            e.target.src = 'https://courseweb.sliit.lk/pluginfile.php/310596/user/icon/lambda/f1?rev=7824289';
+            e.target.src = 'https://cdn-icons-png.flaticon.com/512/4514/4514759.png';
           }}
         />
         <span className={`user-name ${inSidebar ? 'sidebar-name' : ''}`}>{user.name}</span>
@@ -72,7 +110,7 @@ const UserProfile = ({ inSidebar = false }) => {
               alt="User avatar" 
               className="profile-avatar"
               onError={(e) => {
-                e.target.src = 'https://courseweb.sliit.lk/pluginfile.php/310596/user/icon/lambda/f1?rev=7824289';
+                e.target.src = 'https://cdn-icons-png.flaticon.com/512/4514/4514759.png';
               }}
             />
             <div className="profile-info">

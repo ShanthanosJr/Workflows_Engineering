@@ -137,3 +137,8 @@ yarn.lock
 *.log
 *.tmp
 *.temp
+
+# PTFD specific files to ignore
+ptfd-commit.sh
+PTFD-WORKFLOW-GUIDE.md
+PTFD-WORKFLOW-GUIDE.md

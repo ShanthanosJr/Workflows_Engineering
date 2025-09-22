@@ -140,8 +140,8 @@
   color: #f7df1e;
   text-align: center;
   flex-direction: column;
-  padding-top: 9rem;
-  padding-bottom: 9rem;
+  padding-top: 18rem;
+  padding-bottom: 18rem;
   user-select: none;
   z-index: 10; /* Ensure hero is above video */
 }

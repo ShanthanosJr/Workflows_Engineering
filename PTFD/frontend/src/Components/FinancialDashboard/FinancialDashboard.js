@@ -1902,7 +1902,7 @@ export default function FinancialDashboard() {
                       }}
                     >
                       <i className="fas fa-chart-line me-2"></i>
-                      Edit Dashboard
+                      See More
                     </button>
 
                   </div>

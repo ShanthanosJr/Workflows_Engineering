@@ -129,3 +129,11 @@ PTFD/Backend/uploads/*.jpeg
 
 # Zencoder files
 .zencoder/
+
+# Additional files to ignore
+.DS_Store
+package-lock.json
+yarn.lock
+*.log
+*.tmp
+*.temp

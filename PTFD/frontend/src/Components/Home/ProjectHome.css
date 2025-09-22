@@ -158,8 +158,8 @@
   color: #1a1a1a;
   text-align: center;
   flex-direction: column;
-  padding-top: 9rem;
-  padding-bottom: 9rem;
+  padding-top: 18rem;
+  padding-bottom: 18rem;
   user-select: none;
   z-index: 10;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 215, 0, 0.1) 100%);

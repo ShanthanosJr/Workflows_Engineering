@@ -32,6 +32,16 @@ export default function AddProjectTimeline() {
   const [validatingProject, setValidatingProject] = useState(false);
   const [projectError, setProjectError] = useState("");
 
+  // Validation states
+  const [dateError, setDateError] = useState("");
+  const [workerErrors, setWorkerErrors] = useState([]);
+  const [engineerErrors, setEngineerErrors] = useState([]);
+  const [architectErrors, setArchitectErrors] = useState([]);
+  const [managerErrors, setManagerErrors] = useState([]);
+  const [materialErrors, setMaterialErrors] = useState([]);
+  const [toolErrors, setToolErrors] = useState([]);
+  const [expenseErrors, setExpenseErrors] = useState([]);
+
   const [form, setForm] = useState({
     date: "",
     tworker: [],
@@ -87,6 +97,202 @@ export default function AddProjectTimeline() {
     "Construction Apps", "Inspection Tools", "Generator"
   ];
 
+  // Date validation
+  const validateDate = (dateString) => {
+    if (!dateString) {
+      setDateError("");
+      return "";
+    }
+    
+    const selectedDate = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+      setDateError("Date cannot be in the past");
+      return "Date cannot be in the past";
+    }
+    
+    setDateError("");
+    return "";
+  };
+
+  // Worker validation
+  const validateWorker = (worker, index) => {
+    const errors = {};
+    
+    if (worker.name) {
+      if (worker.name.length < 2) {
+        errors.name = "Name must be at least 2 characters";
+      } else if (!/^[a-zA-Z\s]+$/.test(worker.name)) {
+        errors.name = "Name can only contain letters and spaces";
+      }
+    }
+    
+    if (worker.hoursWorked && worker.hoursWorked < 0) {
+      errors.hoursWorked = "Hours cannot be negative";
+    }
+    
+    return errors;
+  };
+
+  // Engineer validation
+  const validateEngineer = (engineer, index) => {
+    const errors = {};
+    
+    if (engineer.name) {
+      if (engineer.name.length < 2) {
+        errors.name = "Name must be at least 2 characters";
+      } else if (!/^[a-zA-Z\s]+$/.test(engineer.name)) {
+        errors.name = "Name can only contain letters and spaces";
+      }
+    }
+    
+    if (engineer.hoursWorked && engineer.hoursWorked < 0) {
+      errors.hoursWorked = "Hours cannot be negative";
+    }
+    
+    return errors;
+  };
+
+  // Architect validation
+  const validateArchitect = (architect, index) => {
+    const errors = {};
+    
+    if (architect.name) {
+      if (architect.name.length < 2) {
+        errors.name = "Name must be at least 2 characters";
+      } else if (!/^[a-zA-Z\s]+$/.test(architect.name)) {
+        errors.name = "Name can only contain letters and spaces";
+      }
+    }
+    
+    if (architect.hoursWorked && architect.hoursWorked < 0) {
+      errors.hoursWorked = "Hours cannot be negative";
+    }
+    
+    return errors;
+  };
+
+  // Manager validation
+  const validateManager = (manager, index) => {
+    const errors = {};
+    
+    if (manager.name) {
+      if (manager.name.length < 2) {
+        errors.name = "Name must be at least 2 characters";
+      } else if (!/^[a-zA-Z\s]+$/.test(manager.name)) {
+        errors.name = "Name can only contain letters and spaces";
+      }
+    }
+    
+    // Contact number validation (optional but if provided, must be valid)
+    if (manager.contact && manager.contact.trim() !== "") {
+      // Simple phone number validation (allows formats like: 123-456-7890, (123) 456-7890, 1234567890)
+      const phoneRegex = /^(\+\d{1,2}\s?)?(\([0-9]{3}\)|[0-9]{3})[\s-]?[0-9]{3}[\s-]?[0-9]{4}$/;
+      if (!phoneRegex.test(manager.contact)) {
+        errors.contact = "Please enter a valid phone number";
+      }
+    }
+    
+    return errors;
+  };
+
+  // Material validation
+  const validateMaterial = (material, index) => {
+    const errors = {};
+    
+    if (material.quantity !== undefined && material.quantity !== null && material.quantity !== "") {
+      if (material.quantity < 0) {
+        errors.quantity = "Quantity cannot be negative";
+      } else if (material.quantity === 0) {
+        errors.quantity = "Quantity must be greater than zero";
+      }
+    }
+    
+    if (material.cost !== undefined && material.cost !== null && material.cost !== "") {
+      if (material.cost < 0) {
+        errors.cost = "Cost cannot be negative";
+      }
+    }
+    
+    // Unit validation
+    if (material.unit) {
+      if (material.unit === "-" || material.unit === "0") {
+        errors.unit = "Unit cannot be '-' or '0'";
+      }
+    }
+    
+    return errors;
+  };
+
+  // Tool validation
+  const validateTool = (tool, index) => {
+    const errors = {};
+    
+    if (tool.quantity !== undefined && tool.quantity !== null && tool.quantity !== "") {
+      if (tool.quantity < 0) {
+        errors.quantity = "Quantity cannot be negative";
+      } else if (tool.quantity === 0) {
+        errors.quantity = "Quantity must be greater than zero";
+      }
+    }
+    
+    return errors;
+  };
+
+  // Expense validation
+  const validateExpense = (expense, index) => {
+    const errors = {};
+    
+    if (expense.amount !== undefined && expense.amount !== null && expense.amount !== "") {
+      const amount = parseFloat(expense.amount);
+      if (isNaN(amount)) {
+        errors.amount = "Please enter a valid amount";
+      } else if (amount < 0) {
+        errors.amount = "Amount cannot be negative";
+      } else if (amount === 0) {
+        errors.amount = "Amount must be greater than zero";
+      }
+    }
+    
+    return errors;
+  };
+
+  // Validate all fields
+  const validateAllFields = () => {
+    // Validate date
+    validateDate(form.date);
+    
+    // Validate workers
+    const newWorkerErrors = form.tworker.map((worker, index) => validateWorker(worker, index));
+    setWorkerErrors(newWorkerErrors);
+    
+    // Validate engineers
+    const newEngineerErrors = form.tengineer.map((engineer, index) => validateEngineer(engineer, index));
+    setEngineerErrors(newEngineerErrors);
+    
+    // Validate architects
+    const newArchitectErrors = form.tarchitect.map((architect, index) => validateArchitect(architect, index));
+    setArchitectErrors(newArchitectErrors);
+    
+    // Validate managers
+    const newManagerErrors = form.tprojectManager.map((manager, index) => validateManager(manager, index));
+    setManagerErrors(newManagerErrors);
+    
+    // Validate materials
+    const newMaterialErrors = form.tmaterials.map((material, index) => validateMaterial(material, index));
+    setMaterialErrors(newMaterialErrors);
+    
+    // Validate tools
+    const newToolErrors = form.ttools.map((tool, index) => validateTool(tool, index));
+    setToolErrors(newToolErrors);
+    
+    // Validate expenses
+    const newExpenseErrors = form.texpenses.map((expense, index) => validateExpense(expense, index));
+    setExpenseErrors(newExpenseErrors);
+  };
+
   // FIXED: Updated validate project function (unchanged logic)
   const validateProject = async (code) => {
     if (!code.trim()) {
@@ -140,10 +346,44 @@ export default function AddProjectTimeline() {
   };
 
   const updateField = (key, index, field, value) => {
-    setForm(prev => {
-      const updated = [...prev[key]];
+    setForm(prevForm => {
+      const updated = [...prevForm[key]];
       updated[index][field] = value;
-      return { ...prev, [key]: updated };
+      
+      // Validate the updated field immediately
+      setTimeout(() => {
+        if (key === "tworker") {
+          const errors = [...workerErrors];
+          errors[index] = validateWorker({ ...updated[index] }, index);
+          setWorkerErrors(errors);
+        } else if (key === "tengineer") {
+          const errors = [...engineerErrors];
+          errors[index] = validateEngineer({ ...updated[index] }, index);
+          setEngineerErrors(errors);
+        } else if (key === "tarchitect") {
+          const errors = [...architectErrors];
+          errors[index] = validateArchitect({ ...updated[index] }, index);
+          setArchitectErrors(errors);
+        } else if (key === "tprojectManager") {
+          const errors = [...managerErrors];
+          errors[index] = validateManager({ ...updated[index] }, index);
+          setManagerErrors(errors);
+        } else if (key === "tmaterials") {
+          const errors = [...materialErrors];
+          errors[index] = validateMaterial({ ...updated[index] }, index);
+          setMaterialErrors(errors);
+        } else if (key === "ttools") {
+          const errors = [...toolErrors];
+          errors[index] = validateTool({ ...updated[index] }, index);
+          setToolErrors(errors);
+        } else if (key === "texpenses") {
+          const errors = [...expenseErrors];
+          errors[index] = validateExpense({ ...updated[index] }, index);
+          setExpenseErrors(errors);
+        }
+      }, 0);
+      
+      return { ...prevForm, [key]: updated };
     });
   };
 
@@ -153,6 +393,13 @@ export default function AddProjectTimeline() {
       updated.splice(index, 1);
       return { ...prev, [key]: updated };
     });
+  };
+
+  // Handle date change with validation
+  const handleDateChange = (e) => {
+    const newDate = e.target.value;
+    setForm(prev => ({ ...prev, date: newDate }));
+    validateDate(newDate);
   };
 
   // Premium: Calculate form progress
@@ -193,6 +440,9 @@ export default function AddProjectTimeline() {
     setLoading(true);
     setMessage("");
 
+    // Validate all fields before submission
+    validateAllFields();
+
     if (!projectCode.trim()) {
       setMessage("❌ Please enter a valid Project Code.");
       setLoading(false);
@@ -201,6 +451,22 @@ export default function AddProjectTimeline() {
 
     if (!projectDetails) {
       setMessage("Please wait for project validation or enter a valid Project Code.");
+      setLoading(false);
+      return;
+    }
+
+    // Check for validation errors
+    const hasWorkerErrors = workerErrors.some(error => Object.keys(error).length > 0);
+    const hasEngineerErrors = engineerErrors.some(error => Object.keys(error).length > 0);
+    const hasArchitectErrors = architectErrors.some(error => Object.keys(error).length > 0);
+    const hasManagerErrors = managerErrors.some(error => Object.keys(error).length > 0);
+    const hasMaterialErrors = materialErrors.some(error => Object.keys(error).length > 0);
+    const hasToolErrors = toolErrors.some(error => Object.keys(error).length > 0);
+    const hasExpenseErrors = expenseErrors.some(error => Object.keys(error).length > 0);
+
+    if (dateError || hasWorkerErrors || hasEngineerErrors || hasArchitectErrors || 
+        hasManagerErrors || hasMaterialErrors || hasToolErrors || hasExpenseErrors) {
+      setMessage("❌ Please fix validation errors before submitting.");
       setLoading(false);
       return;
     }
@@ -252,6 +518,15 @@ export default function AddProjectTimeline() {
       });
       setProjectCode("");
       setProjectDetails(null);
+      // Clear validation errors
+      setDateError("");
+      setWorkerErrors([]);
+      setEngineerErrors([]);
+      setArchitectErrors([]);
+      setManagerErrors([]);
+      setMaterialErrors([]);
+      setToolErrors([]);
+      setExpenseErrors([]);
     }
   };
 
@@ -479,7 +754,8 @@ export default function AddProjectTimeline() {
                             {validatingProject && (
                               <span className="input-group-text bg-transparent" style={{
                                 backgroundColor: '#fdfcfb',
-                                borderColor: '#e5e7eb'
+                                borderColor: '#e5e7eb',
+                                borderLeft: 'none !important'
                               }}>
                                 <div className="spinner-border spinner-border-sm text-warning" role="status" style={{ width: '1rem', height: '1rem' }}>
                                   <span className="visually-hidden">Validating...</span>
@@ -490,6 +766,11 @@ export default function AddProjectTimeline() {
                           {projectError && (
                             <div className="invalid-feedback d-block mt-1">
                               <BsExclamationCircle className="me-1" /> {projectError}
+                            </div>
+                          )}
+                          {projectDetails && (
+                            <div className="valid-feedback d-block mt-1 text-success">
+                              <BsCheckCircle className="me-1" /> Project validated successfully!
                             </div>
                           )}
                           <small className="form-text text-muted mt-1">
@@ -573,7 +854,7 @@ export default function AddProjectTimeline() {
                             </span>
                             <input
                               type="date"
-                              className="form-control form-control-lg"
+                              className={`form-control form-control-lg ${dateError ? 'is-invalid' : ''}`}
                               style={{
                                 borderRadius: '16px',
                                 backgroundColor: '#fdfcfb',
@@ -585,9 +866,29 @@ export default function AddProjectTimeline() {
                                 borderColor: '#e5e7eb'
                               }}
                               value={form.date}
-                              onChange={(e) => setForm(prev => ({ ...prev, date: e.target.value }))}
+                              onChange={handleDateChange}
                               required
                             />
+                            {validatingProject && (
+                              <span className="input-group-text bg-transparent" style={{
+                                backgroundColor: '#fdfcfb',
+                                borderColor: '#e5e7eb'
+                              }}>
+                                <div className="spinner-border spinner-border-sm text-warning" role="status" style={{ width: '1rem', height: '1rem' }}>
+                                  <span className="visually-hidden">Validating...</span>
+                                </div>
+                              </span>
+                            )}
+                          </div>
+                          {dateError && (
+                            <div className="invalid-feedback d-block mt-1">
+                              <BsExclamationCircle className="me-1" /> {dateError}
+                            </div>
+                          )}
+                          <div className="mt-2">
+                            <small className="form-text text-muted">
+                              <BsExclamationCircle className="me-1" /> Select today's date or a future date. Past dates are not allowed.
+                            </small>
                           </div>
                         </div>
                       </div>
@@ -613,7 +914,7 @@ export default function AddProjectTimeline() {
                                   <label className="form-label small text-muted">Name</label>
                                   <input
                                     placeholder="Worker Name"
-                                    className="form-control py-2"
+                                    className={`form-control py-2 ${workerErrors[i]?.name ? 'is-invalid' : ''}`}
                                     style={{
                                       borderRadius: '12px',
                                       backgroundColor: '#fdfcfb',
@@ -623,6 +924,11 @@ export default function AddProjectTimeline() {
                                     value={w.name || ""}
                                     onChange={(e) => updateField("tworker", i, "name", e.target.value)}
                                   />
+                                  {workerErrors[i]?.name && (
+                                    <div className="invalid-feedback">
+                                      {workerErrors[i].name}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="col-md-4">
                                   <label className="form-label small text-muted">Role</label>
@@ -648,7 +954,7 @@ export default function AddProjectTimeline() {
                                   <input
                                     type="number"
                                     placeholder="Hours"
-                                    className="form-control py-2"
+                                    className={`form-control py-2 ${workerErrors[i]?.hoursWorked ? 'is-invalid' : ''}`}
                                     style={{
                                       borderRadius: '12px',
                                       backgroundColor: '#fdfcfb',
@@ -658,6 +964,11 @@ export default function AddProjectTimeline() {
                                     value={w.hoursWorked || ""}
                                     onChange={(e) => updateField("tworker", i, "hoursWorked", e.target.value)}
                                   />
+                                  {workerErrors[i]?.hoursWorked && (
+                                    <div className="invalid-feedback">
+                                      {workerErrors[i].hoursWorked}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="col-md-1 d-flex align-items-end">
                                   <button
@@ -709,7 +1020,7 @@ export default function AddProjectTimeline() {
                                 <div className="col-md-4">
                                   <label className="form-label small text-muted">Name</label>
                                   <input
-                                    className="form-control py-2"
+                                    className={`form-control py-2 ${engineerErrors[i]?.name ? 'is-invalid' : ''}`}
                                     placeholder="Engineer Name"
                                     style={{
                                       borderRadius: '12px',
@@ -720,6 +1031,11 @@ export default function AddProjectTimeline() {
                                     value={en.name || ""}
                                     onChange={(e) => updateField("tengineer", i, "name", e.target.value)}
                                   />
+                                  {engineerErrors[i]?.name && (
+                                    <div className="invalid-feedback">
+                                      {engineerErrors[i].name}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="col-md-4">
                                   <label className="form-label small text-muted">Specialty</label>
@@ -745,7 +1061,7 @@ export default function AddProjectTimeline() {
                                   <input
                                     type="number"
                                     placeholder="Hours"
-                                    className="form-control py-2"
+                                    className={`form-control py-2 ${engineerErrors[i]?.hoursWorked ? 'is-invalid' : ''}`}
                                     style={{
                                       borderRadius: '12px',
                                       backgroundColor: '#fdfcfb',
@@ -755,6 +1071,11 @@ export default function AddProjectTimeline() {
                                     value={en.hoursWorked || ""}
                                     onChange={(e) => updateField("tengineer", i, "hoursWorked", e.target.value)}
                                   />
+                                  {engineerErrors[i]?.hoursWorked && (
+                                    <div className="invalid-feedback">
+                                      {engineerErrors[i].hoursWorked}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="col-md-1 d-flex align-items-end">
                                   <button
@@ -809,7 +1130,7 @@ export default function AddProjectTimeline() {
                                 <div className="col-md-4">
                                   <label className="form-label small text-muted">Name</label>
                                   <input
-                                    className="form-control py-2"
+                                    className={`form-control py-2 ${architectErrors[i]?.name ? 'is-invalid' : ''}`}
                                     placeholder="Architect Name"
                                     style={{
                                       borderRadius: '12px',
@@ -820,6 +1141,11 @@ export default function AddProjectTimeline() {
                                     value={ar.name || ""}
                                     onChange={(e) => updateField("tarchitect", i, "name", e.target.value)}
                                   />
+                                  {architectErrors[i]?.name && (
+                                    <div className="invalid-feedback">
+                                      {architectErrors[i].name}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="col-md-4">
                                   <label className="form-label small text-muted">Specialty</label>
@@ -845,7 +1171,7 @@ export default function AddProjectTimeline() {
                                   <input
                                     type="number"
                                     placeholder="Hours"
-                                    className="form-control py-2"
+                                    className={`form-control py-2 ${architectErrors[i]?.hoursWorked ? 'is-invalid' : ''}`}
                                     style={{
                                       borderRadius: '12px',
                                       backgroundColor: '#fdfcfb',
@@ -855,6 +1181,11 @@ export default function AddProjectTimeline() {
                                     value={ar.hoursWorked || ""}
                                     onChange={(e) => updateField("tarchitect", i, "hoursWorked", e.target.value)}
                                   />
+                                  {architectErrors[i]?.hoursWorked && (
+                                    <div className="invalid-feedback">
+                                      {architectErrors[i].hoursWorked}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="col-md-1 d-flex align-items-end">
                                   <button
@@ -906,7 +1237,7 @@ export default function AddProjectTimeline() {
                                 <div className="col-md-5">
                                   <label className="form-label small text-muted">Name</label>
                                   <input
-                                    className="form-control py-2"
+                                    className={`form-control py-2 ${managerErrors[i]?.name ? 'is-invalid' : ''}`}
                                     placeholder="Project Manager Name"
                                     style={{
                                       borderRadius: '12px',
@@ -917,12 +1248,17 @@ export default function AddProjectTimeline() {
                                     value={pm.name || ""}
                                     onChange={(e) => updateField("tprojectManager", i, "name", e.target.value)}
                                   />
+                                  {managerErrors[i]?.name && (
+                                    <div className="invalid-feedback">
+                                      {managerErrors[i].name}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="col-md-5">
                                   <label className="form-label small text-muted">Contact</label>
                                   <input
-                                    className="form-control py-2"
-                                    placeholder="Contact Info"
+                                    className={`form-control py-2 ${managerErrors[i]?.contact ? 'is-invalid' : ''}`}
+                                    placeholder="Contact Info (e.g., 123-456-7890)"
                                     style={{
                                       borderRadius: '12px',
                                       backgroundColor: '#fdfcfb',
@@ -932,6 +1268,12 @@ export default function AddProjectTimeline() {
                                     value={pm.contact || ""}
                                     onChange={(e) => updateField("tprojectManager", i, "contact", e.target.value)}
                                   />
+                                  {managerErrors[i]?.contact && (
+                                    <div className="invalid-feedback">
+                                      {managerErrors[i].contact}
+                                    </div>
+                                  )}
+                                 {/*<small className="form-text text-muted">Optional: Enter a valid phone number</small>*/}
                                 </div>
                                 <div className="col-md-2 d-flex align-items-end">
                                   <button
@@ -1004,7 +1346,7 @@ export default function AddProjectTimeline() {
                                   <input
                                     type="number"
                                     placeholder="Qty"
-                                    className="form-control py-2"
+                                    className={`form-control py-2 ${materialErrors[i]?.quantity ? 'is-invalid' : ''}`}
                                     style={{
                                       borderRadius: '12px',
                                       backgroundColor: '#fdfcfb',
@@ -1014,12 +1356,17 @@ export default function AddProjectTimeline() {
                                     value={mat.quantity || ""}
                                     onChange={(e) => updateField("tmaterials", i, "quantity", e.target.value)}
                                   />
+                                  {materialErrors[i]?.quantity && (
+                                    <div className="invalid-feedback">
+                                      {materialErrors[i].quantity}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="col-md-2">
                                   <label className="form-label small text-muted">Unit</label>
                                   <input
                                     placeholder="Unit"
-                                    className="form-control py-2"
+                                    className={`form-control py-2 ${materialErrors[i]?.unit ? 'is-invalid' : ''}`}
                                     style={{
                                       borderRadius: '12px',
                                       backgroundColor: '#fdfcfb',
@@ -1029,6 +1376,11 @@ export default function AddProjectTimeline() {
                                     value={mat.unit || ""}
                                     onChange={(e) => updateField("tmaterials", i, "unit", e.target.value)}
                                   />
+                                  {materialErrors[i]?.unit && (
+                                    <div className="invalid-feedback">
+                                      {materialErrors[i].unit}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="col-md-3">
                                   <label className="form-label small text-muted">Cost ($)</label>
@@ -1036,7 +1388,7 @@ export default function AddProjectTimeline() {
                                     type="number"
                                     step="0.01"
                                     placeholder="Cost"
-                                    className="form-control py-2"
+                                    className={`form-control py-2 ${materialErrors[i]?.cost ? 'is-invalid' : ''}`}
                                     style={{
                                       borderRadius: '12px',
                                       backgroundColor: '#fdfcfb',
@@ -1046,6 +1398,11 @@ export default function AddProjectTimeline() {
                                     value={mat.cost || ""}
                                     onChange={(e) => updateField("tmaterials", i, "cost", e.target.value)}
                                   />
+                                  {materialErrors[i]?.cost && (
+                                    <div className="invalid-feedback">
+                                      {materialErrors[i].cost}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="col-md-2 d-flex align-items-end">
                                   <button
@@ -1118,7 +1475,7 @@ export default function AddProjectTimeline() {
                                   <input
                                     type="number"
                                     placeholder="Qty"
-                                    className="form-control py-2"
+                                    className={`form-control py-2 ${toolErrors[i]?.quantity ? 'is-invalid' : ''}`}
                                     style={{
                                       borderRadius: '12px',
                                       backgroundColor: '#fdfcfb',
@@ -1128,6 +1485,11 @@ export default function AddProjectTimeline() {
                                     value={tool.quantity || ""}
                                     onChange={(e) => updateField("ttools", i, "quantity", e.target.value)}
                                   />
+                                  {toolErrors[i]?.quantity && (
+                                    <div className="invalid-feedback">
+                                      {toolErrors[i].quantity}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="col-md-3">
                                   <label className="form-label small text-muted">Status</label>
@@ -1223,7 +1585,7 @@ export default function AddProjectTimeline() {
                                       type="number"
                                       step="0.01"
                                       placeholder="Amount"
-                                      className="form-control py-2"
+                                      className={`form-control py-2 ${expenseErrors[i]?.amount ? 'is-invalid' : ''}`}
                                       style={{
                                         borderRadius: '12px',
                                         backgroundColor: '#fdfcfb',
@@ -1234,6 +1596,11 @@ export default function AddProjectTimeline() {
                                       onChange={(e) => updateField("texpenses", i, "amount", e.target.value)}
                                     />
                                   </div>
+                                  {expenseErrors[i]?.amount && (
+                                    <div className="invalid-feedback">
+                                      {expenseErrors[i].amount}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="col-md-2">
                                   <label className="form-label small text-muted">Date</label>

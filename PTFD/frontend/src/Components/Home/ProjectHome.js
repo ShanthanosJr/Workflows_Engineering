@@ -356,7 +356,7 @@ const PhotoBooth = ({ photos, title }) => {
         <VideoBackground videoId="hero" />
         <div className="hero-content container">
           <h1 className="hero-title">
-            Welcome to the
+            Welcome to 
             <br /><br />
             <span className="title-highlight">Projects Timeline &</span>
             <span className="title-highlight">Financial Dashboard</span>

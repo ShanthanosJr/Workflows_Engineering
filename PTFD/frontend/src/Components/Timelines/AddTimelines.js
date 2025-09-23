@@ -208,7 +208,7 @@ export default function AddTimeline() {
                           onChange={(e) => updateField("tworker", i, "role", e.target.value)}
                           defaultValue=""
                         >
-                          <option value="">Select Role</option>
+                          <option value="">Select Role  ▼</option>
                           {workerRoles.map((role, idx) => (
                             <option key={idx} value={role}>{role}</option>
                           ))}

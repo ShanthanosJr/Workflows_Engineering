@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
+import PtfdIndex from './Components/ptfdIndex/ptfdIndex';
 import ProjectHome from './Components/Home/ProjectHome';
 import ConstructionHome from './Components/Home/ConstructionHome';
 import ProjectsDisplay from './Components/Projects/ProjectsDisplay';
@@ -32,9 +33,10 @@ export default function App() {
 
       <Routes>
         {/* Home route */}
-        <Route path="/" element={<ProjectHome />} />
+        <Route path="/" element={<PtfdIndex />} />
         <Route path="/projectshome" element={<ProjectHome />} />
         <Route path="/construction" element={<ConstructionHome />} />
+        <Route path="/ptfd" element={<PtfdIndex />} />
         {/* Auth routes */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />

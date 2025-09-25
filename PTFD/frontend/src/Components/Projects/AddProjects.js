@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Nav from "../Nav/Nav";
+import { useNavigate } from "react-router-dom";
 
 export default function AddProjects() {
   const [formData, setFormData] = useState({
@@ -147,9 +148,9 @@ export default function AddProjects() {
       }
     }
 
-    // Email uniqueness check (you can add API call here)
+    // Email uniqueness check ( API call )
     if (name === 'powmail' && rule.pattern && rule.pattern.test(value)) {
-      // You could add an API call here to check email uniqueness
+      //  API call to check email uniqueness
       // For now, just basic validation
     }
 
@@ -175,15 +176,16 @@ export default function AddProjects() {
   };
 
   // Handle input changes with live validation
+  const navigate = useNavigate();
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Update form data
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     // Mark field as touched
     setFieldTouched((prev) => ({ ...prev, [name]: true }));
-    
+
     // Perform live validation
     const errors = validateField(name, value);
     setValidationErrors((prev) => ({
@@ -196,7 +198,7 @@ export default function AddProjects() {
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setFieldTouched((prev) => ({ ...prev, [name]: true }));
-    
+
     // Re-validate on blur for more comprehensive checking
     const errors = validateField(name, value);
     setValidationErrors((prev) => ({
@@ -213,13 +215,13 @@ export default function AddProjects() {
   // Get field CSS classes based on validation state
   const getFieldClasses = (fieldName, baseClasses = "form-control form-control-lg") => {
     if (!fieldTouched[fieldName]) return baseClasses;
-    
+
     if (hasFieldError(fieldName)) {
       return `${baseClasses} is-invalid`;
     } else if (validationErrors[fieldName] === null) {
       return `${baseClasses} is-valid`;
     }
-    
+
     return baseClasses;
   };
 
@@ -1072,7 +1074,7 @@ export default function AddProjects() {
                         </div>
                         <div className="col-md-6">
                           <label htmlFor="penddate" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
-                            Horizon <span className="text-danger">*</span>
+                            Estimated Horizon <span className="text-danger">*</span>
                           </label>
                           <input
                             type="date"
@@ -1150,6 +1152,24 @@ export default function AddProjects() {
 
                     {/* Enhanced Submit Button */}
                     <div className="text-end">
+                      <button
+                        type="button"
+                        className="btn px-6 py-3 fw-semibold me-3"
+                        style={{
+                          borderRadius: '50px',
+                          border: '2px solid #1e8449',
+                          color: '#1e8449',
+                          background: 'transparent',
+                          fontSize: '1.1rem',
+                          boxShadow: '0 4px 15px rgba(107, 114, 128, 0.2)',
+                          transition: 'all 0.3s ease',
+                          minWidth: '160px'
+                        }}
+                        onClick={() => navigate("/projects")}
+                        disabled={loading}
+                      >
+                        <i className="fas fa-times me-2"></i>Abandon
+                      </button>
                       <button
                         type="submit"
                         className="btn btn-lg px-6 py-3 fw-semibold"

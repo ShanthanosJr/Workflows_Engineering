@@ -11,8 +11,253 @@ function UpdateProjects() {
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
+  
+  // Validation states
+  const [validationErrors, setValidationErrors] = useState({});
+  const [fieldTouched, setFieldTouched] = useState({});
+  
   const navigate = useNavigate();
   const { id } = useParams();
+
+  // Validation rules
+  const validationRules = {
+    pname: {
+      required: true,
+      minLength: 2,
+      maxLength: 100,
+      pattern: /^[a-zA-Z0-9\s\-.]+$/,
+      message: "Project name must be 2-100 characters, letters, numbers, spaces, hyphens, and periods only"
+    },
+    pnumber: {
+      required: true,
+      pattern: /^[A-Z]{2,4}-\d{4}-\d{3}$/,
+      message: "Format: ABC-2024-001 (2-4 letters, year, 3-digit number)"
+    },
+    pcode: {
+      required: true,
+      minLength: 3,
+      maxLength: 10,
+      pattern: /^[A-Z0-9-]+$/,
+      message: "3-10 characters, uppercase letters, numbers, and hyphens only"
+    },
+    plocation: {
+      required: true,
+      minLength: 5,
+      maxLength: 200,
+      message: "Location must be 5-200 characters"
+    },
+    pownerid: {
+      required: true,
+      pattern: /^OWN-\d{4}-\d{2}$/,
+      message: "Format: OWN-2024-01"
+    },
+    pownername: {
+      required: true,
+      minLength: 2,
+      maxLength: 50,
+      pattern: /^[a-zA-Z\s\-.]+$/,
+      message: "2-50 characters, letters, spaces, hyphens, and periods only"
+    },
+    potelnumber: {
+      required: true,
+      pattern: /^[+]?[1-9][\d\s\-()]{8,15}$/,
+      message: "Valid phone number format (8-15 digits with optional formatting)"
+    },
+    powmail: {
+      required: true,
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      message: "Valid email address required"
+    },
+    pdescription: {
+      required: true,
+      minLength: 10,
+      maxLength: 1000,
+      message: "Description must be 10-1000 characters"
+    },
+    pbudget: {
+      required: true,
+      min: 1000,
+      max: 100000000,
+      message: "Budget must be between $1,000 and $100,000,000"
+    },
+    penddate: {
+      required: true,
+      futureDate: true,
+      message: "End date must be in the future"
+    }
+  };
+
+  // Live validation function
+  const validateField = (name, value) => {
+    const rule = validationRules[name];
+    if (!rule) return null;
+
+    const errors = [];
+
+    // Required validation
+    if (rule.required && (!value || value.toString().trim() === "")) {
+      errors.push(`${getFieldLabel(name)} is required`);
+    }
+
+    // Skip other validations if field is empty and not required
+    if (!value || value.toString().trim() === "") {
+      return errors.length > 0 ? errors : null;
+    }
+
+    // String length validations
+    if (rule.minLength && value.length < rule.minLength) {
+      errors.push(`Minimum ${rule.minLength} characters required`);
+    }
+    if (rule.maxLength && value.length > rule.maxLength) {
+      errors.push(`Maximum ${rule.maxLength} characters allowed`);
+    }
+
+    // Numeric validations
+    if (rule.min && parseFloat(value) < rule.min) {
+      errors.push(`Minimum value: ${rule.min.toLocaleString()}`);
+    }
+    if (rule.max && parseFloat(value) > rule.max) {
+      errors.push(`Maximum value: ${rule.max.toLocaleString()}`);
+    }
+
+    // Pattern validation
+    if (rule.pattern && !rule.pattern.test(value)) {
+      errors.push(rule.message);
+    }
+
+    // Custom validations
+    if (name === 'penddate' && rule.futureDate) {
+      const today = new Date();
+      const selectedDate = new Date(value);
+      if (selectedDate <= today) {
+        errors.push("End date must be in the future");
+      }
+    }
+
+    return errors.length > 0 ? errors : null;
+  };
+
+  // Get user-friendly field labels
+  const getFieldLabel = (name) => {
+    const labels = {
+      pname: "Project Name",
+      pnumber: "Project Number",
+      pcode: "Project Code",
+      plocation: "Location",
+      pownerid: "Owner ID",
+      pownername: "Owner Name",
+      potelnumber: "Phone Number",
+      powmail: "Email",
+      pdescription: "Description",
+      pbudget: "Budget",
+      penddate: "End Date"
+    };
+    return labels[name] || name;
+  };
+
+  // Handle input changes with live validation
+  const handleChange = (field, value) => {
+    setProject(prev => ({ ...prev, [field]: value }));
+    
+    // Mark field as touched
+    setFieldTouched((prev) => ({ ...prev, [field]: true }));
+    
+    // Perform live validation
+    const errors = validateField(field, value);
+    setValidationErrors((prev) => ({
+      ...prev,
+      [field]: errors
+    }));
+  };
+
+  // Handle field blur (when user leaves the field)
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setFieldTouched((prev) => ({ ...prev, [name]: true }));
+    
+    // Re-validate on blur for more comprehensive checking
+    const errors = validateField(name, value);
+    setValidationErrors((prev) => ({
+      ...prev,
+      [name]: errors
+    }));
+  };
+
+  // Check if field has errors and is touched
+  const hasFieldError = (fieldName) => {
+    return fieldTouched[fieldName] && validationErrors[fieldName] && validationErrors[fieldName].length > 0;
+  };
+
+  // Get field CSS classes based on validation state
+  const getFieldClasses = (fieldName, baseClasses = "form-control form-control-lg") => {
+    if (!fieldTouched[fieldName]) return baseClasses;
+    
+    if (hasFieldError(fieldName)) {
+      return `${baseClasses} is-invalid`;
+    } else if (validationErrors[fieldName] === null) {
+      return `${baseClasses} is-valid`;
+    }
+    
+    return baseClasses;
+  };
+
+  // Enhanced form validation before submit
+  const validateForm = () => {
+    const errors = {};
+    let isValid = true;
+
+    // Validate all fields
+    Object.keys(validationRules).forEach(fieldName => {
+      const fieldValue = project[fieldName] || "";
+      const fieldErrors = validateField(fieldName, fieldValue);
+      if (fieldErrors) {
+        errors[fieldName] = fieldErrors;
+        isValid = false;
+      }
+    });
+
+    // Special validation for images - at least one image required (existing or new)
+    if (existingImages.length === 0 && imagePreviewUrls.length === 0) {
+      errors.pimg = ["At least one image is required"];
+      isValid = false;
+    }
+
+    // Mark all fields as touched to show errors
+    const touchedFields = {};
+    Object.keys(validationRules).forEach(field => {
+      touchedFields[field] = true;
+    });
+    touchedFields.pimg = true;
+
+    setFieldTouched(touchedFields);
+    setValidationErrors(errors);
+
+    return isValid;
+  };
+
+  // Render validation feedback
+  const renderValidationFeedback = (fieldName) => {
+    if (hasFieldError(fieldName)) {
+      return (
+        <div className="invalid-feedback d-block">
+          {validationErrors[fieldName].map((error, index) => (
+            <div key={index} className="d-flex align-items-center mt-1">
+              <i className="fas fa-exclamation-circle me-1"></i>
+              {error}
+            </div>
+          ))}
+        </div>
+      );
+    } else if (fieldTouched[fieldName] && validationErrors[fieldName] === null) {
+      return (
+        <div className="valid-feedback d-block">
+          <i className="fas fa-check-circle me-1"></i>
+          Looks good!
+        </div>
+      );
+    }
+    return null;
+  };
 
   useEffect(() => {
     async function fetchProject() {
@@ -112,6 +357,10 @@ function UpdateProjects() {
       return;
     }
 
+    // Clear image validation error when files are selected
+    setValidationErrors(prev => ({ ...prev, pimg: null }));
+    setFieldTouched(prev => ({ ...prev, pimg: true }));
+
     // Convert images to base64 with compression
     files.forEach(file => {
       const reader = new FileReader();
@@ -157,18 +406,41 @@ function UpdateProjects() {
   // Remove existing image
   const removeExistingImage = (index) => {
     setExistingImages(prev => prev.filter((_, i) => i !== index));
+    
+    // Re-validate images
+    const newImageCount = existingImages.length - 1 + imagePreviewUrls.length;
+    if (newImageCount === 0) {
+      setValidationErrors(prev => ({ ...prev, pimg: ["At least one image is required"] }));
+    } else {
+      setValidationErrors(prev => ({ ...prev, pimg: null }));
+    }
   };
 
   // Remove new image
   const removeNewImage = (index) => {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
     setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+    
+    // Re-validate images
+    const newImageCount = existingImages.length + imagePreviewUrls.length - 1;
+    if (newImageCount === 0) {
+      setValidationErrors(prev => ({ ...prev, pimg: ["At least one image is required"] }));
+    } else {
+      setValidationErrors(prev => ({ ...prev, pimg: null }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setMessage("");
+
+    // Validate form
+    if (!validateForm()) {
+      setMessage("❌ Please correct the errors below before submitting.");
+      setSubmitting(false);
+      return;
+    }
 
     try {
       await sendRequest();
@@ -183,10 +455,6 @@ function UpdateProjects() {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleChange = (field, value) => {
-    setProject(prev => ({ ...prev, [field]: value }));
   };
 
   if (loading) {
@@ -369,7 +637,7 @@ function UpdateProjects() {
                             type="text"
                             id="pname"
                             name="pname"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("pname")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -381,9 +649,11 @@ function UpdateProjects() {
                             }}
                             value={project.pname || ""}
                             onChange={(e) => handleChange('pname', e.target.value)}
+                            onBlur={handleBlur}
                             placeholder="e.g., Downtown Office Complex"
                             required
                           />
+                          {renderValidationFeedback("pname")}
                         </div>
                         <div className="col-md-6">
                           <label htmlFor="pnumber" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -393,7 +663,7 @@ function UpdateProjects() {
                             type="text"
                             id="pnumber"
                             name="pnumber"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("pnumber")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -405,9 +675,11 @@ function UpdateProjects() {
                             }}
                             value={project.pnumber || ""}
                             onChange={(e) => handleChange('pnumber', e.target.value)}
+                            onBlur={handleBlur}
                             placeholder="e.g., PRJ-2025-001"
                             required
                           />
+                          {renderValidationFeedback("pnumber")}
                         </div>
                         <div className="col-md-6">
                           <label htmlFor="pcode" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -417,7 +689,7 @@ function UpdateProjects() {
                             type="text"
                             id="pcode"
                             name="pcode"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("pcode")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -429,9 +701,11 @@ function UpdateProjects() {
                             }}
                             value={project.pcode || ""}
                             onChange={(e) => handleChange('pcode', e.target.value)}
+                            onBlur={handleBlur}
                             placeholder="e.g., DTC-001"
                             required
                           />
+                          {renderValidationFeedback("pcode")}
                         </div>
                         <div className="col-md-6">
                           <label htmlFor="plocation" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -441,7 +715,7 @@ function UpdateProjects() {
                             type="text"
                             id="plocation"
                             name="plocation"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("plocation")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -453,9 +727,11 @@ function UpdateProjects() {
                             }}
                             value={project.plocation || ""}
                             onChange={(e) => handleChange('plocation', e.target.value)}
+                            onBlur={handleBlur}
                             placeholder="e.g., 123 Main St, New York, NY"
                             required
                           />
+                          {renderValidationFeedback("plocation")}
                         </div>
 
                         <div className="col-md-6">
@@ -550,7 +826,7 @@ function UpdateProjects() {
                               type="file"
                               id="pimg"
                               name="pimg"
-                              className="form-control form-control-lg"
+                              className={`form-control form-control-lg ${hasFieldError('pimg') ? 'is-invalid' : fieldTouched.pimg && !hasFieldError('pimg') ? 'is-valid' : ''}`}
                               style={{
                                 borderRadius: '16px',
                                 backgroundColor: '#fdfcfb',
@@ -564,6 +840,18 @@ function UpdateProjects() {
                               accept="image/*"
                               onChange={handleImageChange}
                             />
+                            {hasFieldError('pimg') && (
+                              <div className="invalid-feedback d-block">
+                                <i className="fas fa-exclamation-circle me-1"></i>
+                                {validationErrors.pimg[0]}
+                              </div>
+                            )}
+                            {fieldTouched.pimg && !hasFieldError('pimg') && (existingImages.length > 0 || imagePreviewUrls.length > 0) && (
+                              <div className="valid-feedback d-block">
+                                <i className="fas fa-check-circle me-1"></i>
+                                {existingImages.length + imagePreviewUrls.length} image(s) ready for update!
+                              </div>
+                            )}
                             <div className="form-text mt-2" style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
                               Integrate up to {10 - existingImages.length - selectedImages.length} additional assets (max 2MB each). Auto-compression for seamless enhancement.
                             </div>
@@ -646,7 +934,7 @@ function UpdateProjects() {
                             type="text"
                             id="pownerid"
                             name="pownerid"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("pownerid")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -658,9 +946,11 @@ function UpdateProjects() {
                             }}
                             value={project.pownerid || ""}
                             onChange={(e) => handleChange('pownerid', e.target.value)}
+                            onBlur={handleBlur}
                             placeholder="e.g., OWN-2025-01"
                             required
                           />
+                          {renderValidationFeedback("pownerid")}
                         </div>
                         <div className="col-md-4">
                           <label htmlFor="pownername" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -670,7 +960,7 @@ function UpdateProjects() {
                             type="text"
                             id="pownername"
                             name="pownername"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("pownername")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -682,9 +972,11 @@ function UpdateProjects() {
                             }}
                             value={project.pownername || ""}
                             onChange={(e) => handleChange('pownername', e.target.value)}
+                            onBlur={handleBlur}
                             placeholder="e.g., John Doe"
                             required
                           />
+                          {renderValidationFeedback("pownername")}
                         </div>
                         <div className="col-md-4">
                           <label htmlFor="potelnumber" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -694,7 +986,7 @@ function UpdateProjects() {
                             type="tel"
                             id="potelnumber"
                             name="potelnumber"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("potelnumber")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -706,9 +998,11 @@ function UpdateProjects() {
                             }}
                             value={project.potelnumber || ""}
                             onChange={(e) => handleChange('potelnumber', e.target.value)}
+                            onBlur={handleBlur}
                             placeholder="e.g., +1 (555) 123-4567"
                             required
                           />
+                          {renderValidationFeedback("potelnumber")}
                         </div>
                         <div className="col-md-4">
                           <label
@@ -722,7 +1016,7 @@ function UpdateProjects() {
                             type="email"
                             id="powmail"
                             name="powmail"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("powmail")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -734,9 +1028,11 @@ function UpdateProjects() {
                             }}
                             value={project.powmail || ""}
                             onChange={(e) => handleChange('powmail', e.target.value)}
+                            onBlur={handleBlur}
                             placeholder="e.g., owner@example.com"
                             required
                           />
+                          {renderValidationFeedback("powmail")}
                         </div>
 
                       </div>
@@ -760,7 +1056,7 @@ function UpdateProjects() {
                           <textarea
                             id="pdescription"
                             name="pdescription"
-                            className="form-control"
+                            className={getFieldClasses("pdescription", "form-control")}
                             rows="4"
                             style={{
                               borderRadius: '16px',
@@ -775,9 +1071,11 @@ function UpdateProjects() {
                             }}
                             value={project.pdescription || ""}
                             onChange={(e) => handleChange('pdescription', e.target.value)}
+                            onBlur={handleBlur}
                             placeholder="Detail the vision, scope, and key objectives..."
                             required
                           />
+                          {renderValidationFeedback("pdescription")}
                         </div>
                         <div className="col-md-4">
                           <label htmlFor="ppriority" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -819,7 +1117,7 @@ function UpdateProjects() {
                               type="number"
                               id="pbudget"
                               name="pbudget"
-                              className="form-control form-control-lg"
+                              className={getFieldClasses("pbudget")}
                               style={{
                                 borderRadius: '16px',
                                 backgroundColor: '#fdfcfb',
@@ -831,12 +1129,14 @@ function UpdateProjects() {
                               }}
                               value={project.pbudget || ""}
                               onChange={(e) => handleChange('pbudget', e.target.value)}
+                              onBlur={handleBlur}
                               placeholder="0.00"
                               min="0"
                               step="0.01"
                               required
                             />
                           </div>
+                          {renderValidationFeedback("pbudget")}
                         </div>
                         <div className="col-md-4">
                           <label htmlFor="pstatus" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -873,7 +1173,7 @@ function UpdateProjects() {
                             type="date"
                             id="penddate"
                             name="penddate"
-                            className="form-control form-control-lg"
+                            className={getFieldClasses("penddate")}
                             style={{
                               borderRadius: '16px',
                               backgroundColor: '#fdfcfb',
@@ -889,8 +1189,10 @@ function UpdateProjects() {
                                 : ""
                             }
                             onChange={(e) => handleChange('penddate', e.target.value)}
+                            onBlur={handleBlur}
                             required
                           />
+                          {renderValidationFeedback("penddate")}
                         </div>
                         <div className="col-md-6">
                           <label htmlFor="pissues" className="form-label fw-semibold mb-2" style={{ color: '#374151' }}>
@@ -961,7 +1263,7 @@ function UpdateProjects() {
                           transition: 'all 0.3s ease',
                           minWidth: '160px'
                         }}
-                        onClick={() => navigate("/projects-fd")}
+                        onClick={() => navigate("/projects")}
                         disabled={submitting}
                       >
                         <i className="fas fa-times me-2"></i>Abandon

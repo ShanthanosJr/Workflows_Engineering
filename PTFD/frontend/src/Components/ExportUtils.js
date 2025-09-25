@@ -532,7 +532,7 @@ const createVisionMissionPage = (doc) => {
   doc.circle(MARGINS.left + 20, yPosition + 15, 6, 'F');
   doc.setFontSize(8);
   doc.setTextColor(...COLORS.white);
-  doc.text("👁", MARGINS.left + 20, yPosition + 18, { align: 'center' });
+  doc.text("✓", MARGINS.left + 20, yPosition + 18, { align: 'center' });
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
@@ -562,7 +562,7 @@ const createVisionMissionPage = (doc) => {
   doc.circle(MARGINS.left + 20, yPosition + 20, 6, 'F');
   doc.setFontSize(8);
   doc.setTextColor(...COLORS.white);
-  doc.text("🎯", MARGINS.left + 20, yPosition + 23, { align: 'center' });
+  doc.text("→", MARGINS.left + 20, yPosition + 23, { align: 'center' });
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");

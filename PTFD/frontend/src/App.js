@@ -22,9 +22,13 @@ import FinancialDashboardView from './Components/FinancialDashboard/FinancialDas
 import ChatBot from './Components/ChatBot/ChatBot';
 import SignIn from './Components/Auth/SignIn';
 import SignUp from './Components/Auth/SignUp';
+import UserDashboard from './Components/Profile/ProfileDashboard';
 
 import ProfilePage from './Components/Profile/ProfilePage';
 import ProtectedRoute from './Components/Auth/ProtectedRoute';
+
+import UserProjects from './Components/UserView/UserProjects';
+import UserTimeline from './Components/UserView/UserTimeline';
 
 export default function App() {
   return (
@@ -67,6 +71,10 @@ export default function App() {
         <Route path="/financial-dashboard/:id" element={<FinancialDashboardView />} />
         {/* ChatBot routes */}
         <Route path="/chatbot" element={<ChatBot />} />
+        {/* Profile Dashboard route */}
+        <Route path="/profile-dashboard" element={<UserDashboard />} />
+        <Route path="/user-projects" element={<UserProjects />} />
+        <Route path="/user-timeline" element={<UserTimeline />} />
       </Routes>
     </div>
   );

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import "./ptfdIndex.css";
-import Nav from '../Nav/Nav';
+import NavV2 from '../Nav/NavV2';
 import { useNavigate } from 'react-router-dom';
-
 
 // Hero Banner Component
 const HeroBanner = () => {
@@ -15,7 +14,7 @@ const HeroBanner = () => {
             setCurrentKeyword((prev) => (prev + 1) % rotatingKeywords.length);
         }, 3500);
         return () => clearInterval(interval);
-    }, []);
+    }, [rotatingKeywords.length]); // Added missing dependency
 
     return (
         <section className="ptfd-hero-section">
@@ -27,7 +26,7 @@ const HeroBanner = () => {
                     muted
                     playsInline
                 >
-                    <source src="https://c.animaapp.com/mfwtmt56xCUZ08/img/ai_1.mp4" type="video/mp4" />
+                    <source src="https://www.pexels.com/download/video/4878904/" type="video/mp4" />
                 </video>
                 <div className="ptfd-hero-overlay"></div>
             </div>
@@ -35,7 +34,7 @@ const HeroBanner = () => {
             <div className="ptfd-hero-content">
                 <div className="ptfd-hero-text-container">
                     <h1 className="ptfd-hero-title">
-                        Building Tomorrow's
+                        Building Tomorrow&apos;s
                         <br />
                         Infrastructure Today
                     </h1>
@@ -65,15 +64,15 @@ const ConstructionIntro = () => {
     const carouselImages = [
         {
             url: "https://c.animaapp.com/mfwtmt56xCUZ08/img/ai_2.png",
-            alt: "engineering design image"
+            alt: "engineering design"
         },
         {
             url: "https://c.animaapp.com/mfwtmt56xCUZ08/img/ai_3.png",
-            alt: "completed project image"
+            alt: "completed project"
         },
         {
             url: "https://c.animaapp.com/mfwtmt56xCUZ08/img/ai_4.png",
-            alt: "timeline progress image"
+            alt: "timeline progress"
         }
     ];
 
@@ -82,15 +81,27 @@ const ConstructionIntro = () => {
             setCurrentImage((prev) => (prev + 1) % carouselImages.length);
         }, 4000);
         return () => clearInterval(interval);
-    }, []);
+    }, [carouselImages.length]); // Added missing dependency
 
     return (
         <section className="ptfd-construction-section">
+            {/* <div className="ptfd-section-background" style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                backgroundImage: 'url("https://c.animaapp.com/mfwtmt56xCUZ08/img/ai_1.png")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                opacity: 0.1,
+                zIndex: 0
+            }}></div> */}
             <div className="ptfd-construction-container">
                 <div className="ptfd-construction-grid">
                     <div className="ptfd-construction-text">
                         <h2 className="ptfd-construction-title">
-                            What is Construction Excellence?
+                            What is <span className="title-highlight">Construction</span> Excellence?
                         </h2>
                         <p className="ptfd-construction-paragraph">
                             Construction excellence is more than building structures—it's about creating lasting value through innovative engineering, sustainable practices, and unwavering commitment to quality.
@@ -161,7 +172,7 @@ const ProjectsIntro = () => {
             <div className="ptfd-projects-content">
                 <div className="ptfd-projects-header">
                     <h2 className="ptfd-projects-title">
-                        Our Project Portfolio
+                        Our <span className="title-highlight">Project</span> Portfolio
                     </h2>
                     <p className="ptfd-projects-description">
                         From groundbreaking commercial developments to critical infrastructure projects, we deliver exceptional results across diverse construction sectors.
@@ -220,7 +231,7 @@ const TimelineIntro = () => {
                 <div className="ptfd-timeline-grid">
                     <div className="ptfd-timeline-text">
                         <h2 className="ptfd-timeline-title">
-                            Project Timeline Management
+                            <span className="title-highlight">Project</span> Timeline Management
                         </h2>
                         <p className="ptfd-timeline-paragraph">
                             Our advanced project management system ensures every milestone is met on schedule. Track progress in real-time and stay informed throughout the entire construction process.
@@ -236,8 +247,8 @@ const TimelineIntro = () => {
                     <div className="ptfd-timeline-display">
                         <div className="ptfd-timeline-background" title="Click to view larger image">
                             <img
-                                src="https://c.animaapp.com/mfwtmt56xCUZ08/img/ai_4.png"
-                                alt="timeline progress image"
+                                src="https://images.pexels.com/photos/325944/pexels-photo-325944.jpeg"
+                                alt="timeline progress"
                                 className="ptfd-timeline-bg-image"
                                 loading="lazy"
                             />
@@ -280,6 +291,162 @@ const TimelineIntro = () => {
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+// Enhanced Growth of Construction Component with Stats Cards
+const GrowthConstruction = () => {
+    const chartData = [
+        { year: '2021', growth: 5.7 },
+        { year: '2022', growth: 6.0 },
+        { year: '2023', growth: 6.6 },
+        { year: '2024', growth: 10.0 },
+        { year: '2025', growth: 5.5 },
+    ];
+
+    const statsCards = [
+        {
+            icon: '📈',
+            title: "Annual Growth Rate",
+            value: "10.2%",
+            description: "Industry leading growth",
+            color: "text-green-600"
+        },
+        {
+            icon: '👥',
+            title: "Jobs Created",
+            value: "2.4M+",
+            description: "New opportunities nationwide",
+            color: "text-blue-600"
+        },
+        {
+            icon: '💵',
+            title: "Market Value",
+            value: "$1.8T",
+            description: "Total market valuation",
+            color: "text-amber-600"
+        },
+        {
+            icon: '🏗️',
+            title: "Projects Delivered",
+            value: "45K+",
+            description: "Successful completions",
+            color: "text-purple-600"
+        }
+    ];
+
+    const maxGrowth = Math.max(...chartData.map(d => d.growth));
+
+    return (
+        <section className="ptfd-growth-section">
+            {/* Fixed Background Video with Hover Effects */}
+            <div className="ptfd-growth-video-container">
+                <video
+                    className="ptfd-growth-video"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                >
+                    <source src="https://c.animaapp.com/mfwtmt56xCUZ08/img/ai_1.mp4" type="video/mp4" />
+                </video>
+                <div className="ptfd-growth-overlay"></div>
+            </div>
+
+            <div className="ptfd-growth-container">
+                <div className="ptfd-growth-header">
+                    <h2 className="ptfd-growth-title">
+                        Growth in <span className="title-highlight">Construction</span>
+                    </h2>
+                    <p className="ptfd-growth-description">
+                        Witness the exponential growth in the construction industry, driven by innovation, sustainability, and advanced engineering practices.
+                    </p>
+                </div>
+
+                {/* Stats Cards Grid */}
+                <div className="ptfd-growth-stats-grid">
+                    {statsCards.map((stat, index) => (
+                        <div key={index} className="ptfd-growth-stat-card">
+                            <div className="ptfd-growth-stat-content">
+                                <div className="ptfd-growth-stat-icon">
+                                    {stat.icon}
+                                </div>
+                                <h3 className="ptfd-growth-stat-title">{stat.title}</h3>
+                                <div className="ptfd-growth-stat-value">{stat.value}</div>
+                                <p className="ptfd-growth-stat-description">{stat.description}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Enhanced Chart Container */}
+                <div className="ptfd-growth-chart-container">
+                    <div className="ptfd-growth-chart-content">
+                        {chartData.map((data, index) => (
+                            <div key={index} className="ptfd-growth-chart-bar-container">
+                                <span className="ptfd-growth-chart-value">{data.growth}%</span>
+                                <div 
+                                    className="ptfd-growth-bar"
+                                    style={{
+                                        '--bar-height': `${(data.growth / maxGrowth) * 200}px`, // Adjusted to 200 for better fit
+                                        '--index': index
+                                    }}
+                                ></div>
+                                <span className="ptfd-growth-chart-year">{data.year}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+// New Safety and Innovation Component
+const SafetyInnovation = () => {
+    const cards = [
+        {
+            image: 'https://images.pexels.com/photos/209230/pexels-photo-209230.jpeg',
+            title: 'Safety Protocols',
+            description: 'Implementing cutting-edge safety measures to protect our workforce and ensure project success.'
+        },
+        {
+            image: 'https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg',
+            title: 'Innovative Technologies',
+            description: 'Utilizing AI, IoT, and advanced materials to revolutionize construction processes.'
+        },
+        {
+            image: 'https://images.pexels.com/photos/325944/pexels-photo-325944.jpeg',
+            title: 'Sustainable Practices',
+            description: 'Adopting eco-friendly methods to minimize environmental impact while maximizing efficiency.'
+        }
+    ];
+
+    return (
+        <section className="ptfd-safety-section">
+            <div className="ptfd-safety-container">
+                <h2 className="ptfd-safety-title">
+                    Safety and <span className="title-highlight">Innovation</span>
+                </h2>
+                <p className="ptfd-timeline-paragraph">
+                    Building smarter, safer, and more efficient construction workflows. 
+                    Our platform combines advanced technology with practical solutions to streamline project management, 
+                    enhance workplace safety, and drive continuous innovation. Designed for teams who value precision,
+                     reliability, and forward-thinking practices, we empower organizations to deliver projects on time, 
+                     on budget, and without compromise on safety.</p><br />
+                <div className="ptfd-safety-grid">
+                    {cards.map((card, index) => (
+                        <div key={index} className="ptfd-safety-card">
+                            <img src={card.image} alt={card.title} className="ptfd-safety-card-image" />
+                            <div className="ptfd-safety-card-content">
+                                <h3 className="ptfd-safety-card-title">{card.title}</h3>
+                                <p className="ptfd-safety-card-description">{card.description}</p>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </section>
@@ -337,7 +504,7 @@ const FinancialDashboardIntro = () => {
                             <div className="ptfd-dashboard-background" title="Click to view larger image">
                                 <img
                                     src="https://c.animaapp.com/mfwtmt56xCUZ08/img/ai_5.png"
-                                    alt="financial dashboard image"
+                                    alt="financial dashboard"
                                     className="ptfd-dashboard-bg-image"
                                     loading="lazy"
                                 />
@@ -383,7 +550,7 @@ const FinancialDashboardIntro = () => {
 
                         <div className="ptfd-dashboard-text">
                             <h2 className="ptfd-dashboard-title">
-                                Financial Dashboard
+                                Financial <span className="title-highlight">Dashboard</span>
                             </h2>
                             <p className="ptfd-dashboard-paragraph">
                                 Take control of your project finances with our comprehensive dashboard. Monitor budgets, track expenses, and analyze financial performance in real-time.
@@ -405,19 +572,32 @@ const FinancialDashboardIntro = () => {
     );
 };
 
-// Chatbot Premium Component
-const ChatbotPremium = () => {
+// Updated Chatbot Premium Component to match Projecto AI
+const ProjectoAIPremium = () => {
+    const navigate = useNavigate();
     const [isExpanded, setIsExpanded] = useState(false);
 
     return (
         <section className="ptfd-chatbot-section">
+            {/* <div className="ptfd-section-background" style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                backgroundImage: 'url("https://c.animaapp.com/mfwtmt56xCUZ08/img/ai_5.png")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                opacity: 0.1,
+                zIndex: 0
+            }}></div> */}
             <div className="ptfd-chatbot-container">
                 <div className="ptfd-chatbot-header">
                     <h2 className="ptfd-chatbot-title">
-                        AI-Powered Project Assistant
+                        Projecto AI <span className="title-highlight">Assistant</span>
                     </h2>
                     <p className="ptfd-chatbot-description">
-                        Get instant answers to your construction questions with our premium AI assistant. Available 24/7 to help with project planning, cost estimation, and technical guidance.
+                        Get instant answers to your construction questions with Projecto AI. Available 24/7 to help with project planning, cost estimation, and technical guidance.
                     </p>
                 </div>
 
@@ -425,11 +605,11 @@ const ChatbotPremium = () => {
                     <div className="ptfd-chatbot-card-header">
                         <div className="ptfd-chatbot-info">
                             <div className="ptfd-chatbot-avatar">
-                                💬
+                                🏗️
                             </div>
                             <div className="ptfd-chatbot-details">
                                 <h3 className="ptfd-chatbot-name">
-                                    Construction AI Assistant
+                                    Projecto AI
                                 </h3>
                                 <p className="ptfd-chatbot-status">Premium Support Available</p>
                             </div>
@@ -445,7 +625,7 @@ const ChatbotPremium = () => {
                     <div className={`ptfd-chatbot-content ${isExpanded ? 'ptfd-expanded' : ''}`}>
                         <div className="ptfd-chatbot-messages">
                             <div className="ptfd-chatbot-message ptfd-bot-message">
-                                <p>👋 Hello! I'm your AI construction assistant. How can I help you today?</p>
+                                <p>👋 Hello! I'm Projecto AI, your construction assistant. How can I help you today?</p>
                             </div>
                             <div className="ptfd-chatbot-message ptfd-user-message">
                                 <p>What's the typical timeline for a commercial building project?</p>
@@ -465,10 +645,10 @@ const ChatbotPremium = () => {
                                 <div className="ptfd-chatbot-input-area">
                                     <input
                                         type="text"
-                                        placeholder="Ask me anything about construction..."
+                                        placeholder="Ask Projecto AI anything about construction..."
                                         className="ptfd-chatbot-input"
                                     />
-                                    <button className="ptfd-chatbot-send-btn">Send</button>
+                                    <button onClick={() => navigate("/chatbot")} className="ptfd-chatbot-send-btn">Send</button>
                                 </div>
                             </div>
                         )}
@@ -500,7 +680,7 @@ const FutureCTA = () => {
                 <div className="ptfd-cta-container">
                     <div className="ptfd-cta-content">
                         <h2 className="ptfd-cta-title">
-                            Ready to Build the Future?
+                            Ready to <span className="title-highlight">Build</span> The future ?
                         </h2>
                         <p className="ptfd-cta-description">
                             Transform your vision into reality with our comprehensive construction and engineering solutions. From innovative design to sustainable execution, we're your partner in creating tomorrow's infrastructure today.
@@ -536,76 +716,61 @@ const FutureCTA = () => {
     );
 };
 
-// Premium Footer Component
+// Updated Premium Footer Component to match ProjectHome.js exactly
 const PremiumFooter = () => {
     return (
-        <footer className="ptfd-footer">
-            <div className="ptfd-footer-container">
-                <div className="ptfd-footer-grid">
-                    <div className="ptfd-footer-company">
-                        <div className="ptfd-footer-logo">
-                            <span className="ptfd-footer-logo-icon">🏗️</span>
-                            <span className="ptfd-footer-logo-text">Workflows Engineering</span>
+        <footer className="construction-footer text-center bg-dark text-light border-top border-warning">
+            <div className="container">
+                <div className="row">
+                    <div className="col-12">
+                        <div className="footer-brand mb-2 d-flex justify-content-center gap-2 fs-4 fw-bold text-warning">
+                            <span>WORKFLOWS</span>
+                            <span>ENGINEERING</span>
                         </div>
-                        <p className="ptfd-footer-company-description">
-                            Leading construction and engineering solutions that transform visions into reality through innovative design and sustainable practices.
+
+                        <p className="footer-tagline text-uppercase mb-2">
+                            Smart Construction Workflow & Safety Management System
                         </p>
-                        <div className="ptfd-footer-social">
-                            <div className="ptfd-footer-social-icon">f</div>
-                            <div className="ptfd-footer-social-icon">in</div>
-                            <div className="ptfd-footer-social-icon">tw</div>
+
+                        {/* Social icons */}
+                        <div className="footer-social" aria-label="Social media links">
+                            <a href="https://facebook.com/workflowsengineering" target="_blank" rel="noopener noreferrer" aria-label="Visit our Facebook" title="Facebook">
+                                <span role="img" aria-hidden>📘</span>
+                            </a>
+                            <a href="https://instagram.com/workflowsengineering" target="_blank" rel="noopener noreferrer" aria-label="Visit our Instagram" title="Instagram">
+                                <span role="img" aria-hidden>📸</span>
+                            </a>
+                            <a href="https://linkedin.com/company/workflowsengineering" target="_blank" rel="noopener noreferrer" aria-label="Visit our LinkedIn" title="LinkedIn">
+                                <span role="img" aria-hidden>💼</span>
+                            </a>
+                            <a href="https://x.com/workflowseng" target="_blank" rel="noopener noreferrer" aria-label="Visit our Twitter/X" title="Twitter/X">
+                                <span role="img" aria-hidden>🐦</span>
+                            </a>
+                            <a href="https://youtube.com/@workflowsengineering" target="_blank" rel="noopener noreferrer" aria-label="Visit our YouTube" title="YouTube">
+                                <span role="img" aria-hidden>▶️</span>
+                            </a>
                         </div>
-                    </div>
 
-                    <div className="ptfd-footer-section">
-                        <h3 className="ptfd-footer-section-title">Services</h3>
-                        <ul className="ptfd-footer-links">
-                            <li><a href="#" className="ptfd-footer-link">Commercial Construction</a></li>
-                            <li><a href="#" className="ptfd-footer-link">Infrastructure Development</a></li>
-                            <li><a href="#" className="ptfd-footer-link">Industrial Facilities</a></li>
-                            <li><a href="#" className="ptfd-footer-link">Project Management</a></li>
-                            <li><a href="#" className="ptfd-footer-link">Engineering Consulting</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="ptfd-footer-section">
-                        <h3 className="ptfd-footer-section-title">Company</h3>
-                        <ul className="ptfd-footer-links">
-                            <li><a href="#" className="ptfd-footer-link">About Us</a></li>
-                            <li><a href="#" className="ptfd-footer-link">Our Team</a></li>
-                            <li><a href="#" className="ptfd-footer-link">Careers</a></li>
-                            <li><a href="#" className="ptfd-footer-link">News & Updates</a></li>
-                            <li><a href="#" className="ptfd-footer-link">Sustainability</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="ptfd-footer-section">
-                        <h3 className="ptfd-footer-section-title">Contact</h3>
-                        <div className="ptfd-footer-contact">
-                            <div className="ptfd-footer-contact-item">
-                                <span className="ptfd-footer-contact-icon">📍</span>
-                                <span>123 Construction Ave, Building City, BC 12345</span>
-                            </div>
-                            <div className="ptfd-footer-contact-item">
-                                <span className="ptfd-footer-contact-icon">📞</span>
-                                <span>+1 (555) 123-4567</span>
-                            </div>
-                            <div className="ptfd-footer-contact-item">
-                                <span className="ptfd-footer-contact-icon">✉️</span>
-                                <span>info@buildcorp.com</span>
-                            </div>
+                        {/* Quick links */}
+                        <div className="footer-links">
+                            <a href="#hero">Home</a>
+                            <a href="#project">Projects</a>
+                            <a href="#timeline">Timelines</a>
+                            <a href="#dashboard">Financial</a>
+                            <a href="#safety">Safety</a>
+                            <a href="#growth">Market</a>
                         </div>
-                    </div>
-                </div>
 
-                <div className="ptfd-footer-bottom">
-                    <p className="ptfd-footer-copyright">
-                        © 2024 BuildCorp. All rights reserved.
-                    </p>
-                    <div className="ptfd-footer-legal">
-                        <a href="#" className="ptfd-footer-legal-link">Privacy Policy</a>
-                        <a href="#" className="ptfd-footer-legal-link">Terms of Service</a>
-                        <a href="#" className="ptfd-footer-legal-link">Cookie Policy</a>
+                        {/* Contact */}
+                        <div className="footer-contact">
+                            <div>Email: info@workflowsengineering.com</div>
+                            <div>Phone: +1 (71) 429-8544</div>
+                        </div>
+
+                        <p className="footer-website fw-semibold text-warning mb-1">
+                            WWW.WORKFLOWSENGINEERING.COM
+                        </p>
+                        <div className="footer-copy">© {new Date().getFullYear()} Workflows Engineering. All rights reserved.</div>
                     </div>
                 </div>
             </div>
@@ -621,13 +786,15 @@ const ConstructionHomepage = () => {
 
     return (
         <div className="ptfd-homepage">
-            <Nav />
+            <NavV2 />
             <HeroBanner />
             <ConstructionIntro />
             <ProjectsIntro />
             <TimelineIntro />
+            <GrowthConstruction />
+            <SafetyInnovation />
             <FinancialDashboardIntro />
-            <ChatbotPremium />
+            <ProjectoAIPremium />
             <FutureCTA />
             <PremiumFooter />
         </div>

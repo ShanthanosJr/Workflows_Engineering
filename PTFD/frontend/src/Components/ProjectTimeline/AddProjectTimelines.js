@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Nav from "../Nav/Nav";
-import { 
-  BsBuilding, 
-  BsCalendarEvent, 
-  BsPeople, 
-  BsPersonCheck, 
-  BsHddStack, 
-  BsTools, 
-  BsCurrencyDollar, 
+import {
+  BsBuilding,
+  BsCalendarEvent,
+  BsPeople,
+  BsPersonCheck,
+  BsHddStack,
+  BsTools,
+  BsCurrencyDollar,
   BsFileText,
   BsSave,
   BsPlusCircle,
@@ -20,7 +20,7 @@ import {
 
 export default function AddProjectTimeline() {
   const navigate = useNavigate();
-  
+
   // Debug logging
   useEffect(() => {
     console.log('📍 AddProjectTimeline component mounted successfully!');
@@ -103,16 +103,16 @@ export default function AddProjectTimeline() {
       setDateError("");
       return "";
     }
-    
+
     const selectedDate = new Date(dateString);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     if (selectedDate < today) {
       setDateError("Date cannot be in the past");
       return "Date cannot be in the past";
     }
-    
+
     setDateError("");
     return "";
   };
@@ -120,7 +120,7 @@ export default function AddProjectTimeline() {
   // Worker validation
   const validateWorker = (worker, index) => {
     const errors = {};
-    
+
     if (worker.name) {
       if (worker.name.length < 2) {
         errors.name = "Name must be at least 2 characters";
@@ -128,18 +128,18 @@ export default function AddProjectTimeline() {
         errors.name = "Name can only contain letters and spaces";
       }
     }
-    
+
     if (worker.hoursWorked && worker.hoursWorked < 0) {
       errors.hoursWorked = "Hours cannot be negative";
     }
-    
+
     return errors;
   };
 
   // Engineer validation
   const validateEngineer = (engineer, index) => {
     const errors = {};
-    
+
     if (engineer.name) {
       if (engineer.name.length < 2) {
         errors.name = "Name must be at least 2 characters";
@@ -147,18 +147,18 @@ export default function AddProjectTimeline() {
         errors.name = "Name can only contain letters and spaces";
       }
     }
-    
+
     if (engineer.hoursWorked && engineer.hoursWorked < 0) {
       errors.hoursWorked = "Hours cannot be negative";
     }
-    
+
     return errors;
   };
 
   // Architect validation
   const validateArchitect = (architect, index) => {
     const errors = {};
-    
+
     if (architect.name) {
       if (architect.name.length < 2) {
         errors.name = "Name must be at least 2 characters";
@@ -166,18 +166,18 @@ export default function AddProjectTimeline() {
         errors.name = "Name can only contain letters and spaces";
       }
     }
-    
+
     if (architect.hoursWorked && architect.hoursWorked < 0) {
       errors.hoursWorked = "Hours cannot be negative";
     }
-    
+
     return errors;
   };
 
   // Manager validation
   const validateManager = (manager, index) => {
     const errors = {};
-    
+
     if (manager.name) {
       if (manager.name.length < 2) {
         errors.name = "Name must be at least 2 characters";
@@ -185,7 +185,7 @@ export default function AddProjectTimeline() {
         errors.name = "Name can only contain letters and spaces";
       }
     }
-    
+
     // Contact number validation (optional but if provided, must be valid)
     if (manager.contact && manager.contact.trim() !== "") {
       // Simple phone number validation (allows formats like: 123-456-7890, (123) 456-7890, 1234567890)
@@ -194,14 +194,14 @@ export default function AddProjectTimeline() {
         errors.contact = "Please enter a valid phone number";
       }
     }
-    
+
     return errors;
   };
 
   // Material validation
   const validateMaterial = (material, index) => {
     const errors = {};
-    
+
     if (material.quantity !== undefined && material.quantity !== null && material.quantity !== "") {
       if (material.quantity < 0) {
         errors.quantity = "Quantity cannot be negative";
@@ -209,27 +209,27 @@ export default function AddProjectTimeline() {
         errors.quantity = "Quantity must be greater than zero";
       }
     }
-    
+
     if (material.cost !== undefined && material.cost !== null && material.cost !== "") {
       if (material.cost < 0) {
         errors.cost = "Cost cannot be negative";
       }
     }
-    
+
     // Unit validation
     if (material.unit) {
       if (material.unit === "-" || material.unit === "0") {
         errors.unit = "Unit cannot be '-' or '0'";
       }
     }
-    
+
     return errors;
   };
 
   // Tool validation
   const validateTool = (tool, index) => {
     const errors = {};
-    
+
     if (tool.quantity !== undefined && tool.quantity !== null && tool.quantity !== "") {
       if (tool.quantity < 0) {
         errors.quantity = "Quantity cannot be negative";
@@ -237,14 +237,14 @@ export default function AddProjectTimeline() {
         errors.quantity = "Quantity must be greater than zero";
       }
     }
-    
+
     return errors;
   };
 
   // Expense validation
   const validateExpense = (expense, index) => {
     const errors = {};
-    
+
     if (expense.amount !== undefined && expense.amount !== null && expense.amount !== "") {
       const amount = parseFloat(expense.amount);
       if (isNaN(amount)) {
@@ -255,7 +255,7 @@ export default function AddProjectTimeline() {
         errors.amount = "Amount must be greater than zero";
       }
     }
-    
+
     return errors;
   };
 
@@ -263,31 +263,31 @@ export default function AddProjectTimeline() {
   const validateAllFields = () => {
     // Validate date
     validateDate(form.date);
-    
+
     // Validate workers
     const newWorkerErrors = form.tworker.map((worker, index) => validateWorker(worker, index));
     setWorkerErrors(newWorkerErrors);
-    
+
     // Validate engineers
     const newEngineerErrors = form.tengineer.map((engineer, index) => validateEngineer(engineer, index));
     setEngineerErrors(newEngineerErrors);
-    
+
     // Validate architects
     const newArchitectErrors = form.tarchitect.map((architect, index) => validateArchitect(architect, index));
     setArchitectErrors(newArchitectErrors);
-    
+
     // Validate managers
     const newManagerErrors = form.tprojectManager.map((manager, index) => validateManager(manager, index));
     setManagerErrors(newManagerErrors);
-    
+
     // Validate materials
     const newMaterialErrors = form.tmaterials.map((material, index) => validateMaterial(material, index));
     setMaterialErrors(newMaterialErrors);
-    
+
     // Validate tools
     const newToolErrors = form.ttools.map((tool, index) => validateTool(tool, index));
     setToolErrors(newToolErrors);
-    
+
     // Validate expenses
     const newExpenseErrors = form.texpenses.map((expense, index) => validateExpense(expense, index));
     setExpenseErrors(newExpenseErrors);
@@ -310,7 +310,7 @@ export default function AddProjectTimeline() {
         `http://localhost:5050/project-timelines/validate-project/${code}`
       );
       console.log('Validation response:', response.data);
-      
+
       if (response.data.valid) {
         setProjectDetails(response.data.projectDetails);
         setProjectError("");
@@ -349,7 +349,7 @@ export default function AddProjectTimeline() {
     setForm(prevForm => {
       const updated = [...prevForm[key]];
       updated[index][field] = value;
-      
+
       // Validate the updated field immediately
       setTimeout(() => {
         if (key === "tworker") {
@@ -382,7 +382,7 @@ export default function AddProjectTimeline() {
           setExpenseErrors(errors);
         }
       }, 0);
-      
+
       return { ...prevForm, [key]: updated };
     });
   };
@@ -404,17 +404,17 @@ export default function AddProjectTimeline() {
 
   // Premium: Calculate form progress
   useEffect(() => {
-    const totalFields = 1 + form.tworker.length + form.tengineer.length + form.tarchitect.length + 
-                        form.tprojectManager.length + form.texpenses.length + form.tmaterials.length + 
-                        form.ttools.length + (form.tnotes ? 1 : 0);
-    const filledFields = (form.date ? 1 : 0) + form.tworker.filter(w => w.name && w.role).length + 
-                        form.tengineer.filter(e => e.name && e.specialty).length + 
-                        form.tarchitect.filter(a => a.name && a.specialty).length + 
-                        form.tprojectManager.filter(pm => pm.name).length + 
-                        form.texpenses.filter(ex => ex.description && ex.amount).length + 
-                        form.tmaterials.filter(m => m.name && m.quantity).length + 
-                        form.ttools.filter(t => t.name && t.status).length + 
-                        (form.tnotes ? 1 : 0);
+    const totalFields = 1 + form.tworker.length + form.tengineer.length + form.tarchitect.length +
+      form.tprojectManager.length + form.texpenses.length + form.tmaterials.length +
+      form.ttools.length + (form.tnotes ? 1 : 0);
+    const filledFields = (form.date ? 1 : 0) + form.tworker.filter(w => w.name && w.role).length +
+      form.tengineer.filter(e => e.name && e.specialty).length +
+      form.tarchitect.filter(a => a.name && a.specialty).length +
+      form.tprojectManager.filter(pm => pm.name).length +
+      form.texpenses.filter(ex => ex.description && ex.amount).length +
+      form.tmaterials.filter(m => m.name && m.quantity).length +
+      form.ttools.filter(t => t.name && t.status).length +
+      (form.tnotes ? 1 : 0);
     setFormProgress(Math.round((filledFields / Math.max(totalFields, 1)) * 100));
   }, [form]);
 
@@ -464,8 +464,8 @@ export default function AddProjectTimeline() {
     const hasToolErrors = toolErrors.some(error => Object.keys(error).length > 0);
     const hasExpenseErrors = expenseErrors.some(error => Object.keys(error).length > 0);
 
-    if (dateError || hasWorkerErrors || hasEngineerErrors || hasArchitectErrors || 
-        hasManagerErrors || hasMaterialErrors || hasToolErrors || hasExpenseErrors) {
+    if (dateError || hasWorkerErrors || hasEngineerErrors || hasArchitectErrors ||
+      hasManagerErrors || hasMaterialErrors || hasToolErrors || hasExpenseErrors) {
       setMessage("❌ Please fix validation errors before submitting.");
       setLoading(false);
       return;
@@ -484,13 +484,13 @@ export default function AddProjectTimeline() {
 
       const response = await axios.post("http://localhost:5050/project-timelines", timelineData);
       console.log('Timeline creation response:', response.data);
-      
+
       setMessage("✅ Project timeline created successfully!");
       localStorage.removeItem('timelineDraft'); // Clear draft on success
       navigate("/project-timelines");
     } catch (error) {
       console.error("Error creating timeline:", error.response?.data || error.message);
-      
+
       if (error.response?.data?.message) {
         setMessage(`❌ Error creating project timeline: ${error.response.data.message}`);
       } else {
@@ -649,7 +649,7 @@ export default function AddProjectTimeline() {
                     }}>
                       <BsCalendarEvent className="text-black fs-5" />
                     </div>
-                  <div className="w-100 text-center">
+                    <div className="w-100 text-center">
                       <h2 className="h3 fw-bold mb-1" style={{ color: "#111827" }}>
                         Daily Chronicle Blueprint
                       </h2>
@@ -664,8 +664,8 @@ export default function AddProjectTimeline() {
                       <small className="text-muted">Chronicle Completion</small>
                     </div>
                     <div className="progress rounded-pill" style={{ height: '8px', backgroundColor: '#f3f4f6' }} role="progressbar" aria-valuenow={formProgress} aria-valuemin="0" aria-valuemax="100">
-                      <div className="progress-bar bg-gradient rounded-pill" style={{ 
-                        width: `${formProgress}%`, 
+                      <div className="progress-bar bg-gradient rounded-pill" style={{
+                        width: `${formProgress}%`,
                         background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
                         transition: 'width 0.3s ease'
                       }}></div>
@@ -1273,7 +1273,7 @@ export default function AddProjectTimeline() {
                                       {managerErrors[i].contact}
                                     </div>
                                   )}
-                                 {/*<small className="form-text text-muted">Optional: Enter a valid phone number</small>*/}
+                                  {/*<small className="form-text text-muted">Optional: Enter a valid phone number</small>*/}
                                 </div>
                                 <div className="col-md-2 d-flex align-items-end">
                                   <button
@@ -1691,6 +1691,24 @@ export default function AddProjectTimeline() {
 
                     {/* Enhanced Submit Button */}
                     <div className="text-end">
+                      <button
+                        type="button"
+                        className="btn px-6 py-3 fw-semibold me-3"
+                        style={{
+                          borderRadius: '50px',
+                          border: '2px solid #c53030',
+                          color: '#c53030',
+                          background: 'transparent',
+                          fontSize: '1.1rem',
+                          boxShadow: '0 4px 15px rgba(107, 114, 128, 0.2)',
+                          transition: 'all 0.3s ease',
+                          minWidth: '160px'
+                        }}
+                        onClick={() => navigate("/project-timelines")}
+                        disabled={loading}
+                      >
+                        <i className="fas fa-times me-2"></i>Abandon
+                      </button>
                       <button
                         type="submit"
                         className="btn btn-lg px-6 py-3 fw-semibold"

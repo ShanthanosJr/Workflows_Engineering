@@ -6,6 +6,7 @@ const {
   getUserProfile, 
   updateUserProfile, 
   deleteUser,
+  getAllUsers, // Import the new function
   upload
 } = require('../Controllers/UserController');
 const { protect } = require('../Middleware/authMiddleware');
@@ -18,5 +19,6 @@ router.post('/login', loginUser);
 router.get('/profile', protect, getUserProfile);
 router.put('/profile', protect, upload.single('avatar'), updateUserProfile);
 router.delete('/profile', protect, deleteUser);
+router.get('/', protect, getAllUsers); // Add route to get all users
 
 module.exports = router;

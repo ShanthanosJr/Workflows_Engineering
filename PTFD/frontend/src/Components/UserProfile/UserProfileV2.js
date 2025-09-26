@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UserProfile.css';
 
-const UserProfile = ({ inSidebar = false }) => {
+const UserProfileV2 = ({ inSidebar = false }) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -12,7 +12,7 @@ const UserProfile = ({ inSidebar = false }) => {
     name: 'Guest User',
     email: 'guest@example.com',
     avatar: 'https://cdn-icons-png.flaticon.com/512/4514/4514759.png',
-    role: 'Administrator',
+    role: 'User',
     status: 'online',
     lastActive: 'Just now'
   });
@@ -35,7 +35,7 @@ const UserProfile = ({ inSidebar = false }) => {
           name: parsedUserData.name || 'Guest User',
           email: parsedUserData.email || 'guest@example.com',
           avatar: avatar,
-          role: parsedUserData.role || 'Administrator',
+          role: parsedUserData.role || 'User',
           status: parsedUserData.status || 'online',
           lastActive: parsedUserData.lastActive || 'Just now'
         };
@@ -47,7 +47,7 @@ const UserProfile = ({ inSidebar = false }) => {
       name: 'Guest User',
       email: 'guest@example.com',
       avatar: 'https://cdn-icons-png.flaticon.com/512/4514/4514759.png',
-      role: 'Administrator',
+      role: 'User',
       status: 'online',
       lastActive: 'Just now'
     };
@@ -119,7 +119,7 @@ const UserProfile = ({ inSidebar = false }) => {
       name: 'Guest User',
       email: 'guest@example.com',
       avatar: 'https://cdn-icons-png.flaticon.com/512/4514/4514759.png',
-      role: 'Administrator',
+      role: 'User',
       status: 'offline',
       lastActive: 'Offline'
     });
@@ -155,7 +155,7 @@ const UserProfile = ({ inSidebar = false }) => {
       'Member': 'var(--profile-member)',
       'Guest': 'var(--profile-guest)'
     };
-    return colors[role] || colors['Admin'];
+    return colors[role] || colors['Member'];
   };
 
   return (
@@ -303,4 +303,4 @@ const UserProfile = ({ inSidebar = false }) => {
   );
 };
 
-export default UserProfile;
+export default UserProfileV2;

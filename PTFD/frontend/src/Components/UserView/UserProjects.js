@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./UserProjects.css";
 import axios from "axios";
 import NavV2 from "../Nav/NavV2";
+import Footer from "../Nav/ptfdFooter";
 
 const UserProjects = () => {
   const [projects, setProjects] = useState([]);
@@ -12,6 +13,18 @@ const UserProjects = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState("All");
+  const [showDemo, setShowDemo] = useState(false);
+
+
+  // Form state
+  const [formData, setFormData] = useState({
+    preqname: "",
+    preqmail: "",
+    preqnumber: "",
+    preqdescription: ""
+  });
+  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formMessage, setFormMessage] = useState("");
 
   // Fetch projects from API
   useEffect(() => {
@@ -30,6 +43,45 @@ const UserProjects = () => {
 
     fetchProjects();
   }, []);
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormSubmitting(true);
+    setFormMessage("");
+
+    try {
+      await axios.post("http://localhost:5050/project-requests", formData);
+      setFormMessage("Thank you! Your project request has been submitted successfully. Our team will contact you soon.");
+
+      // Reset form
+      setFormData({
+        preqname: "",
+        preqmail: "",
+        preqnumber: "",
+        preqdescription: ""
+      });
+
+      // Clear message after 5 seconds
+      setTimeout(() => {
+        setFormMessage("");
+      }, 5000);
+    } catch (error) {
+      console.error("Error submitting project request:", error);
+      setFormMessage("Sorry, there was an error submitting your request. Please try again.");
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
 
   // Filter projects based on search and filters
   const filteredProjects = projects.filter(project => {
@@ -104,7 +156,7 @@ const UserProjects = () => {
     if (project.pimg && project.pimg.length > 0) {
       return project.pimg[0];
     }
-    
+
     // Default construction images based on type
     const defaultImages = {
       'Residential': 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
@@ -112,36 +164,44 @@ const UserProjects = () => {
       'Infrastructure': 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
       'Industrial': 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'
     };
-    
+
     return defaultImages[project.ptype] || 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80';
   };
 
   return (
     <div className="premium-projects-container">
-        <NavV2 />
-      {/* Premium Navigation 
-      <nav className="premium-navbar">
-        <div className="premium-nav-content">
-          <div className="premium-nav-brand">
-            <div className="premium-brand-icon">🏗️</div>
-            <h1 className="premium-brand-title">BuildCraft Solutions</h1>
-          </div>
-          <div className="premium-nav-links">
-            <a href="#home" className="premium-nav-link">Home</a>
-            <a href="#projects" className="premium-nav-link">Projects</a>
-            <a href="#about" className="premium-nav-link">About</a>
-            <a href="#contact" className="premium-nav-link">Contact</a>
-            <div className="premium-nav-actions">
-              <button className="premium-notification-btn">
-                <span className="premium-bell-icon">🔔</span>
-                <span className="premium-notification-badge">3</span>
-              </button>
-              <button className="premium-profile-btn">👤</button>
+      <NavV2 />
+
+      {showDemo && (
+        <div className="premium-modal-overlay" onClick={() => setShowDemo(false)}>
+          <div
+            className="premium-demo-cinema"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button onClick={() => setShowDemo(false)} className="premium-cinema-close">✕</button>
+
+            {/* Cinematic video */}
+            <div className="premium-cinema-video">
+              <iframe
+                src="https://www.youtube.com/embed/MlIhVHMk788?autoplay=1&rel=0&modestbranding=1&showinfo=0"
+                title="Construction Project Process"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+
+            {/* Optional caption / description */}
+            <div className="premium-cinema-caption">
+              <h2>Construction Project Process</h2>
+              <p>From planning to delivery, here’s how modern construction projects come to life.</p>
             </div>
           </div>
-          <button className="premium-mobile-menu">☰</button>
         </div>
-      </nav>*/}
+      )}
+
+
 
       {/* Premium Hero Section */}
       <section className="premium-hero" id="home">
@@ -155,8 +215,13 @@ const UserProjects = () => {
           <h1 className="premium-hero-title">Workflows Construction Projects</h1>
           <p className="premium-hero-subtitle">Building Excellence Since 2025</p><br></br>
           <div className="premium-hero-actions">
-           {/* <button className="premium-btn premium-btn-primary">View Our Projects</button>*/}
-            <button className="premium-btn premium-btn-secondary">Watch Demo</button>
+            {/* <button className="premium-btn premium-btn-primary">View Our Projects</button>*/}
+            <button
+              className="premium-btn premium-btn-secondary"
+              onClick={() => setShowDemo(true)}
+            >
+              ▶ Watch Demo
+            </button>
           </div>
         </div>
         <div className="premium-scroll-indicator">
@@ -180,7 +245,7 @@ const UserProjects = () => {
               <p className="premium-expertise-description">Custom homes and residential complexes built with precision and care for modern living.</p>
               <span className="premium-expertise-badge">250+ Projects</span>
             </div>
-            
+
             <div className="premium-expertise-card commercial">
               <div className="premium-expertise-image">
                 <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Commercial" />
@@ -189,7 +254,7 @@ const UserProjects = () => {
               <p className="premium-expertise-description">Office buildings, retail spaces, and commercial complexes designed for business success.</p>
               <span className="premium-expertise-badge">180+ Projects</span>
             </div>
-            
+
             <div className="premium-expertise-card infrastructure">
               <div className="premium-expertise-image">
                 <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Infrastructure" />
@@ -209,7 +274,7 @@ const UserProjects = () => {
             <h2 className="premium-section-title">Latest Construction Projects</h2>
             <p className="premium-section-subtitle">Discover our recent works and ongoing developments across various sectors.</p>
           </div>
-          
+
           {/* Premium Search and Filters */}
           <div className="premium-filters">
             <div className="premium-search-box">
@@ -222,7 +287,7 @@ const UserProjects = () => {
               />
               <span className="premium-search-icon">🔍</span>
             </div>
-            
+
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -233,7 +298,7 @@ const UserProjects = () => {
                 <option key={status} value={status}>{status}</option>
               ))}
             </select>
-            
+
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
@@ -309,8 +374,8 @@ const UserProjects = () => {
             <div className="premium-about-content">
               <h2 className="premium-about-title">Building Excellence for the Future</h2>
               <p className="premium-about-text">
-                At Workflows Engineering, we've been transforming visions into reality since 2025. 
-                Our commitment to quality, innovation, and customer satisfaction has made us a 
+                At Workflows Engineering, we've been transforming visions into reality since 2025.
+                Our commitment to quality, innovation, and customer satisfaction has made us a
                 trusted partner for construction projects of all scales.
               </p>
               <div className="premium-stats-grid">
@@ -345,70 +410,68 @@ const UserProjects = () => {
         <div className="premium-container">
           <div className="premium-section-header">
             <h2 className="premium-section-title">Start Your Project Today</h2>
-            <p className="premium-section-subtitle">Ready to build something amazing? Let's discuss your construction needs.</p>
+            <p className="premium-section-subtitle">Ready to build something amazing? Let's discuss your construction needs.</p><br />
+            <p className="premium-section-subtitle">
+              <em>"One of our representatives will get in touch with you soon."</em>
+            </p>
           </div>
           <div className="premium-contact-form">
-            <form className="premium-form">
-              <div className="premium-form-row">
-                <input type="text" placeholder="Your Name" className="premium-form-input" />
-                <input type="email" placeholder="Email Address" className="premium-form-input" />
+            {formMessage && (
+              <div className={`premium-form-message ${formMessage.includes('successfully') ? 'success' : 'error'}`}>
+                {formMessage}
               </div>
-              <input type="text" placeholder="Project Type" className="premium-form-input" />
-              <textarea placeholder="Tell us about your project..." rows="4" className="premium-form-textarea"></textarea>
-              <button type="submit" className="premium-btn premium-btn-primary premium-btn-full">
-                Get Free Consultation
+            )}
+            <form className="premium-form" onSubmit={handleSubmit}>
+              <div className="premium-form-row">
+                <input
+                  type="text"
+                  name="preqname"
+                  placeholder="Your Name"
+                  className="premium-form-input"
+                  value={formData.preqname}
+                  onChange={handleInputChange}
+                  required
+                />
+                <input
+                  type="email"
+                  name="preqmail"
+                  placeholder="Email Address"
+                  className="premium-form-input"
+                  value={formData.preqmail}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <input
+                type="text"
+                name="preqnumber"
+                placeholder="Contact Number"
+                className="premium-form-input"
+                value={formData.preqnumber}
+                onChange={handleInputChange}
+                required
+              />
+              <textarea
+                name="preqdescription"
+                placeholder="Tell us about your project..."
+                rows="4"
+                className="premium-form-textarea"
+                value={formData.preqdescription}
+                onChange={handleInputChange}
+                required
+              ></textarea>
+              <button
+                type="submit"
+                className="premium-btn premium-btn-primary premium-btn-full"
+                disabled={formSubmitting}
+              >
+                {formSubmitting ? 'Submitting...' : 'Get Free Consultation'}
               </button>
             </form>
           </div>
         </div>
       </section>
-
-      {/* Premium Footer */}
-      <footer className="premium-footer">
-        <div className="premium-container">
-          <div className="premium-footer-grid">
-            <div className="premium-footer-brand">
-              <div className="premium-footer-logo">
-                <span className="premium-footer-icon">🏗️</span>
-                <h3 className="premium-footer-title">Workflows Engineering</h3>
-              </div>
-              <p className="premium-footer-description">
-                Building Your dreams into reality with precision, quality, and excellence.
-              </p>
-            </div>
-            <div className="premium-footer-section">
-              <h4 className="premium-footer-heading">Services</h4>
-              <ul className="premium-footer-links">
-                <li>Residential Construction</li>
-                <li>Commercial Projects</li>
-                <li>Infrastructure Development</li>
-                <li>Renovation & Remodeling</li>
-              </ul>
-            </div>
-            <div className="premium-footer-section">
-              <h4 className="premium-footer-heading">Quick Links</h4>
-              <ul className="premium-footer-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#projects">Projects</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-              </ul>
-            </div>
-            <div className="premium-footer-section">
-              <h4 className="premium-footer-heading">Contact Info</h4>
-              <div className="premium-footer-contact">
-                <div>📧 info@workflowsengineering.com</div>
-                <div>📞 (+94) 71-452-9412</div>
-                <div>📍 123 Construction Ave, Kottawa </div>
-              </div>
-            </div>
-          </div>
-          <div className="premium-footer-bottom">
-            <p>&copy; 2025 Workflows Engineering. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
-
+      <Footer />
       {/* Premium Project Detail Modal */}
       {showModal && selectedProject && (
         <div className="premium-modal-overlay" onClick={closeModal}>
@@ -542,9 +605,9 @@ const UserProjects = () => {
                       </div>
                       <div className="premium-modal-stat">
                         <div className="premium-modal-stat-number">
-                          {selectedProject.pstatus === 'Completed' ? '100' : 
-                           selectedProject.pstatus === 'In Progress' ? '65' : 
-                           selectedProject.pstatus === 'Planning' ? '15' : '0'}%
+                          {selectedProject.pstatus === 'Completed' ? '100' :
+                            selectedProject.pstatus === 'In Progress' ? '65' :
+                              selectedProject.pstatus === 'Planning' ? '15' : '0'}%
                         </div>
                         <div className="premium-modal-stat-label">Progress</div>
                       </div>

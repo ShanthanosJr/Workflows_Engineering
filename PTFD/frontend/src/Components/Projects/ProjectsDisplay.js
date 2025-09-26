@@ -288,19 +288,18 @@ export default function ProjectsDisplay() {
 
   const filteredProjects = getSortedAndFilteredProjects();
 
-  const handleExportAll = () => {
-    // For now, we'll create a summary report of all projects
-    const summaryData = {
-      projects: projects,
-      totalProjects: projects.length,
-      totalBudget: projects.reduce((sum, p) => sum + (parseFloat(p.pbudget) || 0), 0),
-      activeProjects: projects.filter(p => p.pstatus === "In Progress").length,
-      generatedAt: new Date()
-    };
+// const handleExportAll = () => {
+//   const summaryData = {
+//     projects: projects,
+//     totalProjects: projects.length,
+//     totalBudget: projects.reduce((sum, p) => sum + (parseFloat(p.pbudget) || 0), 0),
+//     activeProjects: projects.filter(p => p.pstatus === "In Progress").length,
+//     generatedAt: new Date()
+//   };
 
-    // Create a summary PDF using the export utility
-    exportProjectToPDF(summaryData, `projects-summary-${new Date().toISOString().split('T')[0]}.pdf`);
-  };
+//   exportProjectToPDF(summaryData, `projects-summary-${new Date().toISOString().split('T')[0]}.pdf`);
+// };
+
 
   if (loading) {
     return (
@@ -417,7 +416,7 @@ export default function ProjectsDisplay() {
                   }}>
                     <BsBuilding className="me-2" />Forge New Project
                   </button>
-                  <button onClick={handleExportAll} className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
+                  <button onClick={() => navigate("/project-requests")} className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
                     borderRadius: '50px',
                     border: '2px solid #1e8449',
                     color: '#1e8449',
@@ -426,7 +425,7 @@ export default function ProjectsDisplay() {
                     transition: 'all 0.3s ease',
                     boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)'
                   }}>
-                    <BsBuilding className="me-2" />Export to PDF
+                    <BsBuilding className="me-2" />View Requests
                   </button>
                 </div>
               </div>

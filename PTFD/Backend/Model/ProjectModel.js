@@ -14,6 +14,7 @@ const ProjectSchema = new Schema({
     pcode: {
         type: String,
         required: true,
+        unique: true,
     },
     plocation: {
         type: String,

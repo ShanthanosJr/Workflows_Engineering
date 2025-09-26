@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { NavLink } from 'react-router-dom';
-import UserProfile from '../UserProfile/UserProfile'; // Added import
+import UserProfile from '../UserProfile/UserProfileV2'; // Added import
 
 export default function NavV2() {
   const [open, setOpen] = useState(false);
@@ -99,7 +99,7 @@ export default function NavV2() {
 
           {/* Center - Logo */}
           <div className="navv2-navbar-center">
-            <NavLink to="/HOME" className="navv2-logo-link">
+            <NavLink to="/ptfd" className="navv2-logo-link">
               <div className="navv2-logo">
                 <div className="navv2-logo-icon">
                   <img 
@@ -192,7 +192,7 @@ export default function NavV2() {
             <ul className="nav-menu-list">
               <li className="nav-menu-item">
                 <NavLink
-                  to="/HOME"
+                  to="/ptfd"
                   className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
                   onClick={closeMenu}
                 >
@@ -306,8 +306,8 @@ export default function NavV2() {
                 <div className="nav-accordion-title">
                   <span className="nav-title-icon">📊</span>
                   <div className="nav-title-text">
-                    <span className="nav-primary-text">Projects & Dashboard</span>
-                    <span className="nav-secondary-text">Analytics & insights</span>
+                    <span className="nav-primary-text">Projects</span>
+                    <span className="nav-secondary-text">Introducing To Projects</span>
                   </div>
                 </div>
                 <span className={`nav-expand-icon ${expandPD ? 'nav-expand-rotated' : ''}`}>▼</span>
@@ -317,7 +317,7 @@ export default function NavV2() {
                 <ul className="nav-submenu-list">
                   <li>
                     <NavLink 
-                      to="/projectshome" 
+                      to="/user-projects" 
                       className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
                       onClick={closeMenu}
                     >
@@ -327,32 +327,32 @@ export default function NavV2() {
                   </li>
                   <li>
                     <NavLink 
-                      to="/projects" 
+                      to="/user-timeline" 
                       className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">📈</span>
-                      <span className="nav-submenu-text">Projects Dashboard</span>
+                      <span className="nav-submenu-text">Timeline Expo</span>
                     </NavLink>
                   </li>
                   <li>
                     <NavLink 
-                      to="/project-timelines" 
-                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
-                      onClick={closeMenu}
-                    >
-                      <span className="nav-submenu-icon">⏱️</span>
-                      <span className="nav-submenu-text">Timeline Dashboard</span>
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink 
-                      to="/financial-dashboard" 
+                      to="/user-finance" 
                       className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">💰</span>
-                      <span className="nav-submenu-text">Financial Dashboard</span>
+                      <span className="nav-submenu-text">Introducing To Dashboards</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/join-with-us" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">🤝</span>
+                      <span className="nav-submenu-text">Join Us</span>
                     </NavLink>
                   </li>
                   <li>
@@ -362,7 +362,7 @@ export default function NavV2() {
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">🤖</span>
-                      <span className="nav-submenu-text">ChatBot</span>
+                      <span className="nav-submenu-text">Smart AI Assistant</span>
                     </NavLink>
                   </li>
                 </ul>

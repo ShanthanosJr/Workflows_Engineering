@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from "react";
 import "./UserTimeline.css";
 import NavV2 from "../Nav/NavV2";
+import Footer from "../Nav/ptfdFooter";
+import { useNavigate } from "react-router-dom";
 
 const UserTimeline = () => {
+    const navigate = useNavigate();
     const [currentVideoSlide, setCurrentVideoSlide] = useState(0);
     const [currentPhase, setCurrentPhase] = useState(0);
     const [currentBenefit, setCurrentBenefit] = useState(0);
     const [currentProcess, setCurrentProcess] = useState(0);
+    const [showDemo, setShowDemo] = useState(false);
 
     // Video slides for header section
     const videoSlides = [
         {
-            video: "https://www.pexels.com/download/video/8963858/",
+            video: "https://www.pexels.com/download/video/11887097/",
             title: "Timeline Analysis",
             description: "Timeline management begins with comprehensive project analysis, evaluating scope, complexity, and resource requirements to create accurate scheduling frameworks."
         },
@@ -113,7 +117,7 @@ const UserTimeline = () => {
             setCurrentVideoSlide((prev) => (prev + 1) % videoSlides.length);
         }, 5000);
         return () => clearInterval(interval);
-    }, []);
+    }, [videoSlides.length]);
 
     // Auto-advance phases
     useEffect(() => {
@@ -121,7 +125,7 @@ const UserTimeline = () => {
             setCurrentPhase((prev) => (prev + 1) % timelinePhases.length);
         }, 4000);
         return () => clearInterval(interval);
-    }, []);
+    }, [timelinePhases.length]);
 
     // Auto-advance benefits
     useEffect(() => {
@@ -129,7 +133,7 @@ const UserTimeline = () => {
             setCurrentBenefit((prev) => (prev + 1) % timelineBenefits.length);
         }, 3500);
         return () => clearInterval(interval);
-    }, []);
+    }, [timelineBenefits.length]);
 
     const nextVideoSlide = () => {
         setCurrentVideoSlide((prev) => (prev + 1) % videoSlides.length);
@@ -150,6 +154,36 @@ const UserTimeline = () => {
     return (
         <div className="timeline-desc-container">
             <NavV2 />
+
+            {showDemo && (
+                <div className="premium-modal-overlay" onClick={() => setShowDemo(false)}>
+                    <div
+                        className="premium-demo-cinema"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Close button */}
+                        <button onClick={() => setShowDemo(false)} className="premium-cinema-close">✕</button>
+
+                        {/* Cinematic video */}
+                        <div className="premium-cinema-video">
+                            <iframe
+                                src="https://www.youtube.com/embed/cDGukhMg7DM?autoplay=1&rel=0&modestbranding=1&showinfo=0"
+                                title="Construction Project Process"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        </div>
+
+                        {/* Optional caption / description */}
+                        <div className="premium-cinema-caption">
+                            <h2>Construction Timeline Process</h2>
+                            <p>From projects to timeline management, here’s how modern construction projects come to life.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Premium Hero Section with Video Carousel */}
             <section className="timeline-desc-hero">
                 <div className="timeline-desc-video-carousel">
@@ -178,7 +212,7 @@ const UserTimeline = () => {
                                     {videoSlides[currentVideoSlide].description}
                                 </p>
                             </div>
-                            <button className="timeline-desc-hero-button">
+                            <button onClick={() => document.getElementById("contact-form").scrollIntoView({ behavior: "smooth" })} className="timeline-desc-hero-button">
                                 Explore Timeline System
                             </button>
                         </div>
@@ -209,7 +243,7 @@ const UserTimeline = () => {
             <section className="timeline-desc-definition">
                 <div className="timeline-desc-container-inner">
                     <div className="timeline-desc-definition-grid">
-                        <div className="timeline-desc-definition-text">
+                        <div className="timeline-desc-definition-text" id="contact-form">
                             <h2 className="timeline-desc-section-title">
                                 Understanding Construction Timeline Management
                             </h2>
@@ -541,11 +575,13 @@ const UserTimeline = () => {
                         </p>
 
                         <div className="timeline-desc-cta-buttons">
-                            <button className="timeline-desc-cta-primary-btn">
-                                Start Free Trial
+                            <button onClick={() => navigate('/user-projects')} className="timeline-desc-cta-primary-btn">
+                                Get Free Accommodation
                             </button>
-                            <button className="timeline-desc-cta-secondary-btn">
-                                Schedule Demo
+                            <button className="timeline-desc-cta-secondary-btn"
+                                onClick={() => setShowDemo(true)}
+                            >
+                                Watch Timeline Demo
                             </button>
                         </div>
 
@@ -568,77 +604,8 @@ const UserTimeline = () => {
             </section>
 
             {/* Premium Footer */}
-            <footer className="timeline-desc-footer">
-                <div className="timeline-desc-container-inner">
-                    <div className="timeline-desc-footer-grid">
-                        <div className="timeline-desc-footer-brand">
-                            <div className="timeline-desc-footer-logo">
-                                <span className="timeline-desc-footer-icon">⏱️</span>
-                                <h3 className="timeline-desc-footer-title">Timeline Pro</h3>
-                            </div>
-                            <p className="timeline-desc-footer-description">
-                                Advanced timeline management solutions for modern construction projects. Optimize resources, track progress, and deliver projects on time, every time.
-                            </p>
-                            <div className="timeline-desc-footer-social">
-                                <div className="timeline-desc-footer-social-icon">f</div>
-                                <div className="timeline-desc-footer-social-icon">in</div>
-                                <div className="timeline-desc-footer-social-icon">tw</div>
-                            </div>
-                        </div>
-
-                        <div className="timeline-desc-footer-section">
-                            <h4 className="timeline-desc-footer-heading">Features</h4>
-                            <ul className="timeline-desc-footer-links">
-                                <li><a href="#">Resource Planning</a></li>
-                                <li><a href="#">Progress Tracking</a></li>
-                                <li><a href="#">Cost Management</a></li>
-                                <li><a href="#">Team Coordination</a></li>
-                                <li><a href="#">Analytics Dashboard</a></li>
-                            </ul>
-                        </div>
-
-                        <div className="timeline-desc-footer-section">
-                            <h4 className="timeline-desc-footer-heading">Solutions</h4>
-                            <ul className="timeline-desc-footer-links">
-                                <li><a href="#">Commercial Projects</a></li>
-                                <li><a href="#">Residential Development</a></li>
-                                <li><a href="#">Infrastructure</a></li>
-                                <li><a href="#">Industrial Construction</a></li>
-                                <li><a href="#">Renovation Projects</a></li>
-                            </ul>
-                        </div>
-
-                        <div className="timeline-desc-footer-section">
-                            <h4 className="timeline-desc-footer-heading">Support</h4>
-                            <div className="timeline-desc-footer-contact">
-                                <div className="timeline-desc-footer-contact-item">
-                                    <span className="timeline-desc-footer-contact-icon">📧</span>
-                                    <span>support@timelinepro.com</span>
-                                </div>
-                                <div className="timeline-desc-footer-contact-item">
-                                    <span className="timeline-desc-footer-contact-icon">📞</span>
-                                    <span>+1 (555) 987-6543</span>
-                                </div>
-                                <div className="timeline-desc-footer-contact-item">
-                                    <span className="timeline-desc-footer-contact-icon">💬</span>
-                                    <span>24/7 Live Chat</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="timeline-desc-footer-bottom">
-                        <p className="timeline-desc-footer-copyright">
-                            © 2024 Timeline Pro. All rights reserved.
-                        </p>
-                        <div className="timeline-desc-footer-legal">
-                            <a href="#" className="timeline-desc-footer-legal-link">Privacy Policy</a>
-                            <a href="#" className="timeline-desc-footer-legal-link">Terms of Service</a>
-                            <a href="#" className="timeline-desc-footer-legal-link">Cookie Policy</a>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
+            {/* End of Premium Footer */}
         </div>
     );
 };

@@ -15,6 +15,7 @@ const projectTimelineRoutes = require("./Route/ProjectTimelineRts"); // 👈 add
 const financialDashboardRoutes = require("./Route/FinancialDashboardRts"); // 👈 add financial dashboard
 const chatbotRoutes = require("./Route/ChatBotRts"); // 👈 add chatbot routes
 const userRoutes = require("./Route/UserRoutes"); // 👈 add user routes
+const projectReqRoutes = require("./Route/ProjectReqRoutes"); // 👈 add project request routes
 
 // Import ChatBot controller for initialization
 const { initializeKnowledgeBase } = require('./Controllers/ChatBotCtrl');
@@ -41,6 +42,7 @@ app.use("/project-timelines", projectTimelineRoutes); // 👈 mount project time
 app.use("/financial-dashboard", financialDashboardRoutes); // 👈 mount financial dashboard CRUD
 app.use("/chatbot", chatbotRoutes); // 👈 mount chatbot CRUD
 app.use("/api/users", userRoutes); // 👈 mount user routes
+app.use("/project-requests", projectReqRoutes); // 👈 mount project request routes
 
 // Test route
 app.get("/test", (req, res) => {

@@ -37,6 +37,12 @@ const SignUp = () => {
 
     if (!userData.name) {
       newErrors.name = "Name is required"
+    } else if (userData.name.length < 3) {
+      newErrors.name = "Name must be at least 3 characters"
+    } else if (userData.name.length > 30) {
+      newErrors.name = "Name must be less than 30 characters"
+    } else if (!/^[A-Za-z\s]+$/.test(userData.name)) {
+      newErrors.name = "Name can only contain letters and spaces"
     }
 
     if (!userData.email) {

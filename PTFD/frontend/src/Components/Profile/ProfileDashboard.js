@@ -13,7 +13,7 @@ import {
   BsCheckCircle,
   BsEye,
   BsTrash,
-  BsPencil,
+  //BsPencil,
   BsGrid,
   BsList,
   BsExclamationTriangle,
@@ -1177,10 +1177,10 @@ export default function ProfileDashboard() {
                               backdropFilter: 'blur(10px)'
                             }}
                           >
-                            <BsPerson className="text-white fs-4" />
+                            <BsPerson className="text-black fs-4" />
                           </div>
-                          <h2 className="fw-bold text-white mb-1">{selectedUserDetail.age || 'N/A'}</h2>
-                          <p className="text-white-75 mb-0 fw-medium">Age</p>
+                          <h2 className="fw-bold text-black mb-1">{selectedUserDetail.age || 'N/A'}</h2>
+                          <p className="text-black-75 mb-0 fw-medium">Age</p>
                         </div>
                       </div>
                     </div>
@@ -1208,10 +1208,10 @@ export default function ProfileDashboard() {
                               backdropFilter: 'blur(10px)'
                             }}
                           >
-                            <BsCheckCircle className="text-white fs-4" />
+                            <BsCheckCircle className="text-black fs-4" />
                           </div>
-                          <h2 className="fw-bold text-white mb-1">{selectedUserDetail.status || 'Active'}</h2>
-                          <p className="text-white-75 mb-0 fw-medium">Current Status</p>
+                          <h2 className="fw-bold text-black mb-1">{selectedUserDetail.status || 'Active'}</h2>
+                          <p className="text-black-75 mb-0 fw-medium">Current Status</p>
                         </div>
                       </div>
                     </div>
@@ -1239,12 +1239,12 @@ export default function ProfileDashboard() {
                               backdropFilter: 'blur(10px)'
                             }}
                           >
-                            <BsCalendar className="text-white fs-4" />
+                            <BsCalendar className="text-black fs-4" />
                           </div>
-                          <h2 className="fw-bold text-white mb-1">
+                          <h2 className="fw-bold text-black mb-1">
                             {new Date(selectedUserDetail.createdAt || Date.now()).toLocaleDateString()}
                           </h2>
-                          <p className="text-white-75 mb-0 fw-medium">Join Date</p>
+                          <p className="text-black-75 mb-0 fw-medium">Join Date</p>
                         </div>
                       </div>
                     </div>
@@ -1272,12 +1272,12 @@ export default function ProfileDashboard() {
                               backdropFilter: 'blur(10px)'
                             }}
                           >
-                            <BsBriefcase className="text-white fs-4" />
+                            <BsBriefcase className="text-black fs-4" />
                           </div>
-                          <h2 className="fw-bold text-white mb-1">
+                          <h2 className="fw-bold text-black mb-1">
                             {selectedUserDetail.department || 'General'}
                           </h2>
-                          <p className="text-white-75 mb-0 fw-medium">Department</p>
+                          <p className="text-black-75 mb-0 fw-medium">Department</p>
                         </div>
                       </div>
                     </div>
@@ -1375,11 +1375,11 @@ export default function ProfileDashboard() {
                               e.target.src = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&auto=format';
                             }}
                           />
-                          <h6 className="fw-bold mb-3 text-white-75">User Profile</h6>
-                          <h2 className="fw-bold text-white mb-2">
+                          <h6 className="fw-bold mb-3 text-black-75">User Profile</h6>
+                          <h2 className="fw-bold text-black mb-2">
                             {selectedUserDetail.name}
                           </h2>
-                          <p className="text-white-50 mb-0 small">
+                          <p className="text-black-50 mb-0 small">
                             Member since {new Date(selectedUserDetail.createdAt || Date.now()).getFullYear()}
                           </p>
 
@@ -1387,14 +1387,14 @@ export default function ProfileDashboard() {
                           <div className="mt-3 pt-3 border-top border-white border-opacity-25">
                             <div className="row text-center">
                               <div className="col-6">
-                                <small className="text-white-75 d-block">Status</small>
-                                <strong className="text-white">
+                                <small className="text-black-75 d-block">Status</small>
+                                <strong className="text-black">
                                   {selectedUserDetail.status || 'Active'}
                                 </strong>
                               </div>
                               <div className="col-6">
-                                <small className="text-white-75 d-block">Department</small>
-                                <strong className="text-white">
+                                <small className="text-black-75 d-block">Department</small>
+                                <strong className="text-black">
                                   {selectedUserDetail.department || 'General'}
                                 </strong>
                               </div>
@@ -1468,7 +1468,7 @@ export default function ProfileDashboard() {
                       Close
                     </button>
 
-                    <button
+                    {/*<button
                       type="button"
                       className="btn rounded-pill px-4 py-2 fw-semibold"
                       style={{
@@ -1493,9 +1493,9 @@ export default function ProfileDashboard() {
                     >
                       <BsPencil className="me-2" />
                       Edit User
-                    </button>
+                    </button>*/}
 
-                    <button
+                   {/* <button
                       type="button"
                       className="btn rounded-pill px-4 py-2 fw-semibold"
                       style={{
@@ -1520,7 +1520,7 @@ export default function ProfileDashboard() {
                     >
                       <BsEye className="me-2" />
                       View Profile
-                    </button>
+                    </button>*/}
                   </div>
                 </div>
 

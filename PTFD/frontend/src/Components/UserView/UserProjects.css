@@ -14,9 +14,9 @@
   --premium-error: #ef4444;
   --premium-white: #ffffff;
   --premium-black: #0f172a;
-  --premium-gray-50: #f8fafc;
-  --premium-gray-100: #f1f5f9;
-  --premium-gray-200: #e2e8f0;
+  --premium-gray-50: #cfe7ff;
+  --premium-gray-100: #c5c9cc;
+  --premium-gray-200: #d4ddea;
   --premium-gray-300: #cbd5e1;
   --premium-gray-400: #94a3b8;
   --premium-gray-500: #64748b;
@@ -899,6 +899,26 @@
   min-height: 120px;
 }
 
+.premium-form-message {
+  padding: 1rem;
+  border-radius: var(--premium-border-radius);
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.premium-form-message.success {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--premium-success);
+  color: var(--premium-success);
+}
+
+.premium-form-message.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--premium-error);
+  color: var(--premium-error);
+}
+
 /* Premium Footer */
 .premium-footer {
   background: var(--premium-secondary);
@@ -1567,4 +1587,80 @@
 
 .premium-modal::-webkit-scrollbar-thumb:hover {
   background: var(--premium-gray-500);
+}
+
+/* Cinematic Demo Modal */
+.premium-demo-cinema {
+  position: relative !important;
+  max-width: 1200px !important;
+  width: 95% !important;
+  border-radius: 16px !important;
+  background: #000 !important;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6) !important;
+  overflow: hidden !important;
+  animation: fadeInUp 0.4s ease !important;
+}
+
+.premium-cinema-video {
+  position: relative !important;
+  padding-top: 56.25% !important; /* 16:9 aspect ratio */
+  background: #000 !important;
+}
+
+.premium-cinema-video iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+}
+
+.premium-cinema-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: rgba(0,0,0,0.6) !important;
+  color: #fff !important;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 50%;
+  z-index: 20 !important;
+  transition: background 0.3s !important;
+}
+.premium-cinema-close:hover {
+  background: rgba(255, 0, 0, 0.7) !important;
+}
+
+.premium-cinema-caption {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0)) !important;
+  color: #f3f4f6 !important;
+  text-align: center;
+}
+
+.premium-cinema-caption h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #fff !important;
+}
+
+.premium-cinema-caption p {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  color: #d1d5db !important;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

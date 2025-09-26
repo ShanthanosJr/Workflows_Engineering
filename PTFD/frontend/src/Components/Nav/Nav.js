@@ -45,8 +45,8 @@ export default function Nav() {
         <div className="nav-profile-section">
           <div className="nav-profile-header">
             <div className="nav-welcome-badge">
-              <span className="nav-welcome-icon">👋</span>
-              <span>Welcome to</span>
+              <span className="nav-welcome-icon">📈💰📊</span>
+              <span>Welcome To Management Of</span>
             </div>
             <div className="nav-brand-title">
               <span className="nav-brand-icon">🏗️</span>
@@ -118,7 +118,7 @@ export default function Nav() {
                     <span className="nav-link-icon">🦺</span>
                     <div className="nav-link-text">
                       <span className="nav-primary-text">Workers & Safety</span>
-                      <span className="nav-secondary-text">Safety protocols</span>
+                      <span className="nav-secondary-text">Worker Safety & Payroll Management</span>
                     </div>
                   </div>
                   <span className="nav-link-arrow">→</span>
@@ -135,7 +135,7 @@ export default function Nav() {
                     <span className="nav-link-icon">🧰</span>
                     <div className="nav-link-text">
                       <span className="nav-primary-text">Tools</span>
-                      <span className="nav-secondary-text">Equipment management</span>
+                      <span className="nav-secondary-text">Equipment & Tool management</span>
                     </div>
                   </div>
                   <span className="nav-link-arrow">→</span>
@@ -152,7 +152,7 @@ export default function Nav() {
                     <span className="nav-link-icon">🧱</span>
                     <div className="nav-link-text">
                       <span className="nav-primary-text">Materials</span>
-                      <span className="nav-secondary-text">Resource inventory</span>
+                      <span className="nav-secondary-text">Materials & Resource Management</span>
                     </div>
                   </div>
                   <span className="nav-link-arrow">→</span>
@@ -169,7 +169,7 @@ export default function Nav() {
                     <span className="nav-link-icon">📋</span>
                     <div className="nav-link-text">
                       <span className="nav-primary-text">Inspections</span>
-                      <span className="nav-secondary-text">Quality control</span>
+                      <span className="nav-secondary-text">Monitoring & Compliance Control</span>
                     </div>
                   </div>
                   <span className="nav-link-arrow">→</span>
@@ -190,8 +190,8 @@ export default function Nav() {
                 <div className="nav-accordion-title">
                   <span className="nav-title-icon">📊</span>
                   <div className="nav-title-text">
-                    <span className="nav-primary-text">Projects & Dashboard</span>
-                    <span className="nav-secondary-text">Analytics & insights</span>
+                    <span className="nav-primary-text">Projects & Dashboards</span>
+                    <span className="nav-secondary-text">Projects & Financial Management</span>
                   </div>
                 </div>
                 <span className={`nav-expand-icon ${expandPD ? 'nav-expand-rotated' : ''}`}>▼</span>
@@ -201,12 +201,12 @@ export default function Nav() {
                 <ul className="nav-submenu-list">
                   <li>
                     <NavLink 
-                      to="/projectshome" 
+                      to="/project-requests" 
                       className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">📁</span>
-                      <span className="nav-submenu-text">Projects</span>
+                      <span className="nav-submenu-text">Projects Requests</span>
                     </NavLink>
                   </li>
                   <li>
@@ -239,6 +239,16 @@ export default function Nav() {
                       <span className="nav-submenu-text">Financial Dashboard</span>
                     </NavLink>
                   </li>
+                                 <li>
+                    <NavLink 
+                      to="/profile-dashboard" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">👤</span>
+                      <span className="nav-submenu-text">User Dashboard</span>
+                    </NavLink>
+                  </li>
                   <li>
                     <NavLink 
                       to="/chatbot" 
@@ -246,7 +256,7 @@ export default function Nav() {
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">🤖</span>
-                      <span className="nav-submenu-text">ChatBot</span>
+                      <span className="nav-submenu-text">Projecto AI</span>
                     </NavLink>
                   </li>
                 </ul>

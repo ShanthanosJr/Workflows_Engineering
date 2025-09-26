@@ -29,6 +29,9 @@ import ProtectedRoute from './Components/Auth/ProtectedRoute';
 
 import UserProjects from './Components/UserView/UserProjects';
 import UserTimeline from './Components/UserView/UserTimeline';
+import ProjectReqsAll from './Components/Projects/ProjectReqsAll';
+import UserFinance from './Components/UserView/UserFinance';
+import JoinWithUs from './Components/UserView/JoinWithUs';
 
 export default function App() {
   return (
@@ -75,6 +78,9 @@ export default function App() {
         <Route path="/profile-dashboard" element={<UserDashboard />} />
         <Route path="/user-projects" element={<UserProjects />} />
         <Route path="/user-timeline" element={<UserTimeline />} />
+        <Route path="/project-requests" element={<ProjectReqsAll />} />
+        <Route path="/user-finance" element={<UserFinance />} />
+        <Route path="/join-with-us" element={<JoinWithUs />} />
       </Routes>
     </div>
   );

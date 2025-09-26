@@ -30,8 +30,8 @@ function UpdateProjects() {
     },
     pnumber: {
       required: true,
-      pattern: /^[A-Z]{2,4}-\d{4}-\d{3}$/,
-      message: "Format: ABC-2024-001 (2-4 letters, year, 3-digit number)"
+      pattern: /^[A-Z]{2,4}-\d{4}-\d{4}$/,
+      message: "Format: ABC-2024-0000 (2-4 letters, year, 3-digit number)"
     },
     pcode: {
       required: true,
@@ -48,8 +48,8 @@ function UpdateProjects() {
     },
     pownerid: {
       required: true,
-      pattern: /^OWN-\d{4}-\d{2}$/,
-      message: "Format: OWN-2024-01"
+      pattern: /^OWN-\d{4}-\d{4}$/,
+      message: "Format: OWN-2024-0000"
     },
     pownername: {
       required: true,
@@ -781,7 +781,16 @@ function UpdateProjects() {
                                   <div key={`existing-${index}`} className="col-lg-3 col-md-4 col-sm-6">
                                     <div className="position-relative rounded-3 overflow-hidden shadow-sm" style={{
                                       height: '160px',
-                                      background: 'linear-gradient(135deg, #f8f7f4 0%, #fdfcfb 100%)'
+                                      background: 'linear-gradient(135deg, #f8f7f4 0%, #fdfcfb 100%)',
+                                      transition: 'all 0.3s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.transform = 'translateY(-5px)';
+                                      e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.transform = 'translateY(0)';
+                                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
                                     }}>
                                       <img
                                         src={url}
@@ -791,23 +800,41 @@ function UpdateProjects() {
                                       />
                                       <button
                                         type="button"
-                                        className="btn position-absolute top-2 end-2"
+                                        className="btn position-absolute top-0 end-0"
                                         onClick={() => removeExistingImage(index)}
                                         style={{
-                                          width: '36px',
-                                          height: '36px',
+                                          width: '32px',
+                                          height: '32px',
                                           borderRadius: '50%',
-                                          background: 'rgba(239, 68, 68, 0.9)',
+                                          background: 'rgba(220, 38, 38, 0.95)',
                                           color: 'white',
                                           border: 'none',
                                           display: 'flex',
                                           alignItems: 'center',
                                           justifyContent: 'center',
-                                          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                                          boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)',
+                                          cursor: 'pointer',
+                                          zIndex: 20,
+                                          transition: 'all 0.2s ease',
+                                          transform: 'scale(1)',
                                         }}
-                                        title="Discard"
+                                        onMouseEnter={(e) => {
+                                          e.currentTarget.style.transform = 'scale(1.15)';
+                                          e.currentTarget.style.background = 'rgba(220, 38, 38, 1)';
+                                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.6)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.transform = 'scale(1)';
+                                          e.currentTarget.style.background = 'rgba(220, 68, 68, 0.95)';
+                                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(220, 38, 38, 0.4)';
+                                        }}
+                                        title="Remove Image"
                                       >
-                                        <i className="fas fa-times fs-6"></i>
+                                        <i className="fas fa-times" style={{ 
+                                          color: 'inherit', 
+                                          fontSize: '14px',
+                                          fontWeight: 'bold'
+                                        }}></i>
                                       </button>
                                       <div className="position-absolute bottom-0 start-0 end-0 bg-primary bg-opacity-75 text-white text-center py-1" style={{ fontSize: '0.8rem' }}>
                                         Established {index + 1}
@@ -815,6 +842,93 @@ function UpdateProjects() {
                                     </div>
                                   </div>
                                 ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="mt-2 text-center">
+                            <small className="text-info fw-medium">
+                              <i className="fas fa-info-circle me-1"></i>
+                              Hover over images and click the <span className="text-danger">✕</span> button to remove them
+                            </small>
+                          </div>
+
+                          {/* New Images Preview */}
+                          {imagePreviewUrls.length > 0 && (
+                            <div className="mb-4">
+                              <h6 className="fw-semibold mb-3" style={{ color: '#059669' }}>🆕 Augmented Preview ({imagePreviewUrls.length})</h6>
+                              <div className="row g-3">
+                                {imagePreviewUrls.map((url, index) => (
+                                  <div key={`new-${index}`} className="col-lg-3 col-md-4 col-sm-6">
+                                    <div className="position-relative rounded-3 overflow-hidden shadow-sm" style={{
+                                      height: '160px',
+                                      background: 'linear-gradient(135deg, #f8f7f4 0%, #fdfcfb 100%)',
+                                      transition: 'all 0.3s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.transform = 'translateY(-5px)';
+                                      e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.transform = 'translateY(0)';
+                                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+                                    }}>
+                                      <img
+                                        src={url}
+                                        alt={`New ${index + 1}`}
+                                        className="img-fluid w-100 h-100 object-cover"
+                                        style={{ objectFit: 'cover' }}
+                                      />
+                                      <button
+                                        type="button"
+                                        className="btn position-absolute top-0 end-0 m-2"
+                                        onClick={() => removeNewImage(index)}
+                                        style={{
+                                          width: '32px',
+                                          height: '32px',
+                                          borderRadius: '50%',
+                                          background: 'rgba(220, 38, 38, 0.95)',
+                                          color: 'white',
+                                          border: 'none',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)',
+                                          cursor: 'pointer',
+                                          zIndex: 20,
+                                          transition: 'all 0.2s ease',
+                                          transform: 'scale(1)',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.currentTarget.style.transform = 'scale(1.15)';
+                                          e.currentTarget.style.background = 'rgba(220, 38, 38, 1)';
+                                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.6)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.transform = 'scale(1)';
+                                          e.currentTarget.style.background = 'rgba(220, 68, 68, 0.95)';
+                                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(220, 38, 38, 0.4)';
+                                        }}
+                                        title="Remove Image"
+                                      >
+                                        <i className="fas fa-times" style={{ 
+                                          color: 'inherit', 
+                                          fontSize: '14px',
+                                          fontWeight: 'bold'
+                                        }}></i>
+                                      </button>
+                                      <div className="position-absolute bottom-0 start-0 end-0 bg-success bg-opacity-75 text-white text-center py-1" style={{ fontSize: '0.8rem' }}>
+                                        {selectedImages[index]?.name || `Augmented ${index + 1}`}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="mt-2 text-center">
+                                <small className="text-info fw-medium">
+                                  <i className="fas fa-info-circle me-1"></i>
+                                  Hover over images and click the <span className="text-danger">✕</span> button to remove them
+                                </small>
                               </div>
                             </div>
                           )}
@@ -856,53 +970,6 @@ function UpdateProjects() {
                               Integrate up to {10 - existingImages.length - selectedImages.length} additional assets (max 2MB each). Auto-compression for seamless enhancement.
                             </div>
                           </div>
-
-                          {/* New Images Preview */}
-                          {imagePreviewUrls.length > 0 && (
-                            <div className="mb-4">
-                              <h6 className="fw-semibold mb-3" style={{ color: '#059669' }}>🆕 Augmented Preview ({imagePreviewUrls.length})</h6>
-                              <div className="row g-3">
-                                {imagePreviewUrls.map((url, index) => (
-                                  <div key={`new-${index}`} className="col-lg-3 col-md-4 col-sm-6">
-                                    <div className="position-relative rounded-3 overflow-hidden shadow-sm" style={{
-                                      height: '160px',
-                                      background: 'linear-gradient(135deg, #f8f7f4 0%, #fdfcfb 100%)'
-                                    }}>
-                                      <img
-                                        src={url}
-                                        alt={`New ${index + 1}`}
-                                        className="img-fluid w-100 h-100 object-cover"
-                                        style={{ objectFit: 'cover' }}
-                                      />
-                                      <button
-                                        type="button"
-                                        className="btn position-absolute top-2 end-2"
-                                        onClick={() => removeNewImage(index)}
-                                        style={{
-                                          width: '36px',
-                                          height: '36px',
-                                          borderRadius: '50%',
-                                          background: 'rgba(239, 68, 68, 0.9)',
-                                          color: 'white',
-                                          border: 'none',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
-                                        }}
-                                        title="Discard"
-                                      >
-                                        <i className="fas fa-times fs-6"></i>
-                                      </button>
-                                      <div className="position-absolute bottom-0 start-0 end-0 bg-success bg-opacity-75 text-white text-center py-1" style={{ fontSize: '0.8rem' }}>
-                                        {selectedImages[index]?.name || `Augmented ${index + 1}`}
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
 
                           {/* Image Summary */}
                           <div className="mt-3 text-center">

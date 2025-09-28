@@ -16,36 +16,49 @@ const CreateTool = ({ onSave, onClose }) => {
   const today = new Date().toISOString().split("T")[0];
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
 
-    // Serial: only numbers
-    if (name === "serial") {
-      if (!/^\d*$/.test(value)) return;
-    }
+  // Serial: only numbers, max 5 digits
+  if (name === "serial") {
+    if (!/^\d*$/.test(value)) return;
+    if (value.length > 5) return;
+  }
 
-    // Depreciation Rate: only positive numbers, no special chars
-    if (name === "depreciationRate") {
-      if (!/^\d*\.?\d*$/.test(value)) return;
-      if (value && parseFloat(value) < 0) return;
-    }
+  // Depreciation Rate: only positive numbers
+  // - if integer → max 4 digits
+  // - if decimal → max 3 decimal places
+  if (name === "depreciationRate") {
+    if (!/^\d*\.?\d{0,3}$/.test(value)) return;
+    if (value && parseFloat(value) < 0) return;
 
-    // Usage Hours: only positive integers
-    if (name === "usageHours") {
-      if (!/^\d*$/.test(value)) return;
-      if (value && parseInt(value) < 0) return;
-    }
+    // if integer, max 4 digits
+    if (!value.includes(".") && value.length > 4) return;
+  }
 
-    // Price: only positive numbers, no special chars
-    if (name === "price") {
-      if (!/^\d*\.?\d*$/.test(value)) return;
-      if (value && parseFloat(value) < 0) return;
-    }
+  // Usage Hours: only positive integers, max 3 digits
+  if (name === "usageHours") {
+    if (!/^\d*$/.test(value)) return;
+    if (value && parseInt(value) < 0) return;
+    if (value.length > 3) return;
+  }
 
-    setForm({
-      ...form,
-      [name]: value,
-    });
-  };
+  // Price: only positive numbers
+  // - if integer → max 4 digits
+  // - if decimal → max 4 decimal places
+  if (name === "price") {
+    if (!/^\d*\.?\d{0,4}$/.test(value)) return;
+    if (value && parseFloat(value) < 0) return;
+
+    // if integer, max 4 digits
+    if (!value.includes(".") && value.length > 4) return;
+  }
+
+  setForm({
+    ...form,
+    [name]: value,
+  });
+};
+
 
   // Handle image file and convert to base64
   const handleImageChange = (e) => {

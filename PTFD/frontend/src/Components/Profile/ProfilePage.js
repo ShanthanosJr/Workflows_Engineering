@@ -351,7 +351,7 @@ const ProfilePage = () => {
                 Update personal details, employment information, and contact data with precision in your construction management profile.
               </p>
               <div className="d-flex justify-content-center gap-3 flex-wrap">
-                <button onClick={() => navigate("/projectshome")} className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
+                <button onClick={() => navigate("/projects")} className="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold" style={{
                   borderRadius: '50px',
                   border: '2px solid #6B46C1',
                   color: '#6B46C1',

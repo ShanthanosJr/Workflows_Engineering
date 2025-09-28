@@ -7,6 +7,10 @@ import UserProfile from '../UserProfile/UserProfile'; // Added import
 export default function Nav() {
   const [open, setOpen] = useState(false);
   const [expandPD, setExpandPD] = useState(false); // collapsed by default
+  const [expandWS, setExpandWS] = useState(false); // Workers & Safety accordion
+  const [expandT, setExpandT] = useState(false); // Tools accordion
+  const [expandM, setExpandM] = useState(false); // Materials accordion
+  const [expandI, setExpandI] = useState(false); // Inspections accordion
 
   const closeMenu = () => setOpen(false);
   const toggleMenu = () => setOpen((v) => !v);
@@ -107,75 +111,271 @@ export default function Nav() {
                   <span className="nav-link-arrow">→</span>
                 </NavLink>
               </li>
-
-              <li className="nav-menu-item">
-                <NavLink
-                  to="/WSPM"
-                  className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
-                  onClick={closeMenu}
-                >
-                  <div className="nav-link-content">
-                    <span className="nav-link-icon">🦺</span>
-                    <div className="nav-link-text">
-                      <span className="nav-primary-text">Workers & Safety</span>
-                      <span className="nav-secondary-text">Worker Safety & Payroll Management</span>
-                    </div>
-                  </div>
-                  <span className="nav-link-arrow">→</span>
-                </NavLink>
-              </li>
-
-              <li className="nav-menu-item">
-                <NavLink
-                  to="/ETM"
-                  className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
-                  onClick={closeMenu}
-                >
-                  <div className="nav-link-content">
-                    <span className="nav-link-icon">🧰</span>
-                    <div className="nav-link-text">
-                      <span className="nav-primary-text">Tools</span>
-                      <span className="nav-secondary-text">Equipment & Tool management</span>
-                    </div>
-                  </div>
-                  <span className="nav-link-arrow">→</span>
-                </NavLink>
-              </li>
-
-              <li className="nav-menu-item">
-                <NavLink
-                  to="/MISTM"
-                  className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
-                  onClick={closeMenu}
-                >
-                  <div className="nav-link-content">
-                    <span className="nav-link-icon">🧱</span>
-                    <div className="nav-link-text">
-                      <span className="nav-primary-text">Materials</span>
-                      <span className="nav-secondary-text">Materials & Resource Management</span>
-                    </div>
-                  </div>
-                  <span className="nav-link-arrow">→</span>
-                </NavLink>
-              </li>
-
-              <li className="nav-menu-item">
-                <NavLink
-                  to="/CIM"
-                  className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
-                  onClick={closeMenu}
-                >
-                  <div className="nav-link-content">
-                    <span className="nav-link-icon">📋</span>
-                    <div className="nav-link-text">
-                      <span className="nav-primary-text">Inspections</span>
-                      <span className="nav-secondary-text">Monitoring & Compliance Control</span>
-                    </div>
-                  </div>
-                  <span className="nav-link-arrow">→</span>
-                </NavLink>
-              </li>
             </ul>
+          </div>
+
+          {/* Workers & Safety accordion */}
+          <div className="nav-menu-section">
+            <div className="nav-accordion-item">
+              <button
+                className={`nav-accordion-header ${expandWS ? 'nav-accordion-expanded' : ''}`}
+                aria-expanded={expandWS}
+                aria-controls="workers-safety-submenu"
+                onClick={() => setExpandWS((v) => !v)}
+              >
+                <div className="nav-accordion-title">
+                  <span className="nav-title-icon">🦺</span>
+                  <div className="nav-title-text">
+                    <span className="nav-primary-text">Workers & Safety</span>
+                    <span className="nav-secondary-text">Personnel Management</span>
+                  </div>
+                </div>
+                <span className={`nav-expand-icon ${expandWS ? 'nav-expand-rotated' : ''}`}>▼</span>
+              </button>
+              
+              <div id="workers-safety-submenu" className={`nav-accordion-content ${expandWS ? 'nav-accordion-content-expanded' : ''}`}>
+                <ul className="nav-submenu-list">
+                  <li>
+                    <NavLink 
+                      to="/WSPM" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">📋</span>
+                      <span className="nav-submenu-text">Safety Protocols</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/worker-certifications" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">🏆</span>
+                      <span className="nav-submenu-text">Certifications</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/incident-reports" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">⚠️</span>
+                      <span className="nav-submenu-text">Incident Reports</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/training-modules" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">📚</span>
+                      <span className="nav-submenu-text">Training Modules</span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Tools accordion */}
+          <div className="nav-menu-section">
+            <div className="nav-accordion-item">
+              <button
+                className={`nav-accordion-header ${expandT ? 'nav-accordion-expanded' : ''}`}
+                aria-expanded={expandT}
+                aria-controls="tools-submenu"
+                onClick={() => setExpandT((v) => !v)}
+              >
+                <div className="nav-accordion-title">
+                  <span className="nav-title-icon">🧰</span>
+                  <div className="nav-title-text">
+                    <span className="nav-primary-text">Tools</span>
+                    <span className="nav-secondary-text">Equipment Management</span>
+                  </div>
+                </div>
+                <span className={`nav-expand-icon ${expandT ? 'nav-expand-rotated' : ''}`}>▼</span>
+              </button>
+              
+              <div id="tools-submenu" className={`nav-accordion-content ${expandT ? 'nav-accordion-content-expanded' : ''}`}>
+                <ul className="nav-submenu-list">
+                  <li>
+                    <a 
+                      href="http://localhost:3001/admin"
+                      className="nav-submenu-link"
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">🔧</span>
+                      <span className="nav-submenu-text">Tool Inventory</span>
+                    </a>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/tool-maintenance" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">🛠️</span>
+                      <span className="nav-submenu-text">Maintenance Schedule</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/tool-assignments" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">📌</span>
+                      <span className="nav-submenu-text">Assignments</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/tool-calibration" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">📏</span>
+                      <span className="nav-submenu-text">Calibration</span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Materials accordion */}
+          <div className="nav-menu-section">
+            <div className="nav-accordion-item">
+              <button
+                className={`nav-accordion-header ${expandM ? 'nav-accordion-expanded' : ''}`}
+                aria-expanded={expandM}
+                aria-controls="materials-submenu"
+                onClick={() => setExpandM((v) => !v)}
+              >
+                <div className="nav-accordion-title">
+                  <span className="nav-title-icon">🧱</span>
+                  <div className="nav-title-text">
+                    <span className="nav-primary-text">Materials</span>
+                    <span className="nav-secondary-text">Resource Management</span>
+                  </div>
+                </div>
+                <span className={`nav-expand-icon ${expandM ? 'nav-expand-rotated' : ''}`}>▼</span>
+              </button>
+              
+              <div id="materials-submenu" className={`nav-accordion-content ${expandM ? 'nav-accordion-content-expanded' : ''}`}>
+                <ul className="nav-submenu-list">
+                  <li>
+                    <NavLink 
+                      to="/MISTM" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">📦</span>
+                      <span className="nav-submenu-text">Stock Management</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/material-suppliers" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">🚚</span>
+                      <span className="nav-submenu-text">Suppliers</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/material-orders" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">🛒</span>
+                      <span className="nav-submenu-text">Orders</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/material-usage" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">📊</span>
+                      <span className="nav-submenu-text">Usage Reports</span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Inspections accordion */}
+          <div className="nav-menu-section">
+            <div className="nav-accordion-item">
+              <button
+                className={`nav-accordion-header ${expandI ? 'nav-accordion-expanded' : ''}`}
+                aria-expanded={expandI}
+                aria-controls="inspections-submenu"
+                onClick={() => setExpandI((v) => !v)}
+              >
+                <div className="nav-accordion-title">
+                  <span className="nav-title-icon">📋</span>
+                  <div className="nav-title-text">
+                    <span className="nav-primary-text">Inspections</span>
+                    <span className="nav-secondary-text">Quality Control</span>
+                  </div>
+                </div>
+                <span className={`nav-expand-icon ${expandI ? 'nav-expand-rotated' : ''}`}>▼</span>
+              </button>
+              
+              <div id="inspections-submenu" className={`nav-accordion-content ${expandI ? 'nav-accordion-content-expanded' : ''}`}>
+                <ul className="nav-submenu-list">
+                  <li>
+                    <NavLink 
+                      to="/CIM" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">🔍</span>
+                      <span className="nav-submenu-text">Compliance Checks</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/safety-inspections" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">✅</span>
+                      <span className="nav-submenu-text">Safety Inspections</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/quality-audits" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">📐</span>
+                      <span className="nav-submenu-text">Quality Audits</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink 
+                      to="/inspection-reports" 
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                      onClick={closeMenu}
+                    >
+                      <span className="nav-submenu-icon">📝</span>
+                      <span className="nav-submenu-text">Reports</span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
 
           {/* Enhanced Projects & Dashboard accordion */}
@@ -191,7 +391,7 @@ export default function Nav() {
                   <span className="nav-title-icon">📊</span>
                   <div className="nav-title-text">
                     <span className="nav-primary-text">Projects & Dashboards</span>
-                    <span className="nav-secondary-text">Projects & Financial Management</span>
+                    <span className="nav-secondary-text">Project Management</span>
                   </div>
                 </div>
                 <span className={`nav-expand-icon ${expandPD ? 'nav-expand-rotated' : ''}`}>▼</span>
@@ -206,7 +406,7 @@ export default function Nav() {
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">📁</span>
-                      <span className="nav-submenu-text">Projects Requests</span>
+                      <span className="nav-submenu-text">Project Requests</span>
                     </NavLink>
                   </li>
                   <li>
@@ -216,7 +416,7 @@ export default function Nav() {
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">📈</span>
-                      <span className="nav-submenu-text">Projects Dashboard</span>
+                      <span className="nav-submenu-text">Project Tracking</span>
                     </NavLink>
                   </li>
                   <li>
@@ -226,7 +426,7 @@ export default function Nav() {
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">⏱️</span>
-                      <span className="nav-submenu-text">Timeline Dashboard</span>
+                      <span className="nav-submenu-text">Timeline Manager</span>
                     </NavLink>
                   </li>
                   <li>
@@ -236,7 +436,7 @@ export default function Nav() {
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">💰</span>
-                      <span className="nav-submenu-text">Financial Dashboard</span>
+                      <span className="nav-submenu-text">Financial Overview</span>
                     </NavLink>
                   </li>
                                  <li>
@@ -246,7 +446,7 @@ export default function Nav() {
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">👤</span>
-                      <span className="nav-submenu-text">User Dashboard</span>
+                      <span className="nav-submenu-text">Administrator Analytics</span>
                     </NavLink>
                   </li>
                   <li>
@@ -256,7 +456,7 @@ export default function Nav() {
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">🤖</span>
-                      <span className="nav-submenu-text">Projecto AI</span>
+                      <span className="nav-submenu-text">Project AI Assistant</span>
                     </NavLink>
                   </li>
                 </ul>

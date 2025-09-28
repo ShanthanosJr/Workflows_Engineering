@@ -2,9 +2,11 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
 import { FaClipboardList } from "react-icons/fa";
+import Nav from "../../Nav/Nav";
 
 const ToolHome = () => (
   <div className="App">
+    <Nav />
     {/* Themed Header Bar */}
     <header className="caution-tape-bar top-bar" style={{ background: "#ffd700", color: "#222", padding: "1rem 0", fontWeight: "bold", letterSpacing: "0.1em" }}>
       <div>WORKFLOWS ENGINEERING - Equipment & Tool Management</div>

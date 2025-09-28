@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import "./ptfdIndex.css";
 import NavV2 from '../Nav/NavV2';
+import Footer from '../Nav/ptfdFooter'; // Import the ptfdFooter component
 import { useNavigate } from 'react-router-dom';
 
 // Hero Banner Component
@@ -716,68 +717,6 @@ const FutureCTA = () => {
     );
 };
 
-// Updated Premium Footer Component to match ProjectHome.js exactly
-const PremiumFooter = () => {
-    return (
-        <footer className="construction-footer text-center bg-dark text-light border-top border-warning">
-            <div className="container">
-                <div className="row">
-                    <div className="col-12">
-                        <div className="footer-brand mb-2 d-flex justify-content-center gap-2 fs-4 fw-bold text-warning">
-                            <span>WORKFLOWS</span>
-                            <span>ENGINEERING</span>
-                        </div>
-
-                        <p className="footer-tagline text-uppercase mb-2">
-                            Smart Construction Workflow & Safety Management System
-                        </p>
-
-                        {/* Social icons */}
-                        <div className="footer-social" aria-label="Social media links">
-                            <a href="https://facebook.com/workflowsengineering" target="_blank" rel="noopener noreferrer" aria-label="Visit our Facebook" title="Facebook">
-                                <span role="img" aria-hidden>📘</span>
-                            </a>
-                            <a href="https://instagram.com/workflowsengineering" target="_blank" rel="noopener noreferrer" aria-label="Visit our Instagram" title="Instagram">
-                                <span role="img" aria-hidden>📸</span>
-                            </a>
-                            <a href="https://linkedin.com/company/workflowsengineering" target="_blank" rel="noopener noreferrer" aria-label="Visit our LinkedIn" title="LinkedIn">
-                                <span role="img" aria-hidden>💼</span>
-                            </a>
-                            <a href="https://x.com/workflowseng" target="_blank" rel="noopener noreferrer" aria-label="Visit our Twitter/X" title="Twitter/X">
-                                <span role="img" aria-hidden>🐦</span>
-                            </a>
-                            <a href="https://youtube.com/@workflowsengineering" target="_blank" rel="noopener noreferrer" aria-label="Visit our YouTube" title="YouTube">
-                                <span role="img" aria-hidden>▶️</span>
-                            </a>
-                        </div>
-
-                        {/* Quick links */}
-                        <div className="footer-links">
-                            <a href="#hero">Home</a>
-                            <a href="#project">Projects</a>
-                            <a href="#timeline">Timelines</a>
-                            <a href="#dashboard">Financial</a>
-                            <a href="#safety">Safety</a>
-                            <a href="#growth">Market</a>
-                        </div>
-
-                        {/* Contact */}
-                        <div className="footer-contact">
-                            <div>Email: info@workflowsengineering.com</div>
-                            <div>Phone: +1 (71) 429-8544</div>
-                        </div>
-
-                        <p className="footer-website fw-semibold text-warning mb-1">
-                            WWW.WORKFLOWSENGINEERING.COM
-                        </p>
-                        <div className="footer-copy">© {new Date().getFullYear()} Workflows Engineering. All rights reserved.</div>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    );
-};
-
 // Main Homepage Component
 const ConstructionHomepage = () => {
     useEffect(() => {
@@ -796,7 +735,7 @@ const ConstructionHomepage = () => {
             <FinancialDashboardIntro />
             <ProjectoAIPremium />
             <FutureCTA />
-            <PremiumFooter />
+            <Footer />
         </div>
     );
 };

@@ -74,8 +74,8 @@ export default function AddProjects() {
     },
     potelnumber: {
       required: true,
-      pattern: /^[+]?[1-9][\d\s\-()]{8,15}$/,
-      message: "Valid phone number format (8-15 digits with optional formatting)"
+      pattern: /^(?:0\d{9}|\+94[\s-]?\d{2,3}[\s-]?\d{3}[\s-]?\d{3})$/,
+      message: "Valid phone number must be like 0712345678 or +94 712 345 678"
     },
     powmail: {
       required: true,
@@ -793,14 +793,14 @@ export default function AddProjects() {
                                       background: 'linear-gradient(135deg, #f8f7f4 0%, #fdfcfb 100%)',
                                       transition: 'all 0.3s ease',
                                     }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.transform = 'translateY(-5px)';
-                                      e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.transform = 'translateY(0)';
-                                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
-                                    }}>
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-5px)';
+                                        e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+                                      }}>
                                       <img
                                         src={url}
                                         alt={`Asset ${index + 1}`}
@@ -839,8 +839,8 @@ export default function AddProjects() {
                                         }}
                                         title="Remove Image"
                                       >
-                                        <i className="fas fa-times" style={{ 
-                                          color: 'inherit', 
+                                        <i className="fas fa-times" style={{
+                                          color: 'inherit',
                                           fontSize: '14px',
                                           fontWeight: 'bold'
                                         }}></i>
@@ -952,7 +952,7 @@ export default function AddProjects() {
                             value={formData.potelnumber}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            placeholder="e.g., +1 (555) 123-4567"
+                            placeholder="e.g., +(94) 123-456-789 or 071-123-4567"
                           />
                           {renderValidationFeedback("potelnumber")}
                         </div>

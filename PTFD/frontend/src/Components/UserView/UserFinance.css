@@ -109,7 +109,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(0, 0, 0, 0.4) 100%);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(0, 0, 0, 0.6) 100%);
 }
 
 .finance-desc-hero-content {
@@ -123,15 +123,25 @@
   max-width: 900px;
   width: 100%;
   padding: 0 2rem;
+  animation: heroContentFadeIn 1.5s ease-out;
 }
 
+/* Hero Title with gradient (like photo styling) */
 .finance-desc-hero-title {
   font-family: var(--finance-font-display);
   font-size: clamp(3rem, 8vw, 6rem);
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 2rem;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   line-height: 1.1;
+
+  /* gradient text */
+  background: linear-gradient(180deg, #ffffff 0%, #e9eef2 45%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  text-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  animation: titleSlideUp 1.2s ease-out 0.3s both;
 }
 
 .finance-desc-slide-content {
@@ -144,36 +154,107 @@
   font-size: clamp(1.8rem, 4vw, 2.5rem);
   font-weight: 600;
   margin-bottom: 1rem;
-  color: var(--finance-accent);
+
+  background: linear-gradient(180deg, #ffffff 0%, #dbe3e9 60%, #7c8a96 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  text-shadow: 0 3px 8px rgba(0,0,0,0.38);
+  animation: subtitleFadeIn 1s ease-out 0.6s both;
 }
 
+
+/* Slide Description (light steel-gray for readability) */
 .finance-desc-slide-description {
   font-size: clamp(1.1rem, 2.5vw, 1.4rem);
   line-height: 1.6;
-  opacity: 0.95;
   max-width: 700px;
   margin: 0 auto;
+
+  color: #e5e9ed !important; /* light grayish-blue */
+  text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+
+  animation: descriptionFadeIn 1s ease-out 0.9s both;
 }
 
+.finance-desc-hero-actions {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  animation: actionsFadeIn 1s ease-out 0.9s both;
+}
+
+
+
+/* Premium Buttons */
 .finance-desc-hero-button {
-  background: var(--finance-primary);
-  color: var(--finance-white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
   border: none;
-  padding: 1.2rem 3rem;
-  font-size: 1.2rem;
-  font-weight: 600;
   border-radius: var(--finance-border-radius);
+  font-family: var(--finance-font-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
   transition: var(--finance-transition);
-  box-shadow: var(--finance-shadow-lg);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  color: var(--finance-white);
+  border: 2px solid var(--finance-white);
+  animation: actionsFadeIn 1s ease-out 1.2s both;
+  box-shadow: var(--finance-shadow);
+}
+
+.finance-desc-hero-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
 }
 
 .finance-desc-hero-button:hover {
-  background: var(--finance-primary-dark);
-  transform: translateY(-3px);
-  box-shadow: var(--finance-shadow-xl);
+  background: var(--finance-white);
+  color: var(--finance-black);
+  transform: translateY(-2px);
+  box-shadow: var(--finance-shadow-lg);
+}
+
+.finance-desc-hero-button:hover::before {
+  left: 100%;
+}
+
+.premium-pulse-btn {
+  position: relative;
+}
+
+.premium-pulse-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulseRipple 2s infinite;
+}
+
+.premium-play-icon {
+  font-size: 1.1rem;
+  margin-right: 0.5rem;
+  animation: playIconPulse 2s ease-in-out infinite;
 }
 
 .finance-desc-video-navigation {
@@ -349,12 +430,14 @@
   font-size: 1.8rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: var(--finance-white) !important;
 }
 
 .finance-desc-feature-description {
   font-size: 1rem;
   line-height: 1.5;
   opacity: 0.95;
+  color: var(--finance-white)!important;
 }
 
 .finance-desc-feature-indicators {
@@ -518,16 +601,48 @@
 .finance-desc-charts {
   padding: 8rem 0;
   background: linear-gradient(135deg, var(--finance-gray-100) 0%, var(--finance-gray-50) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.finance-desc-charts-video-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.finance-desc-charts-video-background video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.2; /* Low opacity for subtle background */
+}
+
+.finance-desc-charts-video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.7); /* Light overlay to ensure text readability */
 }
 
 .finance-desc-charts-header {
   text-align: center;
   margin-bottom: 5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .finance-desc-charts-showcase {
   max-width: 1000px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .finance-desc-chart-navigation {
@@ -581,11 +696,12 @@
 }
 
 .finance-desc-chart-display {
-  background: var(--finance-white);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: var(--finance-border-radius-lg);
   padding: 3rem;
   box-shadow: var(--finance-shadow-lg);
   min-height: 400px;
+  backdrop-filter: blur(5px);
 }
 
 .finance-desc-chart-container {
@@ -1437,6 +1553,83 @@
 }
 
 /* Animations */
+@keyframes heroContentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes titleSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes subtitleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes descriptionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes actionsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseRipple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+@keyframes playIconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
 @keyframes slideContentFade {
   from {
     opacity: 0;
@@ -1492,15 +1685,35 @@
   }
 }
 
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 @keyframes bounce {
   0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
   }
   40% {
-    transform: translateY(-10px);
+    transform: translateX(-50%) translateY(-10px);
   }
   60% {
-    transform: translateY(-5px);
+    transform: translateX(-50%) translateY(-5px);
   }
 }
 
@@ -1667,6 +1880,10 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  
+  .finance-desc-scroll-indicator {
+    animation: none;
   }
 }
 

@@ -10,12 +10,12 @@ const path = require("path");
 
 // Import Routes
 const projectRoutes = require("./Route/ProjectRoutes");
-const timelineRoutes = require("./Route/TimelineRoutes"); // 👈 add timeline
-const projectTimelineRoutes = require("./Route/ProjectTimelineRts"); // 👈 add project timeline
-const financialDashboardRoutes = require("./Route/FinancialDashboardRts"); // 👈 add financial dashboard
-const chatbotRoutes = require("./Route/ChatBotRts"); // 👈 add chatbot routes
-const userRoutes = require("./Route/UserRoutes"); // 👈 add user routes
-const projectReqRoutes = require("./Route/ProjectReqRoutes"); // 👈 add project request routes
+const timelineRoutes = require("./Route/TimelineRoutes"); //  timeline
+const projectTimelineRoutes = require("./Route/ProjectTimelineRts"); // project timeline
+const financialDashboardRoutes = require("./Route/FinancialDashboardRts"); // financial dashboard
+const chatbotRoutes = require("./Route/ChatBotRts"); // chatbot routes
+const userRoutes = require("./Route/UserRoutes"); // user routes
+const projectReqRoutes = require("./Route/ProjectReqRoutes"); //  project request routes
 
 // Import ChatBot controller for initialization
 const { initializeKnowledgeBase } = require('./Controllers/ChatBotCtrl');
@@ -37,12 +37,12 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/projects", projectRoutes);
-app.use("/timelines", timelineRoutes); // 👈 mount timeline CRUD
-app.use("/project-timelines", projectTimelineRoutes); // 👈 mount project timeline CRUD
-app.use("/financial-dashboard", financialDashboardRoutes); // 👈 mount financial dashboard CRUD
-app.use("/chatbot", chatbotRoutes); // 👈 mount chatbot CRUD
-app.use("/api/users", userRoutes); // 👈 mount user routes
-app.use("/project-requests", projectReqRoutes); // 👈 mount project request routes
+app.use("/timelines", timelineRoutes); // timeline CRUD
+app.use("/project-timelines", projectTimelineRoutes); // project timeline CRUD
+app.use("/financial-dashboard", financialDashboardRoutes); //  financial dashboard CRUD
+app.use("/chatbot", chatbotRoutes); //  chatbot CRUD
+app.use("/api/users", userRoutes); //  user routes
+app.use("/project-requests", projectReqRoutes); //  project request routes
 
 // Test route
 app.get("/test", (req, res) => {

@@ -11,6 +11,26 @@ const UserTimeline = () => {
     const [currentBenefit, setCurrentBenefit] = useState(0);
     const [currentProcess, setCurrentProcess] = useState(0);
     const [showDemo, setShowDemo] = useState(false);
+    const [visibleSections, setVisibleSections] = useState(new Set());
+
+    // Intersection Observer for animations
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setVisibleSections(prev => new Set([...prev, entry.target.id]));
+                    }
+                });
+            },
+            { threshold: 0.1, rootMargin: '100px' }
+        );
+
+        const sections = document.querySelectorAll('[data-animate]');
+        sections.forEach(section => observer.observe(section));
+
+        return () => observer.disconnect();
+    }, []);
 
     // Video slides for header section
     const videoSlides = [
@@ -161,10 +181,7 @@ const UserTimeline = () => {
                         className="premium-demo-cinema"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Close button */}
                         <button onClick={() => setShowDemo(false)} className="premium-cinema-close">✕</button>
-
-                        {/* Cinematic video */}
                         <div className="premium-cinema-video">
                             <iframe
                                 src="https://www.youtube.com/embed/cDGukhMg7DM?autoplay=1&rel=0&modestbranding=1&showinfo=0"
@@ -174,11 +191,9 @@ const UserTimeline = () => {
                                 allowFullScreen
                             />
                         </div>
-
-                        {/* Optional caption / description */}
                         <div className="premium-cinema-caption">
                             <h2>Construction Timeline Process</h2>
-                            <p>From projects to timeline management, here’s how modern construction projects come to life.</p>
+                            <p>From projects to timeline management, here's how modern construction projects come to life.</p>
                         </div>
                     </div>
                 </div>
@@ -202,18 +217,22 @@ const UserTimeline = () => {
                     <div className="timeline-desc-hero-content">
                         <div className="timeline-desc-hero-text">
                             <h1 className="timeline-desc-hero-title">
-                                What is Timeline Management?
+                                Welcome to Timeline Management
                             </h1>
                             <div className="timeline-desc-slide-content">
                                 <h2 className="timeline-desc-slide-title">
                                     {videoSlides[currentVideoSlide].title}
                                 </h2>
-                                <p className="timeline-desc-slide-description">
+                                <p className="timeline-desc-slide-description"><br></br>
                                     {videoSlides[currentVideoSlide].description}
                                 </p>
                             </div>
-                            <button onClick={() => document.getElementById("contact-form").scrollIntoView({ behavior: "smooth" })} className="timeline-desc-hero-button">
-                                Explore Timeline System
+                            <button
+                                onClick={() => setShowDemo(true)}
+                                className="timeline-desc-hero-button premium-pulse-btn"
+                            >
+                                <span className="premium-play-icon">▶</span>
+                                Watch Timeline Demo
                             </button>
                         </div>
                     </div>
@@ -240,7 +259,11 @@ const UserTimeline = () => {
             </section>
 
             {/* Timeline Definition Section */}
-            <section className="timeline-desc-definition">
+            <section
+                className={`timeline-desc-definition ${visibleSections.has('definition') ? 'animate-in' : ''}`}
+                id="definition"
+                data-animate
+            >
                 <div className="timeline-desc-container-inner">
                     <div className="timeline-desc-definition-grid">
                         <div className="timeline-desc-definition-text" id="contact-form">
@@ -305,7 +328,17 @@ const UserTimeline = () => {
             </section>
 
             {/* Benefits Section */}
-            <section className="timeline-desc-benefits">
+            <section
+                className={`timeline-desc-benefits ${visibleSections.has('benefits') ? 'animate-in' : ''}`}
+                id="benefits"
+                data-animate
+            >
+                <div className="timeline-desc-benefits-video-background">
+                    <video autoPlay loop muted playsInline>
+                        <source src="https://www.pexels.com/download/video/5846620/" type="video/mp4" />
+                    </video>
+                    <div className="timeline-desc-benefits-video-overlay"></div>
+                </div>
                 <div className="timeline-desc-container-inner">
                     <div className="timeline-desc-benefits-header">
                         <h2 className="timeline-desc-section-title">
@@ -377,7 +410,11 @@ const UserTimeline = () => {
             </section>
 
             {/* Process Section */}
-            <section className="timeline-desc-process">
+            <section
+                className={`timeline-desc-process ${visibleSections.has('process') ? 'animate-in' : ''}`}
+                id="process"
+                data-animate
+            >
                 <div className="timeline-desc-container-inner">
                     <div className="timeline-desc-process-header">
                         <h2 className="timeline-desc-section-title">
@@ -446,7 +483,17 @@ const UserTimeline = () => {
             </section>
 
             {/* Resource Allocation Section */}
-            <section className="timeline-desc-resources">
+            <section
+                className={`timeline-desc-resources ${visibleSections.has('resources') ? 'animate-in' : ''}`}
+                id="resources"
+                data-animate
+            >
+                <div className="timeline-desc-benefits-video-background">
+                    <video autoPlay loop muted playsInline>
+                        <source src="https://www.pexels.com/download/video/5846711/" type="video/mp4" />
+                    </video>
+                    <div className="timeline-desc-benefits-video-overlay"></div>
+                </div>
                 <div className="timeline-desc-container-inner">
                     <div className="timeline-desc-resources-grid">
                         <div className="timeline-desc-resources-visual">
@@ -517,7 +564,11 @@ const UserTimeline = () => {
             </section>
 
             {/* Technology Section */}
-            <section className="timeline-desc-technology">
+            <section
+                className={`timeline-desc-technology ${visibleSections.has('technology') ? 'animate-in' : ''}`}
+                id="technology"
+                data-animate
+            >
                 <div className="timeline-desc-container-inner">
                     <div className="timeline-desc-technology-content">
                         <h2 className="timeline-desc-section-title">
@@ -564,7 +615,18 @@ const UserTimeline = () => {
             </section>
 
             {/* Call to Action Section */}
-            <section className="timeline-desc-cta">
+            <section
+                className={`timeline-desc-cta ${visibleSections.has('cta') ? 'animate-in' : ''}`}
+                id="cta"
+                data-animate
+            >
+                <div className="timeline-desc-benefits-video-background">
+                    <video autoPlay loop muted playsInline>
+                        <source src="https://www.pexels.com/download/video/4630091/" type="video/mp4" />
+                    </video>
+                    <div className="timeline-desc-benefits-video-overlay"></div>
+                </div>
+
                 <div className="timeline-desc-container-inner">
                     <div className="timeline-desc-cta-content">
                         <h2 className="timeline-desc-cta-title">
@@ -575,7 +637,7 @@ const UserTimeline = () => {
                         </p>
 
                         <div className="timeline-desc-cta-buttons">
-                            <button onClick={() => navigate('/user-projects')} className="timeline-desc-cta-primary-btn">
+                            <button onClick={() => navigate('/user-projects#contact')} className="timeline-desc-cta-primary-btn">
                                 Get Free Accommodation
                             </button>
                             <button className="timeline-desc-cta-secondary-btn"
@@ -603,9 +665,7 @@ const UserTimeline = () => {
                 </div>
             </section>
 
-            {/* Premium Footer */}
             <Footer />
-            {/* End of Premium Footer */}
         </div>
     );
 };

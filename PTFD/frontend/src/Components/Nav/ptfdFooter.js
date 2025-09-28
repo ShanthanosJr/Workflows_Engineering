@@ -1,6 +1,7 @@
 import React from 'react';
+import './ptfdFooter.css';
 
-const PremiumFooter = () => {
+const ptfdFooter = () => {
     return (
         <footer className="construction-footer ptfd-construction-footer">
             <div className="container ptfd-container">
@@ -41,7 +42,7 @@ const PremiumFooter = () => {
                             <a href="#timeline" className="ptfd-footer-link">Timelines</a>
                             <a href="#dashboard" className="ptfd-footer-link">Financial</a>
                             <a href="#safety" className="ptfd-footer-link">Safety</a>
-                            <a href="#growth" className="ptfd-footer-link">Market</a>
+                            <a href="#growth" className="ptfd-footer-link">AI</a>
                         </div>
 
                         {/* Contact 
@@ -54,8 +55,8 @@ const PremiumFooter = () => {
               WWW.WORKFLOWSENGINEERING.COM
             </p>*/}
                         <div className="footer-copy ptfd-footer-copy">
-                            <div className="ptfd-contact-item">Email: info@workflowsengineering.com</div>
-                            <div className="ptfd-contact-item">Phone: +94 (71) 429-8544</div>
+                            <div className="ptfd-contact-item">info@workflowsengineering.com</div>
+                            <div className="ptfd-contact-item">+94 (71) 429-8544</div>
                             © {new Date().getFullYear()} Workflows Engineering. All rights reserved.</div>
                     </div>
                 </div>
@@ -64,4 +65,4 @@ const PremiumFooter = () => {
     );
 };
 
-export default PremiumFooter;
+export default ptfdFooter;

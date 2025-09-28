@@ -26,12 +26,13 @@ import UserDashboard from './Components/Profile/ProfileDashboard';
 
 import ProfilePage from './Components/Profile/ProfilePage';
 import ProtectedRoute from './Components/Auth/ProtectedRoute';
+import ProjectReqsAll from './Components/Projects/ProjectReqsAll';
 
 import UserProjects from './Components/UserView/UserProjects';
 import UserTimeline from './Components/UserView/UserTimeline';
-import ProjectReqsAll from './Components/Projects/ProjectReqsAll';
 import UserFinance from './Components/UserView/UserFinance';
 import JoinWithUs from './Components/UserView/JoinWithUs';
+import UserChatbot from './Components/UserView/UserChatbot';
 
 export default function App() {
   return (
@@ -75,12 +76,14 @@ export default function App() {
         {/* ChatBot routes */}
         <Route path="/chatbot" element={<ChatBot />} />
         {/* Profile Dashboard route */}
+        <Route path="/project-requests" element={<ProjectReqsAll />} />
         <Route path="/profile-dashboard" element={<UserDashboard />} />
+        {/* User View routes */}
         <Route path="/user-projects" element={<UserProjects />} />
         <Route path="/user-timeline" element={<UserTimeline />} />
-        <Route path="/project-requests" element={<ProjectReqsAll />} />
         <Route path="/user-finance" element={<UserFinance />} />
         <Route path="/join-with-us" element={<JoinWithUs />} />
+        <Route path="/user-chatbot" element={<UserChatbot />} />
       </Routes>
     </div>
   );

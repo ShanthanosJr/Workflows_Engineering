@@ -3,18 +3,20 @@ import "./UserProjects.css";
 import axios from "axios";
 import NavV2 from "../Nav/NavV2";
 import Footer from "../Nav/ptfdFooter";
+import { useNavigate } from "react-router-dom";
 
 const UserProjects = () => {
   const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [typeFilter, setTypeFilter] = useState("All");
+  // const [searchTerm, setSearchTerm] = useState("");
+  // const [statusFilter, setStatusFilter] = useState("All");
+  //  const [typeFilter, setTypeFilter] = useState("All");
   const [showDemo, setShowDemo] = useState(false);
-
+  const [visibleSections, setVisibleSections] = useState(new Set());
+  
+  const navigate = useNavigate();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -26,6 +28,25 @@ const UserProjects = () => {
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formMessage, setFormMessage] = useState("");
 
+  // Intersection Observer for animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections(prev => new Set([...prev, entry.target.id]));
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+
+    const sections = document.querySelectorAll('[data-animate]');
+    sections.forEach(section => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
+
   // Fetch projects from API
   useEffect(() => {
     const fetchProjects = async () => {
@@ -36,8 +57,6 @@ const UserProjects = () => {
       } catch (error) {
         console.error("Error fetching projects:", error);
         setProjects([]);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -63,7 +82,6 @@ const UserProjects = () => {
       await axios.post("http://localhost:5050/project-requests", formData);
       setFormMessage("Thank you! Your project request has been submitted successfully. Our team will contact you soon.");
 
-      // Reset form
       setFormData({
         preqname: "",
         preqmail: "",
@@ -71,7 +89,6 @@ const UserProjects = () => {
         preqdescription: ""
       });
 
-      // Clear message after 5 seconds
       setTimeout(() => {
         setFormMessage("");
       }, 5000);
@@ -83,23 +100,19 @@ const UserProjects = () => {
     }
   };
 
-  // Filter projects based on search and filters
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = (
-      (project.pname && project.pname.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (project.plocation && project.plocation.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (project.pdescription && project.pdescription.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+  // Get projects by type for section-wise display
+  const getProjectsByType = (type, limit = 4) => {
+    return projects.filter(project => project.ptype === type).slice(0, limit);
+  };
 
-    const matchesStatus = statusFilter === "All" || project.pstatus === statusFilter;
-    const matchesType = typeFilter === "All" || project.ptype === typeFilter;
-
-    return matchesSearch && matchesStatus && matchesType;
-  });
-
-  // Get unique values for filters
-  const uniqueStatuses = [...new Set(projects.map(p => p.pstatus).filter(Boolean))];
-  const uniqueTypes = [...new Set(projects.map(p => p.ptype).filter(Boolean))];
+  // Get mixed projects (different types)
+  const getMixedProjects = (limit = 4) => {
+    const mixedTypes = ['Industrial', 'Mixed-Use', 'Renovation', 'Government'];
+    return projects.filter(project =>
+      mixedTypes.includes(project.ptype) ||
+      !['Infrastructure', 'Commercial', 'Residential'].includes(project.ptype)
+    ).slice(0, limit);
+  };
 
   const handleViewProject = (project) => {
     setSelectedProject(project);
@@ -157,7 +170,6 @@ const UserProjects = () => {
       return project.pimg[0];
     }
 
-    // Default construction images based on type
     const defaultImages = {
       'Residential': 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
       'Commercial': 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
@@ -178,10 +190,7 @@ const UserProjects = () => {
             className="premium-demo-cinema"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close button */}
             <button onClick={() => setShowDemo(false)} className="premium-cinema-close">✕</button>
-
-            {/* Cinematic video */}
             <div className="premium-cinema-video">
               <iframe
                 src="https://www.youtube.com/embed/MlIhVHMk788?autoplay=1&rel=0&modestbranding=1&showinfo=0"
@@ -191,17 +200,13 @@ const UserProjects = () => {
                 allowFullScreen
               />
             </div>
-
-            {/* Optional caption / description */}
             <div className="premium-cinema-caption">
               <h2>Construction Project Process</h2>
-              <p>From planning to delivery, here’s how modern construction projects come to life.</p>
+              <p>From planning to delivery, here's how modern construction projects come to life.</p>
             </div>
           </div>
         </div>
       )}
-
-
 
       {/* Premium Hero Section */}
       <section className="premium-hero" id="home">
@@ -212,15 +217,15 @@ const UserProjects = () => {
           <div className="premium-hero-overlay"></div>
         </div>
         <div className="premium-hero-content">
-          <h1 className="premium-hero-title">Workflows Construction Projects</h1>
-          <p className="premium-hero-subtitle">Building Excellence Since 2025</p><br></br>
+          <h1 className="premium-hero-title">Workflows Construction Portfolio</h1><br></br>
+          <p className="premium-hero-subtitle">Building Excellence For The Future Generation</p><br></br>
           <div className="premium-hero-actions">
-            {/* <button className="premium-btn premium-btn-primary">View Our Projects</button>*/}
             <button
-              className="premium-btn premium-btn-secondary"
+              className="premium-btn premium-btn-secondary premium-pulse-btn"
               onClick={() => setShowDemo(true)}
             >
-              ▶ Watch Demo
+              <span className="premium-play-icon">▶</span>
+              Watch Projects Demo
             </button>
           </div>
         </div>
@@ -230,7 +235,11 @@ const UserProjects = () => {
       </section>
 
       {/* Premium Expertise Section */}
-      <section className="premium-expertise">
+      <section
+        className={`premium-expertise ${visibleSections.has('expertise') ? 'animate-in' : ''}`}
+        id="expertise"
+        data-animate
+      >
         <div className="premium-container">
           <div className="premium-section-header">
             <h2 className="premium-section-title">Our Expertise</h2>
@@ -267,108 +276,238 @@ const UserProjects = () => {
         </div>
       </section>
 
-      {/* Premium Projects Section */}
-      <section className="premium-projects" id="projects">
+      {/* Latest Infrastructure Projects Section */}
+      <section
+        className={`premium-project-section infrastructure-section ${visibleSections.has('infrastructure-projects') ? 'animate-in' : ''}`}
+        id="infrastructure-projects"
+        data-animate
+      >
+        <div className="timeline-desc-benefits-video-background">
+          <video autoPlay loop muted playsInline>
+            <source src="https://www.pexels.com/download/video/32911250/" type="video/mp4" />
+          </video>
+          <div className="timeline-desc-benefits-video-overlay"></div>
+        </div>
         <div className="premium-container">
           <div className="premium-section-header">
-            <h2 className="premium-section-title">Latest Construction Projects</h2>
-            <p className="premium-section-subtitle">Discover our recent works and ongoing developments across various sectors.</p>
+            <h2 className="premium-section-title">Latest Infrastructure Projects</h2>
+            <p className="premium-section-subtitle">Discover our recent infrastructure developments across various sectors.</p>
           </div>
-
-          {/* Premium Search and Filters */}
-          <div className="premium-filters">
-            <div className="premium-search-box">
-              <input
-                type="text"
-                placeholder="Search projects..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="premium-search-input"
-              />
-              <span className="premium-search-icon">🔍</span>
-            </div>
-
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="premium-filter-select"
-            >
-              <option value="All">All Status</option>
-              {uniqueStatuses.map(status => (
-                <option key={status} value={status}>{status}</option>
-              ))}
-            </select>
-
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="premium-filter-select"
-            >
-              <option value="All">All Types</option>
-              {uniqueTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Premium Projects Grid */}
-          {loading ? (
-            <div className="premium-loading">
-              <div className="premium-spinner"></div>
-              <p>Loading projects...</p>
-            </div>
-          ) : (
-            <div className="premium-projects-grid">
-              {filteredProjects.map((project) => (
-                <div key={project._id} className="premium-project-card">
-                  <div className="premium-project-image">
-                    <img src={getProjectImage(project)} alt={project.pname} />
-                    <div className="premium-project-badges">
-                      <span className={`premium-status-badge ${getStatusColor(project.pstatus)}`}>
-                        {project.pstatus}
-                      </span>
-                      {project.ppriority && (
-                        <div className={`premium-priority-dot ${getPriorityColor(project.ppriority)}`} title={`${project.ppriority} Priority`}></div>
-                      )}
-                    </div>
-                    <div className="premium-project-overlay">
-                      <button
-                        onClick={() => handleViewProject(project)}
-                        className="premium-view-btn"
-                      >
-                        👁️ View Details
-                      </button>
-                    </div>
+          <div className="premium-projects-grid">
+            {getProjectsByType('Infrastructure', 4).map((project, index) => (
+              <div key={project._id} className="premium-project-card" style={{ animationDelay: `${index * 0.3}s` }}>
+                <div className="premium-project-image">
+                  <img src={getProjectImage(project)} alt={project.pname} />
+                  <div className="premium-project-badges">
+                    <span className={`premium-status-badge ${getStatusColor(project.pstatus)}`}>
+                      {project.pstatus}
+                    </span>
+                    {project.ppriority && (
+                      <div className={`premium-priority-dot ${getPriorityColor(project.ppriority)}`} title={`${project.ppriority} Priority`}></div>
+                    )}
                   </div>
-                  <div className="premium-project-content">
-                    <div className="premium-project-header">
-                      <h3 className="premium-project-title">{project.pname}</h3>
-                      <span className="premium-project-type">{project.ptype}</span>
-                    </div>
-                    <p className="premium-project-description">{project.pdescription}</p>
-                    <div className="premium-project-footer">
-                      <span className="premium-project-budget">{formatCurrency(project.pbudget)}</span>
-                      <span className="premium-project-location">
-                        📍 {project.plocation}
-                      </span>
-                    </div>
+                  <div className="premium-project-overlay">
+                    <button
+                      onClick={() => handleViewProject(project)}
+                      className="premium-view-btn"
+                    >
+                      👁️ View Details
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="premium-project-content">
+                  <div className="premium-project-header">
+                    <h3 className="premium-project-title">{project.pname}</h3>
+                    <span className="premium-project-type">{project.ptype}</span>
+                  </div>
+                  <p className="premium-project-description">{project.pdescription}</p>
+                  <div className="premium-project-footer">
+                    <span className="premium-project-budget">{formatCurrency(project.pbudget)}</span>
+                    <span className="premium-project-location">
+                      📍 {project.plocation}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          {filteredProjects.length === 0 && !loading && (
-            <div className="premium-no-results">
-              <div className="premium-no-results-icon">🔍</div>
-              <p>No projects found matching your criteria.</p>
-            </div>
-          )}
+      {/* Commercial Projects Section */}
+      <section
+        className={`premium-project-section commercial-section ${visibleSections.has('commercial-projects') ? 'animate-in' : ''}`}
+        id="commercial-projects"
+        data-animate
+      >
+        <div className="premium-container">
+          <div className="premium-section-header">
+            <h2 className="premium-section-title">Our Commercial Projects</h2>
+            <p className="premium-section-subtitle">Explore our commercial developments and business-focused constructions.</p>
+          </div>
+          <div className="premium-projects-grid">
+            {getProjectsByType('Commercial', 4).map((project, index) => (
+              <div key={project._id} className="premium-project-card" style={{ animationDelay: `${index * 0.3}s` }}>
+                <div className="premium-project-image">
+                  <img src={getProjectImage(project)} alt={project.pname} />
+                  <div className="premium-project-badges">
+                    <span className={`premium-status-badge ${getStatusColor(project.pstatus)}`}>
+                      {project.pstatus}
+                    </span>
+                    {project.ppriority && (
+                      <div className={`premium-priority-dot ${getPriorityColor(project.ppriority)}`} title={`${project.ppriority} Priority`}></div>
+                    )}
+                  </div>
+                  <div className="premium-project-overlay">
+                    <button
+                      onClick={() => handleViewProject(project)}
+                      className="premium-view-btn"
+                    >
+                      👁️ View Details
+                    </button>
+                  </div>
+                </div>
+                <div className="premium-project-content">
+                  <div className="premium-project-header">
+                    <h3 className="premium-project-title">{project.pname}</h3>
+                    <span className="premium-project-type">{project.ptype}</span>
+                  </div>
+                  <p className="premium-project-description">{project.pdescription}</p>
+                  <div className="premium-project-footer">
+                    <span className="premium-project-budget">{formatCurrency(project.pbudget)}</span>
+                    <span className="premium-project-location">
+                      📍 {project.plocation}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Residential Projects Section */}
+      <section
+        className={`premium-project-section residential-section ${visibleSections.has('residential-projects') ? 'animate-in' : ''}`}
+        id="residential-projects"
+        data-animate
+      >
+        <div className="timeline-desc-benefits-video-background">
+          <video autoPlay loop muted playsInline>
+            <source src="https://www.pexels.com/download/video/2826350/" type="video/mp4" />
+          </video>
+          <div className="timeline-desc-benefits-video-overlay"></div>
+        </div>
+        <div className="premium-container">
+          <div className="premium-section-header">
+            <h2 className="premium-section-title">Residential Excellence</h2>
+            <p className="premium-section-subtitle">Browse our residential projects and custom home developments.</p>
+          </div>
+          <div className="premium-projects-grid">
+            {getProjectsByType('Residential', 3).map((project, index) => (
+              <div key={project._id} className="premium-project-card" style={{ animationDelay: `${index * 0.3}s` }}>
+                <div className="premium-project-image">
+                  <img src={getProjectImage(project)} alt={project.pname} />
+                  <div className="premium-project-badges">
+                    <span className={`premium-status-badge ${getStatusColor(project.pstatus)}`}>
+                      {project.pstatus}
+                    </span>
+                    {project.ppriority && (
+                      <div className={`premium-priority-dot ${getPriorityColor(project.ppriority)}`} title={`${project.ppriority} Priority`}></div>
+                    )}
+                  </div>
+                  <div className="premium-project-overlay">
+                    <button
+                      onClick={() => handleViewProject(project)}
+                      className="premium-view-btn"
+                    >
+                      👁️ View Details
+                    </button>
+                  </div>
+                </div>
+                <div className="premium-project-content">
+                  <div className="premium-project-header">
+                    <h3 className="premium-project-title">{project.pname}</h3>
+                    <span className="premium-project-type">{project.ptype}</span>
+                  </div>
+                  <p className="premium-project-description">{project.pdescription}</p>
+                  <div className="premium-project-footer">
+                    <span className="premium-project-budget">{formatCurrency(project.pbudget)}</span>
+                    <span className="premium-project-location">
+                      📍 {project.plocation}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Mixed-Use & Specialty Projects Section */}
+      <section
+        className={`premium-project-section mixed-section ${visibleSections.has('mixed-projects') ? 'animate-in' : ''}`}
+        id="mixed-projects"
+        data-animate
+      >
+        <div className="premium-container">
+          <div className="premium-section-header">
+            <h2 className="premium-section-title">Specialty & Mixed-Use Projects</h2>
+            <p className="premium-section-subtitle">Innovative solutions for unique construction challenges and mixed-use developments.</p>
+          </div>
+          <div className="premium-projects-grid">
+            {getMixedProjects(4).map((project, index) => (
+              <div key={project._id} className="premium-project-card" style={{ animationDelay: `${index * 0.3}s` }}>
+                <div className="premium-project-image">
+                  <img src={getProjectImage(project)} alt={project.pname} />
+                  <div className="premium-project-badges">
+                    <span className={`premium-status-badge ${getStatusColor(project.pstatus)}`}>
+                      {project.pstatus}
+                    </span>
+                    {project.ppriority && (
+                      <div className={`premium-priority-dot ${getPriorityColor(project.ppriority)}`} title={`${project.ppriority} Priority`}></div>
+                    )}
+                  </div>
+                  <div className="premium-project-overlay">
+                    <button
+                      onClick={() => handleViewProject(project)}
+                      className="premium-view-btn"
+                    >
+                      👁️ View Details
+                    </button>
+                  </div>
+                </div>
+                <div className="premium-project-content">
+                  <div className="premium-project-header">
+                    <h3 className="premium-project-title">{project.pname}</h3>
+                    <span className="premium-project-type">{project.ptype}</span>
+                  </div>
+                  <p className="premium-project-description">{project.pdescription}</p>
+                  <div className="premium-project-footer">
+                    <span className="premium-project-budget">{formatCurrency(project.pbudget)}</span>
+                    <span className="premium-project-location">
+                      📍 {project.plocation}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Premium About Section */}
-      <section className="premium-about" id="about">
+      <section
+        className={`premium-about ${visibleSections.has('about') ? 'animate-in' : ''}`}
+        id="about"
+        data-animate
+      >
+        <div className="timeline-desc-benefits-video-background">
+          <video autoPlay loop muted playsInline>
+            <source src="https://www.pexels.com/download/video/9868164/" type="video/mp4" />
+          </video>
+          <div className="timeline-desc-benefits-video-overlay"></div>
+        </div>
         <div className="premium-container">
           <div className="premium-about-grid">
             <div className="premium-about-content">
@@ -392,7 +531,7 @@ const UserProjects = () => {
                   <div className="premium-stat-label">Client Satisfaction</div>
                 </div>
               </div>
-              <button className="premium-btn premium-btn-primary">Learn More About Us</button>
+              <button onClick={() => navigate("/join-with-us")} className="premium-btn premium-btn-primary">Learn More About Us</button>
             </div>
             <div className="premium-about-image">
               <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Construction Team" />
@@ -406,7 +545,11 @@ const UserProjects = () => {
       </section>
 
       {/* Premium Contact Section */}
-      <section className="premium-contact" id="contact">
+      <section
+        className={`premium-contact ${visibleSections.has('contact') ? 'animate-in' : ''}`}
+        id="contact"
+        data-animate
+      >
         <div className="premium-container">
           <div className="premium-section-header">
             <h2 className="premium-section-title">Start Your Project Today</h2>
@@ -471,7 +614,9 @@ const UserProjects = () => {
           </div>
         </div>
       </section>
+
       <Footer />
+
       {/* Premium Project Detail Modal */}
       {showModal && selectedProject && (
         <div className="premium-modal-overlay" onClick={closeModal}>
@@ -618,8 +763,6 @@ const UserProjects = () => {
 
               {/* Action Buttons */}
               <div className="premium-modal-actions">
-                {/*<button className="premium-btn premium-btn-primary">📥 Export Details</button>
-                <button className="premium-btn premium-btn-secondary">📤 Share Project</button>*/}
                 <button onClick={closeModal} className="premium-btn premium-btn-outline">Close</button>
               </div>
             </div>

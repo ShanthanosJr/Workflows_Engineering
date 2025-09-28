@@ -1610,16 +1610,4 @@ input:focus,
   font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
 }
 
-/* ProjectHome Footer Styles */
-.construction-footer {
-  user-select: none;
-  background: #ffffff !important;
-  padding-top: 2rem;
-  padding-bottom: 1rem;
-  border-top: 3px solid #f7df1e;
-  z-index: 20;
-  color: #f7df1e !important;
-  text-align: center;
-  width: 100%;
-  margin-bottom: 0;
-}
+

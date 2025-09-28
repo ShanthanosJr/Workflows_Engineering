@@ -11,11 +11,11 @@ function UpdateProjects() {
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
-  
+
   // Validation states
   const [validationErrors, setValidationErrors] = useState({});
   const [fieldTouched, setFieldTouched] = useState({});
-  
+
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -28,28 +28,11 @@ function UpdateProjects() {
       pattern: /^[a-zA-Z0-9\s\-.]+$/,
       message: "Project name must be 2-100 characters, letters, numbers, spaces, hyphens, and periods only"
     },
-    pnumber: {
-      required: true,
-      pattern: /^[A-Z]{2,4}-\d{4}-\d{4}$/,
-      message: "Format: ABC-2024-0000 (2-4 letters, year, 3-digit number)"
-    },
-    pcode: {
-      required: true,
-      minLength: 3,
-      maxLength: 10,
-      pattern: /^[A-Z0-9-]+$/,
-      message: "3-10 characters, uppercase letters, numbers, and hyphens only"
-    },
     plocation: {
       required: true,
       minLength: 5,
       maxLength: 200,
       message: "Location must be 5-200 characters"
-    },
-    pownerid: {
-      required: true,
-      pattern: /^OWN-\d{4}-\d{4}$/,
-      message: "Format: OWN-2024-0000"
     },
     pownername: {
       required: true,
@@ -60,8 +43,8 @@ function UpdateProjects() {
     },
     potelnumber: {
       required: true,
-      pattern: /^[+]?[1-9][\d\s\-()]{8,15}$/,
-      message: "Valid phone number format (8-15 digits with optional formatting)"
+      pattern: /^(?:0\d{9}|\+94[\s-]?\d{2,3}[\s-]?\d{3}[\s-]?\d{3})$/,
+      message: "Valid phone number must be like 0712345678 or +94 712 345 678"
     },
     powmail: {
       required: true,
@@ -155,13 +138,20 @@ function UpdateProjects() {
     return labels[name] || name;
   };
 
+  // Check if field is read-only
+  const isFieldReadOnly = (fieldName) => {
+    const readOnlyFields = ['pnumber', 'pcode', 'pownerid', 'ptype'];
+    return readOnlyFields.includes(fieldName);
+  };
+
+
   // Handle input changes with live validation
   const handleChange = (field, value) => {
     setProject(prev => ({ ...prev, [field]: value }));
-    
+
     // Mark field as touched
     setFieldTouched((prev) => ({ ...prev, [field]: true }));
-    
+
     // Perform live validation
     const errors = validateField(field, value);
     setValidationErrors((prev) => ({
@@ -174,7 +164,7 @@ function UpdateProjects() {
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setFieldTouched((prev) => ({ ...prev, [name]: true }));
-    
+
     // Re-validate on blur for more comprehensive checking
     const errors = validateField(name, value);
     setValidationErrors((prev) => ({
@@ -190,14 +180,19 @@ function UpdateProjects() {
 
   // Get field CSS classes based on validation state
   const getFieldClasses = (fieldName, baseClasses = "form-control form-control-lg") => {
+    // Handle read-only fields
+    if (isFieldReadOnly(fieldName)) {
+      return `${baseClasses} bg-light text-muted`;
+    }
+
     if (!fieldTouched[fieldName]) return baseClasses;
-    
+
     if (hasFieldError(fieldName)) {
       return `${baseClasses} is-invalid`;
     } else if (validationErrors[fieldName] === null) {
       return `${baseClasses} is-valid`;
     }
-    
+
     return baseClasses;
   };
 
@@ -237,6 +232,16 @@ function UpdateProjects() {
 
   // Render validation feedback
   const renderValidationFeedback = (fieldName) => {
+    // Handle read-only fields
+    if (isFieldReadOnly(fieldName)) {
+      return (
+        <div className="valid-feedback d-block text-muted">
+          <i className="fas fa-lock me-1"></i>
+          Read only
+        </div>
+      );
+    }
+
     if (hasFieldError(fieldName)) {
       return (
         <div className="invalid-feedback d-block">
@@ -258,6 +263,7 @@ function UpdateProjects() {
     }
     return null;
   };
+
 
   useEffect(() => {
     async function fetchProject() {
@@ -406,7 +412,7 @@ function UpdateProjects() {
   // Remove existing image
   const removeExistingImage = (index) => {
     setExistingImages(prev => prev.filter((_, i) => i !== index));
-    
+
     // Re-validate images
     const newImageCount = existingImages.length - 1 + imagePreviewUrls.length;
     if (newImageCount === 0) {
@@ -420,7 +426,7 @@ function UpdateProjects() {
   const removeNewImage = (index) => {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
     setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
-    
+
     // Re-validate images
     const newImageCount = existingImages.length + imagePreviewUrls.length - 1;
     if (newImageCount === 0) {
@@ -666,18 +672,21 @@ function UpdateProjects() {
                             className={getFieldClasses("pnumber")}
                             style={{
                               borderRadius: '16px',
-                              backgroundColor: '#fdfcfb',
+                              backgroundColor: '#f8f9fa',
                               padding: '1rem 1.25rem',
                               border: '1px solid #e5e7eb',
                               boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
                               transition: 'all 0.2s ease',
-                              fontSize: '1rem'
+                              fontSize: '1rem',
+                              color: '#6c757d',
+                              fontStyle: 'italic'
                             }}
                             value={project.pnumber || ""}
                             onChange={(e) => handleChange('pnumber', e.target.value)}
                             onBlur={handleBlur}
                             placeholder="e.g., PRJ-2025-001"
                             required
+                            readOnly
                           />
                           {renderValidationFeedback("pnumber")}
                         </div>
@@ -692,18 +701,21 @@ function UpdateProjects() {
                             className={getFieldClasses("pcode")}
                             style={{
                               borderRadius: '16px',
-                              backgroundColor: '#fdfcfb',
+                              backgroundColor: '#f8f9fa',
                               padding: '1rem 1.25rem',
                               border: '1px solid #e5e7eb',
                               boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
                               transition: 'all 0.2s ease',
-                              fontSize: '1rem'
+                              fontSize: '1rem',
+                              color: '#6c757d',
+                              fontStyle: 'italic'
                             }}
                             value={project.pcode || ""}
                             onChange={(e) => handleChange('pcode', e.target.value)}
                             onBlur={handleBlur}
                             placeholder="e.g., DTC-001"
                             required
+                            readOnly
                           />
                           {renderValidationFeedback("pcode")}
                         </div>
@@ -744,16 +756,19 @@ function UpdateProjects() {
                             className="form-select form-select-lg"
                             style={{
                               borderRadius: '16px',
-                              backgroundColor: '#fdfcfb',
+                              backgroundColor: '#f8f9fa',
                               padding: '1rem 1.25rem',
                               border: '1px solid #e5e7eb',
                               boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
                               transition: 'all 0.2s ease',
-                              fontSize: '1rem'
+                              fontSize: '1rem',
+                              color: '#6c757d',
+                              fontStyle: 'italic'
                             }}
                             value={project.ptype || ""}
                             onChange={(e) => handleChange('ptype', e.target.value)}
                             required
+                            disabled
                           >
                             <option value="">Select category...</option>
                             <option value="Residential">🏠 Residential</option>
@@ -784,14 +799,14 @@ function UpdateProjects() {
                                       background: 'linear-gradient(135deg, #f8f7f4 0%, #fdfcfb 100%)',
                                       transition: 'all 0.3s ease',
                                     }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.transform = 'translateY(-5px)';
-                                      e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.transform = 'translateY(0)';
-                                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
-                                    }}>
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-5px)';
+                                        e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+                                      }}>
                                       <img
                                         src={url}
                                         alt={`Current ${index + 1}`}
@@ -830,8 +845,8 @@ function UpdateProjects() {
                                         }}
                                         title="Remove Image"
                                       >
-                                        <i className="fas fa-times" style={{ 
-                                          color: 'inherit', 
+                                        <i className="fas fa-times" style={{
+                                          color: 'inherit',
                                           fontSize: '14px',
                                           fontWeight: 'bold'
                                         }}></i>
@@ -865,14 +880,14 @@ function UpdateProjects() {
                                       background: 'linear-gradient(135deg, #f8f7f4 0%, #fdfcfb 100%)',
                                       transition: 'all 0.3s ease',
                                     }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.transform = 'translateY(-5px)';
-                                      e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.transform = 'translateY(0)';
-                                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
-                                    }}>
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-5px)';
+                                        e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+                                      }}>
                                       <img
                                         src={url}
                                         alt={`New ${index + 1}`}
@@ -911,8 +926,8 @@ function UpdateProjects() {
                                         }}
                                         title="Remove Image"
                                       >
-                                        <i className="fas fa-times" style={{ 
-                                          color: 'inherit', 
+                                        <i className="fas fa-times" style={{
+                                          color: 'inherit',
                                           fontSize: '14px',
                                           fontWeight: 'bold'
                                         }}></i>
@@ -1004,18 +1019,21 @@ function UpdateProjects() {
                             className={getFieldClasses("pownerid")}
                             style={{
                               borderRadius: '16px',
-                              backgroundColor: '#fdfcfb',
+                              backgroundColor: '#f8f9fa',
                               padding: '1rem 1.25rem',
                               border: '1px solid #e5e7eb',
                               boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
                               transition: 'all 0.2s ease',
-                              fontSize: '1rem'
+                              fontSize: '1rem',
+                              color: '#6c757d',
+                              fontStyle: 'italic'
                             }}
                             value={project.pownerid || ""}
                             onChange={(e) => handleChange('pownerid', e.target.value)}
                             onBlur={handleBlur}
                             placeholder="e.g., OWN-2025-01"
                             required
+                            readOnly
                           />
                           {renderValidationFeedback("pownerid")}
                         </div>
@@ -1066,7 +1084,7 @@ function UpdateProjects() {
                             value={project.potelnumber || ""}
                             onChange={(e) => handleChange('potelnumber', e.target.value)}
                             onBlur={handleBlur}
-                            placeholder="e.g., +1 (555) 123-4567"
+                            placeholder="e.g., +94 71 123 4567 or 071 123 4567"
                             required
                           />
                           {renderValidationFeedback("potelnumber")}

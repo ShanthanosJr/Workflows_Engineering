@@ -15,70 +15,58 @@ export default function NavV2() {
   // Function to detect background color and adjust navbar theme
   useEffect(() => {
     const detectBackgroundColor = () => {
-      const body = document.body;
-      const computedStyle = window.getComputedStyle(body);
-      const backgroundColor = computedStyle.backgroundColor;
-      
-      // Check if background is dark by analyzing RGB values
-      const rgb = backgroundColor.match(/\d+/g);
-      if (rgb) {
-        const brightness = (parseInt(rgb[0]) * 299 + parseInt(rgb[1]) * 587 + parseInt(rgb[2]) * 114) / 1000;
-        setIsDarkBackground(brightness < 128);
-      }
-      
-      // Also check for sections with dark backgrounds
-      const sections = document.querySelectorAll('section, .hero-section, .dark-section, .ptfd-hero-section, .ptfd-projects-section, .ptfd-dashboard-section, .ptfd-cta-section');
+      const sections = document.querySelectorAll(
+        "section, .hero-section, .dark-section, .ptfd-hero-section, .ptfd-projects-section, .ptfd-dashboard-section, .ptfd-cta-section"
+      );
+
       let darkSectionDetected = false;
-      
+
       sections.forEach(section => {
         const rect = section.getBoundingClientRect();
-        if (rect.top <= 100 && rect.bottom >= 100) { // If section is at navbar level
+        if (rect.top <= 0 && rect.bottom >= 60) { // navbar height ~60px
           const sectionStyle = window.getComputedStyle(section);
           const bgColor = sectionStyle.backgroundColor;
           const bgImage = sectionStyle.backgroundImage;
-          
-          if (bgImage !== 'none' || section.classList.contains('dark-section') || 
-              section.classList.contains('ptfd-hero-section') || 
-              section.classList.contains('ptfd-projects-section') ||
-              section.classList.contains('ptfd-dashboard-section') ||
-              section.classList.contains('ptfd-cta-section')) {
+
+          // If background image or known dark-section classes
+          if (bgImage !== "none" || section.classList.contains("dark-section")) {
             darkSectionDetected = true;
           }
-          
-          if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)') {
+
+          // If solid color
+          if (bgColor && bgColor !== "rgba(0, 0, 0, 0)") {
             const rgb = bgColor.match(/\d+/g);
             if (rgb) {
-              const brightness = (parseInt(rgb[0]) * 299 + parseInt(rgb[1]) * 587 + parseInt(rgb[2]) * 114) / 1000;
+              const brightness =
+                (parseInt(rgb[0]) * 299 +
+                  parseInt(rgb[1]) * 587 +
+                  parseInt(rgb[2]) * 114) /
+                1000;
               if (brightness < 128) darkSectionDetected = true;
             }
           }
         }
       });
-      
+
       setIsDarkBackground(darkSectionDetected);
+      console.log("Dark background detected:", darkSectionDetected);
     };
 
-    // Initial detection
     detectBackgroundColor();
-
-    // Listen for scroll events to detect background changes
-    const handleScroll = () => {
-      detectBackgroundColor();
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', detectBackgroundColor);
+    window.addEventListener("scroll", detectBackgroundColor);
+    window.addEventListener("resize", detectBackgroundColor);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', detectBackgroundColor);
+      window.removeEventListener("scroll", detectBackgroundColor);
+      window.removeEventListener("resize", detectBackgroundColor);
     };
   }, []);
+
 
   return (
     <>
       {/* Modern Adaptive Navbar */}
-      <nav className={`navv2-navbar ${isDarkBackground ? 'navv2-navbar-light' : 'navv2-navbar-dark'}`}>
+      <nav className={`navv2-navbar ${isDarkBackground ? 'navv2-theme-dark' : 'navv2-theme-light'}`}>
         <div className="navv2-navbar-container">
           {/* Left - Menu Button */}
           <div className="navv2-navbar-left">
@@ -102,9 +90,9 @@ export default function NavV2() {
             <NavLink to="/ptfd" className="navv2-logo-link">
               <div className="navv2-logo">
                 <div className="navv2-logo-icon">
-                  <img 
-                    src="/WorkflowsEngineering.png" 
-                    alt="Workflows Engineering Logo" 
+                  <img
+                    src="/WorkflowsEngineering.png"
+                    alt="Workflows Engineering Logo"
                     className="navv2-logo-image"
                     onError={(e) => {
                       // Fallback to text if image fails to load
@@ -112,7 +100,7 @@ export default function NavV2() {
                       e.target.nextElementSibling.style.display = 'block';
                     }}
                   />
-                  <div className="navv2-logo-fallback" style={{display: 'none'}}>
+                  <div className="navv2-logo-fallback" style={{ display: 'none' }}>
                     <div className="navv2-building-icon">
                       <div className="navv2-building-base"></div>
                       <div className="navv2-building-tower"></div>
@@ -188,7 +176,7 @@ export default function NavV2() {
               <span className="nav-title-icon">🏠</span>
               Main Menu
             </h3>
-            
+
             <ul className="nav-menu-list">
               <li className="nav-menu-item">
                 <NavLink
@@ -312,13 +300,13 @@ export default function NavV2() {
                 </div>
                 <span className={`nav-expand-icon ${expandPD ? 'nav-expand-rotated' : ''}`}>▼</span>
               </button>
-              
+
               <div id="projects-submenu" className={`nav-accordion-content ${expandPD ? 'nav-accordion-content-expanded' : ''}`}>
                 <ul className="nav-submenu-list">
                   <li>
-                    <NavLink 
-                      to="/user-projects" 
-                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                    <NavLink
+                      to="/user-projects"
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`}
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">📁</span>
@@ -326,9 +314,9 @@ export default function NavV2() {
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink 
-                      to="/user-timeline" 
-                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                    <NavLink
+                      to="/user-timeline"
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`}
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">📈</span>
@@ -336,9 +324,9 @@ export default function NavV2() {
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink 
-                      to="/user-finance" 
-                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                    <NavLink
+                      to="/user-finance"
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`}
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">💰</span>
@@ -346,23 +334,23 @@ export default function NavV2() {
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink 
-                      to="/join-with-us" 
-                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                    <NavLink
+                      to="/join-with-us"
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`}
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">🤝</span>
-                      <span className="nav-submenu-text">Join Us</span>
+                      <span className="nav-submenu-text">Join With Us</span>
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink 
-                      to="/chatbot" 
-                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`} 
+                    <NavLink
+                      to="/user-chatbot"
+                      className={({ isActive }) => `nav-submenu-link ${isActive ? 'nav-submenu-link-active' : ''}`}
                       onClick={closeMenu}
                     >
                       <span className="nav-submenu-icon">🤖</span>
-                      <span className="nav-submenu-text">Smart AI Assistant</span>
+                      <span className="nav-submenu-text">Projecto AI Assistant</span>
                     </NavLink>
                   </li>
                 </ul>
@@ -394,14 +382,11 @@ export default function NavV2() {
           backdrop-filter: blur(10px);
         }
 
-        .navv2-navbar-dark {
-          background: transparent;
-          color: #000000;
+        .navv2-theme-dark, .navv2-theme-dark * {
+          color: #ffffff !important;
         }
-
-        .navv2-navbar-light {
-          background: transparent;
-          color: #ffffff;
+        .navv2-theme-light, .navv2-theme-light * {
+          color: #000000 !important;
         }
 
         .navv2-navbar-container {
@@ -449,8 +434,8 @@ export default function NavV2() {
         }
 
         .navv2-dot {
-          width: 10px;
-          height: 10px;
+          width: 10px !important;
+          height: 10px !important;
           border-radius: 50%;
           background: currentColor;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -461,8 +446,8 @@ export default function NavV2() {
         }
 
         .navv2-menu-text {
-          font-size: 1rem;
-          font-weight: 900;
+          font-size: 1rem !important;
+          font-weight: 900 !important;
           letter-spacing: 0.15em;
           text-transform: uppercase;
         }
@@ -569,17 +554,17 @@ export default function NavV2() {
         }
 
         .navv2-logo-main {
-          font-size: 1.2rem;
-          font-weight: 900;
-          letter-spacing: 0.08em;
+          font-size: 1.3rem !important;
+          font-weight: 900 !important;
+          letter-spacing: 0.08em !important;
           line-height: 1;
           margin-bottom: 4px;
         }
 
         .navv2-logo-sub {
-          font-size: 0.8rem;
-          font-weight: 700;
-          letter-spacing: 0.12em;
+          font-size: 0.9rem !important;
+          font-weight: 700 !important;
+          letter-spacing: 0.12em !important;
           opacity: 0.9;
           text-transform: uppercase;
         }
@@ -595,8 +580,8 @@ export default function NavV2() {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 56px;
-          height: 56px;
+          width: 56px !important;
+          height: 56px !important;
           border-radius: 50%;
           background: transparent;
           color: inherit;
@@ -617,14 +602,14 @@ export default function NavV2() {
         }
 
         .navv2-bell-icon {
-          width: 26px;
-          height: 26px;
+          width: 26px !important;
+          height: 26px !important;
         }
 
         .navv2-bell-icon svg {
           width: 100%;
           height: 100%;
-          stroke-width: 2.5;
+          stroke-width: 2.5 !important;
         }
 
         /* Notification Badge (optional) */

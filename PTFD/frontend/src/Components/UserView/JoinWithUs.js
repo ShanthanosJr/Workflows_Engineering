@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./JoinWithUs.css";
-import "../Nav/ptfdFooter.css";
 import NavV2 from "../Nav/NavV2";
 import { useNavigate } from "react-router-dom";
 import Footer from "../Nav/ptfdFooter";
@@ -25,16 +24,62 @@ const JoinWithUs = () => {
     const [formSubmitting, setFormSubmitting] = useState(false);
     const [formMessage, setFormMessage] = useState("");
 
+    const [visibleSections, setVisibleSections] = useState(new Set());
+
+    // Intersection Observer for animations
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setVisibleSections(prev => new Set([...prev, entry.target.id]));
+                    }
+                });
+            },
+            { threshold: 0.1, rootMargin: '100px' }
+        );
+
+        const sections = document.querySelectorAll('[data-animate]');
+        sections.forEach(section => observer.observe(section));
+
+        return () => observer.disconnect();
+    }, []);
+
     // Fetch projects from API
     useEffect(() => {
         const fetchProjects = async () => {
             try {
                 const response = await axios.get("http://localhost:5050/projects");
-                const projectData = response.data.projects || [];
-                setProjects(projectData);
+                const projectData = response.data.projects || response.data || [];
+                // Ensure each project has the required fields
+                const validatedProjects = projectData.map(project => ({
+                    ...project,
+                    pname: project.pname || project.name || "Unnamed Project",
+                    pdescription: project.pdescription || project.description || "No description available",
+                    pimage: project.pimage || project.image || "https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+                    plocation: project.plocation || project.location || "Location not specified",
+                    pbudget: project.pbudget || project.budget || "Budget not specified"
+                }));
+                setProjects(validatedProjects);
             } catch (error) {
                 console.error("Error fetching projects:", error);
-                setProjects([]);
+                // Set fallback projects in case of API error
+                setProjects([
+                    {
+                        pname: "Modern Office Complex",
+                        pdescription: "A state-of-the-art office complex featuring sustainable design and modern amenities.",
+                        pimage: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+                        plocation: "New York, NY",
+                        pbudget: "2,500,000"
+                    },
+                    {
+                        pimage: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+                        pname: "Luxury Residential Tower",
+                        pdescription: "A high-end residential tower with premium finishes and panoramic city views.",
+                        plocation: "Miami, FL",
+                        pbudget: "5,200,000"
+                    }
+                ]);
             }
         };
 
@@ -137,7 +182,7 @@ const JoinWithUs = () => {
         }
     ];
 
-    const displayedProjects = projects.slice(0, 4);
+    const displayedProjects = projects && Array.isArray(projects) ? projects.slice(0, 4) : [];
 
     // Process steps
     const processSteps = [
@@ -239,20 +284,21 @@ const JoinWithUs = () => {
             <NavV2 />
 
             {/* Advanced Hero Section with Video Background */}
-            <section className="construction-hero">
+            <section className="construction-hero" id="hero" data-animate>
                 <div className="construction-hero-video-bg">
                     <video autoPlay loop muted playsInline>
                         <source src="https://www.pexels.com/download/video/27864490/" type="video/mp4" />
+                        Your browser does not support the video tag.
                     </video>
                     <div className="construction-hero-overlay"></div>
                 </div>
 
                 <div className="construction-hero-grid">
                     <div className="construction-hero-content">
-                        <div className="construction-hero-badge">
+                       {/*} <div className="construction-hero-badge">
                             <span className="construction-badge-icon">🏆</span>
                             <span className="construction-badge-text">Industry Leaders Since 2025</span>
-                        </div>
+                        </div>*/}
 
                         <h1 className="construction-hero-title">
                             {heroSteps[heroAnimationStep].title}
@@ -310,294 +356,217 @@ const JoinWithUs = () => {
                                     Live Monitoring
                                 </div>
                             </div>
-                            <div className="construction-dashboard-content">
-                                <div className="construction-progress-section">
-                                    <div className="construction-progress-item">
-                                        <span className="construction-progress-label">Foundation</span>
-                                        <div className="construction-progress-bar">
-                                            <div className="construction-progress-fill" style={{ width: '100%' }}></div>
-                                        </div>
-                                        <span className="construction-progress-value">100%</span>
-                                    </div>
-                                    <div className="construction-progress-item">
-                                        <span className="construction-progress-label">Structure</span>
-                                        <div className="construction-progress-bar">
-                                            <div className="construction-progress-fill" style={{ width: '75%' }}></div>
-                                        </div>
-                                        <span className="construction-progress-value">75%</span>
-                                    </div>
-                                    <div className="construction-progress-item">
-                                        <span className="construction-progress-label">Finishing</span>
-                                        <div className="construction-progress-bar">
-                                            <div className="construction-progress-fill" style={{ width: '45%' }}></div>
-                                        </div>
-                                        <span className="construction-progress-value">45%</span>
-                                    </div>
+                            <div className="construction-dashboard-metrics">
+                                <div className="construction-metric-item">
+                                    <div className="construction-metric-value">85%</div>
+                                    <div className="construction-metric-label">Completion</div>
                                 </div>
-                                <div className="construction-dashboard-stats">
-                                    <div className="construction-stat-item">
-                                        <span className="construction-stat-icon">👷</span>
-                                        <span className="construction-stat-value">24</span>
-                                        <span className="construction-stat-label">Workers</span>
-                                    </div>
-                                    <div className="construction-stat-item">
-                                        <span className="construction-stat-icon">🏗️</span>
-                                        <span className="construction-stat-value">8</span>
-                                        <span className="construction-stat-label">Engineers</span>
-                                    </div>
+                                <div className="construction-metric-item">
+                                    <div className="construction-metric-value">45</div>
+                                    <div className="construction-metric-label">Team Members</div>
                                 </div>
+                                <div className="construction-metric-item">
+                                    <div className="construction-metric-value">12</div>
+                                    <div className="construction-metric-label">Days Ahead</div>
+                                </div>
+                            </div>
+                            <div className="construction-dashboard-chart">
+                                <div className="construction-chart-bar" style={{ width: '45%' }}></div>
+                                <div className="construction-chart-bar" style={{ width: '65%' }}></div>
+                                <div className="construction-chart-bar" style={{ width: '85%' }}></div>
+                                <div className="construction-chart-bar" style={{ width: '55%' }}></div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div className="construction-hero-indicators">
-                    {heroSteps.map((_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => setHeroAnimationStep(index)}
-                            className={`construction-hero-indicator ${heroAnimationStep === index ? 'active' : ''}`}
-                        />
-                    ))}
-                </div>
             </section>
 
             {/* Why Choose Us Section */}
-            <section className="construction-why-section">
+            <section 
+                className={`construction-why-section ${visibleSections.has('why') ? 'animate-in' : ''}`} 
+                id="why" 
+                data-animate
+            >
                 <div className="construction-container">
                     <div className="construction-section-header">
                         <h2 className="construction-section-title">
-                            Why Choose Our Construction Excellence?
+                            Why Choose Our Construction Services?
                         </h2>
                         <p className="construction-section-subtitle">
-                            Discover the advantages that set us apart in the construction industry and make us the preferred choice for discerning clients.
+                            Discover the difference of working with a partner committed to excellence, innovation, and your complete satisfaction in every project we undertake.
                         </p>
                     </div>
 
                     <div className="construction-why-grid">
                         <div className="construction-why-card quality">
-                            <div className="construction-why-header">
-                                <div className="construction-why-icon">🎯</div>
-                                <div className="construction-why-badge">Premium</div>
-                            </div>
+                            <div className="construction-why-icon">🏆</div>
                             <h3 className="construction-why-title">Unmatched Quality</h3>
                             <p className="construction-why-description">
-                                Every project meets the highest industry standards with rigorous quality control and premium materials.
+                                We use premium materials and state-of-the-art techniques to ensure your project stands the test of time with superior craftsmanship.
                             </p>
-                            <div className="construction-why-metric">
-                                <span className="construction-metric-value">99.8%</span>
-                                <span className="construction-metric-label">Quality Score</span>
-                            </div>
                         </div>
-
                         <div className="construction-why-card innovation">
-                            <div className="construction-why-header">
-                                <div className="construction-why-icon">💡</div>
-                                <div className="construction-why-badge">Advanced</div>
-                            </div>
-                            <h3 className="construction-why-title">Cutting-Edge Innovation</h3>
+                            <div className="construction-why-icon">💡</div>
+                            <h3 className="construction-why-title">Innovative Solutions</h3>
                             <p className="construction-why-description">
-                                Latest construction technologies and sustainable practices for future-ready buildings.
+                                Our team brings cutting-edge technology and creative problem-solving to every project, delivering efficient and modern construction solutions.
                             </p>
-                            <div className="construction-why-metric">
-                                <span className="construction-metric-value">50+</span>
-                                <span className="construction-metric-label">Technologies</span>
-                            </div>
                         </div>
-
                         <div className="construction-why-card timeline">
-                            <div className="construction-why-header">
-                                <div className="construction-why-icon">⚡</div>
-                                <div className="construction-why-badge">Efficient</div>
-                            </div>
+                            <div className="construction-why-icon">⏱️</div>
                             <h3 className="construction-why-title">On-Time Delivery</h3>
                             <p className="construction-why-description">
-                                Proven track record of delivering projects on schedule with efficient project management.
+                                We pride ourselves on meeting deadlines without compromising quality, using advanced project management tools and methodologies.
                             </p>
-                            <div className="construction-why-metric">
-                                <span className="construction-metric-value">95%</span>
-                                <span className="construction-metric-label">On-Time Rate</span>
-                            </div>
                         </div>
-
                         <div className="construction-why-card support">
-                            <div className="construction-why-header">
-                                <div className="construction-why-icon">🤝</div>
-                                <div className="construction-why-badge">24/7</div>
-                            </div>
-                            <h3 className="construction-why-title">Expert Support</h3>
+                            <div className="construction-why-icon">🤝</div>
+                            <h3 className="construction-why-title">Dedicated Support</h3>
                             <p className="construction-why-description">
-                                Dedicated support team available around the clock for all your project needs.
+                                From initial consultation to final handover, our team provides comprehensive support and clear communication throughout the process.
                             </p>
-                            <div className="construction-why-metric">
-                                <span className="construction-metric-value">24/7</span>
-                                <span className="construction-metric-label">Availability</span>
-                            </div>
-                        </div>
-                        <div className="construction-why-card innovation">
-                            <div className="construction-why-header">
-                                <div className="construction-why-icon">🤖</div>
-                                <div className="construction-why-badge">AI</div>
-                            </div>
-                            <h3 className="construction-why-title">Smart Assistance</h3>
-                            <p className="construction-why-description">
-                                Get instant answers, guidance, and support with an intelligent chatbot integrated into the workflow system.
-                            </p>
-                            <div className="construction-why-metric">
-                                <span className="construction-metric-value">24/7</span>
-                                <span className="construction-metric-label">Availability</span>
-                            </div>
-                        </div>
-
-                        <div className="construction-why-card timeline">
-                            <div className="construction-why-header">
-                                <div className="construction-why-icon">📅</div>
-                                <div className="construction-why-badge">Timeline</div>
-                            </div>
-                            <h3 className="construction-why-title">Project Scheduling</h3>
-                            <p className="construction-why-description">
-                                Visualize milestones, deadlines, and progress with a clear and dynamic project timeline.
-                            </p>
-                            <div className="construction-why-metric">
-                                <span className="construction-metric-value">100+</span>
-                                <span className="construction-metric-label">Architects</span>
-                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Team Section with Video Background */}
-            <section className="construction-team-section">
+            {/* Team Section */}
+            <section 
+                className={`construction-team-section ${visibleSections.has('team') ? 'animate-in' : ''}`} 
+                id="team" 
+                data-animate
+            >
                 <div className="construction-team-video-bg">
                     <video autoPlay loop muted playsInline>
                         <source src="https://www.pexels.com/download/video/6774633/" type="video/mp4" />
+                        Your browser does not support the video tag.
                     </video>
                     <div className="construction-team-overlay"></div>
                 </div>
+                <div className="construction-container">
+                    <div className="construction-section-header">
+                        <h2 className="construction-section-title white">
+                            Meet Our Expert Team
+                        </h2>
+                        <p className="construction-section-subtitle white">
+                            Our dedicated professionals bring years of experience and passion to every project, ensuring exceptional results and client satisfaction.
+                        </p>
+                    </div>
 
-                <div className="construction-team-content">
-                    <div className="construction-container">
-                        <div className="construction-section-header">
-                            <h2 className="construction-section-title white">
-                                Meet Our Expert Team
-                            </h2>
-                            <p className="construction-section-subtitle white">
-                                Our diverse team of professionals brings together decades of experience, innovation, and dedication to deliver exceptional results.
+                    <div className="construction-team-profile">
+                        <div className="construction-profile-image-container">
+                            <img
+                                src={teamMembers[currentTeamMember].image}
+                                alt={teamMembers[currentTeamMember].name}
+                                className="construction-profile-image"
+                                onError={(e) => {
+                                    e.target.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80";
+                                }}
+                            />
+                        </div>
+
+                        <div className="construction-profile-content">
+                            <div className="construction-profile-header">
+                                <h3 className="construction-profile-name">
+                                    {teamMembers[currentTeamMember].name}
+                                </h3>
+                                <div className="construction-profile-role">
+                                    {teamMembers[currentTeamMember].role}
+                                </div>
+                            </div>
+
+                            <p className="construction-profile-description">
+                                {teamMembers[currentTeamMember].description}
                             </p>
-                        </div>
 
-                        <div className="construction-team-showcase">
-                            <div className="construction-team-profile">
-                                <div className="construction-profile-image">
-                                    <img src={teamMembers[currentTeamMember].image} alt={teamMembers[currentTeamMember].name} />
-                                    <div className="construction-profile-overlay">
-                                        <span className="construction-profile-overlay-text">
-                                            👤 View Full Profile
-                                        </span>
-                                    </div>
+                            <div className="construction-profile-stats">
+                                <div className="construction-stat-card">
+                                    <div className="construction-stat-value">{teamMembers[currentTeamMember].experience}</div>
+                                    <div className="construction-stat-label">Experience</div>
                                 </div>
-                                <div className="construction-profile-info">
-                                    <div className="construction-profile-header">
-                                        <h3 className="construction-profile-name">{teamMembers[currentTeamMember].name}</h3>
-                                        <div className="construction-profile-role">{teamMembers[currentTeamMember].role}</div>
-                                    </div>
-                                    <div className="construction-profile-details">
-                                        <div className="construction-profile-detail">
-                                            <span className="construction-detail-icon">⏱️</span>
-                                            <span className="construction-detail-text">{teamMembers[currentTeamMember].experience}</span>
-                                        </div>
-                                        <div className="construction-profile-detail">
-                                            <span className="construction-detail-icon">🎯</span>
-                                            <span className="construction-detail-text">{teamMembers[currentTeamMember].specialty}</span>
-                                        </div>
-                                        <div className="construction-profile-detail">
-                                            <span className="construction-detail-icon">📊</span>
-                                            <span className="construction-detail-text">{teamMembers[currentTeamMember].projects}</span>
-                                        </div>
-                                    </div>
-                                    <p className="construction-profile-description">
-                                        {teamMembers[currentTeamMember].description}
-                                    </p>
+                                <div className="construction-stat-card">
+                                    <div className="construction-stat-value">{teamMembers[currentTeamMember].specialty}</div>
+                                    <div className="construction-stat-label">Specialty</div>
+                                </div>
+                                <div className="construction-stat-card">
+                                    <div className="construction-stat-value">{teamMembers[currentTeamMember].projects}</div>
+                                    <div className="construction-stat-label">Completed</div>
                                 </div>
                             </div>
-
-                            <div className="construction-team-navigation">
-                                <button onClick={prevTeamMember} className="construction-team-nav-btn">
-                                    ←
-                                </button>
-                                <div className="construction-team-indicators">
-                                    {teamMembers.map((_, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => setCurrentTeamMember(index)}
-                                            className={`construction-team-indicator ${currentTeamMember === index ? 'active' : ''}`}
-                                        />
-                                    ))}
-                                </div>
-                                <button onClick={nextTeamMember} className="construction-team-nav-btn">
-                                    →
-                                </button>
-                            </div>
                         </div>
+                    </div>
+
+                    <div className="construction-team-navigation">
+                        <button onClick={prevTeamMember} className="construction-team-nav-btn">
+                            ←
+                        </button>
+                        <div className="construction-team-indicators">
+                            {teamMembers.map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setCurrentTeamMember(index)}
+                                    className={`construction-team-indicator ${currentTeamMember === index ? 'active' : ''}`}
+                                />
+                            ))}
+                        </div>
+                        <button onClick={nextTeamMember} className="construction-team-nav-btn">
+                            →
+                        </button>
                     </div>
                 </div>
             </section>
 
-            {/* Current Projects Section */}
-            <section className="construction-projects-section">
+            {/* Projects Section */}
+            <section 
+                className={`construction-projects-section ${visibleSections.has('projects') ? 'animate-in' : ''}`} 
+                id="projects" 
+                data-animate
+            >
                 <div className="construction-container">
                     <div className="construction-section-header">
                         <h2 className="construction-section-title">
-                            Our Current Projects
+                            Our Ongoing Projects
                         </h2>
                         <p className="construction-section-subtitle">
-                            See our ongoing work and the quality standards we maintain across all project types and scales.
+                            Explore our portfolio of successfully completed projects, showcasing our expertise across various construction domains.
                         </p>
                     </div>
 
-                    <div className="construction-projects-showcase">
-                        <div className="construction-projects-carousel">
-                            {displayedProjects.map((project, index) => (
-                                <div
-                                    key={index}
-                                    className={`construction-project-slide ${currentProject === index ? 'active' : ''}`}
-                                >
-                                    <img src={project.pimg && project.pimg.length > 0 ? project.pimg[0] : "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"} alt={project.pname} />
-                                    <div className="construction-project-overlay">
-                                        <div className="construction-project-info">
-                                            <h3 className="construction-project-name">{project.pname || "Project Name"}</h3>
-                                            <div className="construction-project-meta">
-                                                <span className="construction-project-type">{project.ptype || "Type"}</span>
-                                                <span className={`construction-project-status ${project.pstatus?.toLowerCase().replace(' ', '-') || 'planning'}`}>
-                                                    {project.pstatus || "Planning"}
-                                                </span>
-                                            </div>
-                                            <div className="construction-project-progress">
-                                                <div className="construction-progress-bar">
-                                                    <div className="construction-progress-fill" style={{ width: '75%' }}></div>
-                                                </div>
-                                                <span className="construction-progress-percentage">75%</span>
-                                            </div>
-                                            <div className="construction-project-details">
-                                                <div className="construction-project-detail">
-                                                    <span className="construction-detail-label">Budget:</span>
-                                                    <span className="construction-detail-value">{project.pbudget ? `$${project.pbudget.toLocaleString()}` : "$0"}</span>
-                                                </div>
-                                                <div className="construction-project-detail">
-                                                    <span className="construction-detail-label">End Date:</span>
-                                                    <span className="construction-detail-value">{project.penddate ? new Date(project.penddate).toLocaleDateString() : "N/A"}</span>
-                                                </div>
-                                            </div>
+                    <div className="construction-projects-grid">
+                        {displayedProjects.map((project, index) => (
+                            <div key={index} className="construction-project-card">
+                                <img 
+                                    src={project.pimg || "https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"} 
+                                    alt={project.pname} 
+                                    className="construction-project-image"
+                                    onError={(e) => {
+                                        e.target.src = "https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80";
+                                    }}
+                                />
+                                <div className="construction-project-overlay">
+                                    <div className="construction-project-content">
+                                        <h3 className="construction-project-title">{project.pname}</h3>
+                                        <p className="construction-project-description">{project.pdescription ? project.pdescription.substring(0, 100) + "..." : "No description available"}</p>
+                                        <div className="construction-project-stats">
+                                            <span className="construction-stat">
+                                                <span className="construction-stat-icon">📍</span>
+                                                {project.plocation || "Location not specified"}
+                                            </span>
+                                            <span className="construction-stat">
+                                                <span className="construction-stat-icon">💰</span>
+                                                ${project.pbudget || "Budget not specified"}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+                        ))}
+                    </div>
 
+                    {displayedProjects.length > 0 && (
                         <div className="construction-projects-navigation">
-                            <button
-                                onClick={() => setCurrentProject((prev) => (prev - 1 + (displayedProjects.length || 1)) % (displayedProjects.length || 1))}
+                            <button 
+                                onClick={() => setCurrentProject((prev) => (prev - 1 + displayedProjects.length) % displayedProjects.length)} 
                                 className="construction-projects-nav-btn"
                             >
                                 ←
@@ -611,76 +580,80 @@ const JoinWithUs = () => {
                                     />
                                 ))}
                             </div>
-                            <button
-                                onClick={() => setCurrentProject((prev) => (prev + 1) % (displayedProjects.length || 1))}
+                            <button 
+                                onClick={() => setCurrentProject((prev) => (prev + 1) % displayedProjects.length)} 
                                 className="construction-projects-nav-btn"
                             >
                                 →
                             </button>
                         </div>
-                    </div>
+                    )}
                 </div>
             </section>
 
-            {/* Process Section with Video Background */}
-            <section className="construction-process-section">
+            {/* Process Section */}
+            <section 
+                className={`construction-process-section ${visibleSections.has('process') ? 'animate-in' : ''}`} 
+                id="process" 
+                data-animate
+            >
                 <div className="construction-process-video-bg">
                     <video autoPlay loop muted playsInline>
-                        <source src="https://www.pexels.com/download/video/15990565/" type="video/mp4" />
+                        <source src="https://www.pexels.com/download/video/2048246/" type="video/mp4" />
+                        Your browser does not support the video tag.
                     </video>
                     <div className="construction-process-overlay"></div>
                 </div>
+                <div className="construction-container">
+                    <div className="construction-section-header">
+                        <h2 className="construction-section-title white">
+                            Our Proven Process
+                        </h2>
+                        <p className="construction-section-subtitle white">
+                            From concept to completion, our structured approach ensures efficient project delivery with minimal disruptions and maximum value.
+                        </p>
+                    </div>
 
-                <div className="construction-process-content">
-                    <div className="construction-container">
-                        <div className="construction-section-header">
-                            <h2 className="construction-section-title white">
-                                Our Proven Process
-                            </h2>
-                            <p className="construction-section-subtitle white">
-                                From initial consultation to final delivery, our systematic approach ensures exceptional results at every stage.
+                    <div className="construction-process-grid">
+                        <div className="construction-process-card">
+                            <div className="construction-process-icon">
+                                {processSteps[currentProcess].icon}
+                            </div>
+                            <h3 className="construction-process-title">
+                                {processSteps[currentProcess].title}
+                            </h3>
+                            <p className="construction-process-description">
+                                {processSteps[currentProcess].description}
                             </p>
                         </div>
+                    </div>
 
-                        <div className="construction-process-grid">
-                            {processSteps.map((step, index) => (
-                                <div
+                    <div className="construction-process-navigation">
+                        <button onClick={prevProcess} className="construction-process-nav-btn">
+                            ←
+                        </button>
+                        <div className="construction-process-indicators">
+                            {processSteps.map((_, index) => (
+                                <button
                                     key={index}
-                                    className={`construction-process-card ${currentProcess === index ? 'active' : ''}`}
                                     onClick={() => setCurrentProcess(index)}
-                                >
-                                    <div className="construction-process-number">{String(index + 1).padStart(2, '0')}</div>
-                                    <div className="construction-process-icon">{step.icon}</div>
-                                    <h4 className="construction-process-title">{step.title}</h4>
-                                    <p className="construction-process-description">{step.description}</p>
-                                    <div className="construction-process-arrow">→</div>
-                                </div>
+                                    className={`construction-process-indicator ${currentProcess === index ? 'active' : ''}`}
+                                />
                             ))}
                         </div>
-
-                        <div className="construction-process-navigation">
-                            <button onClick={prevProcess} className="construction-process-nav-btn">
-                                ←
-                            </button>
-                            <div className="construction-process-indicators">
-                                {processSteps.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setCurrentProcess(index)}
-                                        className={`construction-process-indicator ${currentProcess === index ? 'active' : ''}`}
-                                    />
-                                ))}
-                            </div>
-                            <button onClick={nextProcess} className="construction-process-nav-btn">
-                                →
-                            </button>
-                        </div>
+                        <button onClick={nextProcess} className="construction-process-nav-btn">
+                            →
+                        </button>
                     </div>
                 </div>
             </section>
 
             {/* Testimonials Section */}
-            <section className="construction-testimonials-section">
+            <section 
+                className={`construction-testimonials-section ${visibleSections.has('testimonials') ? 'animate-in' : ''}`} 
+                id="testimonials" 
+                data-animate
+            >
                 <div className="construction-container">
                     <div className="construction-section-header">
                         <h2 className="construction-section-title">
@@ -741,7 +714,11 @@ const JoinWithUs = () => {
             </section>
 
             {/* Contact Form Section */}
-            <section className="construction-contact-section" id="contact-form">
+            <section 
+                className={`construction-contact-section ${visibleSections.has('contact') ? 'animate-in' : ''}`} 
+                id="contact-form" 
+                data-animate
+            >
                 <div className="construction-container">
                     <div className="construction-contact-grid">
                         <div className="construction-contact-info">

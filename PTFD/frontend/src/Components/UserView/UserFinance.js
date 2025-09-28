@@ -228,7 +228,7 @@ const UserFinance = () => {
           <div className="finance-desc-hero-content">
             <div className="finance-desc-hero-text">
               <h1 className="finance-desc-hero-title">
-                What is Financial Management?
+                Welcome to Financial Management 
               </h1>
               <div className="finance-desc-slide-content">
                 <h2 className="finance-desc-slide-title">
@@ -238,8 +238,12 @@ const UserFinance = () => {
                   {videoSlides[currentVideoSlide].description}
                 </p>
               </div>
-              <button onClick={() => document.getElementById("contact").scrollIntoView({ behavior: "smooth" })} className="finance-desc-hero-button">
-                Explore Financial System
+              <button
+                className="finance-desc-hero-button premium-pulse-btn"
+                onClick={() => setShowDemo(true)}
+              >
+                <span className="premium-play-icon">▶</span>
+                Watch Finance Demo
               </button>
             </div>
           </div>
@@ -262,6 +266,8 @@ const UserFinance = () => {
               →
             </button>
           </div>
+
+
         </div>
       </section>
 
